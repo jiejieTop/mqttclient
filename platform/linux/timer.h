@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-10 22:18:32
- * @LastEditTime: 2019-12-15 14:30:04
+ * @LastEditTime: 2019-12-16 02:04:02
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
-typedef struct mqtt_timer {
+typedef struct platform_timer {
     struct timeval time;
-} mqtt_timer_t;
+} platform_timer_t;
 
+void platform_timer_init(platform_timer_t* timer);
+void platform_timer_cutdown(platform_timer_t* timer, unsigned int timeout);

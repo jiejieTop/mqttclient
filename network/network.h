@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime: 2019-12-15 15:53:55
+ * @LastEditTime: 2019-12-16 01:22:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -32,6 +32,9 @@ typedef struct connect_params {
     char                *addr;
     int                 port;
     char                *ca;
+    char                *client_id;
+    char                *user_name;
+    char                *password;
 } connect_params_t;
 
 
@@ -45,10 +48,10 @@ typedef struct network {
 } network_t;
 
 
-int network_init(network_t *n, connect_params_t *connect_params);
-int network_read(network_t *n, unsigned char *buf, int len, int timeout);
-int network_write(network_t *n, unsigned char *buf, int len, int timeout);
-int network_connect(network_t *n);
-void network_disconnect(network_t *n);
+void network_init(network_t* n, connect_params_t* connect_params);
+int network_read(network_t* n, unsigned char* buf, int len, int timeout);
+int network_write(network_t* n, unsigned char* buf, int len, int timeout);
+int network_connect(network_t* n);
+void network_release(network_t* n);
 
 #endif
