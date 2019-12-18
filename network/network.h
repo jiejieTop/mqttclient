@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime: 2019-12-16 01:22:47
+ * @LastEditTime : 2019-12-18 22:32:59
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -35,6 +35,11 @@ typedef struct connect_params {
     char                *client_id;
     char                *user_name;
     char                *password;
+	unsigned char       will_flag;
+    void                *will_options;
+    unsigned short      keep_alive_interval;
+    unsigned char       clean_session;
+    unsigned char       mqtt_version;
 } connect_params_t;
 
 

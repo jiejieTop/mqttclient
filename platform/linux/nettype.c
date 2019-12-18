@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime: 2019-12-16 01:59:10
+ * @LastEditTime : 2019-12-18 23:35:23
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -106,6 +106,8 @@ int platform_nettype_connect(network_t* n)
         close(n->socket);
         RETURN_ERROR(FAIL_ERROR);
     }
+
+    printf("connect server success...\n");
 
     RETURN_ERROR(SUCCESS_ERROR);
 }

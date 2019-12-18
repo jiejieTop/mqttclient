@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2019-12-16 02:25:55
+ * @LastEditTime : 2019-12-18 21:24:31
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -83,15 +83,12 @@ typedef struct mqtt_client {
     void                        (*default_message_handler)(void*, message_data_t*);
     network_t                   *network;
     client_state_t              client_state;
-    unsigned int                keep_alive_interval;
-    int                         clean_session;
     char                        connection_state;
     char                        ping_outstanding;
     platform_timer_t            ping_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
-    connect_params_t            connect_data;
-    // MQTTPacket_connectData      connect_data;
+    connect_params_t            *connect_data;
 } mqtt_client_t;
 
 
@@ -99,19 +96,19 @@ typedef void (*disconnect_handler_t)(mqtt_client_t *, void *);
 typedef void (*reconnect_handler_t)(mqtt_client_t *, void *);
 
 typedef struct client_init_params{
-	unsigned int            cmd_timeout;
-    size_t                  read_buf_size;
-    size_t                  write_buf_size;
-    connect_params_t        connect_params;
-	disconnect_handler_t    disconnect_handler;
-	reconnect_handler_t     reconnect_handler;
-	void                    *disconnect_handler_data;
-	void                    *reconnect_handler_data;
+	unsigned int                cmd_timeout;
+    size_t                      read_buf_size;
+    size_t                      write_buf_size;
+    connect_params_t            connect_params;
+	disconnect_handler_t        disconnect_handler;
+	reconnect_handler_t         reconnect_handler;
+	void                        *disconnect_handler_data;
+	void                        *reconnect_handler_data;
 } client_init_params_t;
 
 int mqtt_set_connect_data(mqtt_client_t* c, MQTTPacket_connectData* connect_data);
 int mqtt_init(mqtt_client_t* c, client_init_params_t* init);
 int mqtt_release(mqtt_client_t* c);
-
-
+// int mqtt_connect(mqtt_client_t* c, MQTTPacket_connectData* connect_data);
+int mqtt_connect(mqtt_client_t* c);
 #endif /* _MQTTCLIENT_H_ */
