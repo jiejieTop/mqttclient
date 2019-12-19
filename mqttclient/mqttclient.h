@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-18 21:24:31
+ * @LastEditTime : 2019-12-20 00:14:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -27,7 +27,8 @@
 #define     DEFAULT_CMD_TIMEOUT     2000
 #define     MAX_CMD_TIMEOUT         5000
 #define     MIN_CMD_TIMEOUT         500
-
+#define     KEEP_ALIVE_INTERVAL     100
+#define     MQTT_VERSION            4   // 4 is mqtt 3.1.1
 
 typedef enum mqtt_qos {
     QOS0 = 0,
@@ -71,6 +72,7 @@ typedef struct message_handlers {
     message_handler_t   handler;
 } message_handlers_t;
 
+
 typedef struct mqtt_client {
     unsigned int                packet_id;
     unsigned int                cmd_timeout;
@@ -88,7 +90,7 @@ typedef struct mqtt_client {
     platform_timer_t            ping_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
-    connect_params_t            *connect_data;
+    connect_params_t            *connect_params;
 } mqtt_client_t;
 
 
@@ -109,6 +111,8 @@ typedef struct client_init_params{
 int mqtt_set_connect_data(mqtt_client_t* c, MQTTPacket_connectData* connect_data);
 int mqtt_init(mqtt_client_t* c, client_init_params_t* init);
 int mqtt_release(mqtt_client_t* c);
-// int mqtt_connect(mqtt_client_t* c, MQTTPacket_connectData* connect_data);
 int mqtt_connect(mqtt_client_t* c);
+int mqtt_disconnect(mqtt_client_t* c);
+
+
 #endif /* _MQTTCLIENT_H_ */

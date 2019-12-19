@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime : 2019-12-18 22:32:59
+ * @LastEditTime : 2019-12-19 23:29:46
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -35,6 +35,9 @@ typedef struct connect_params {
     char                *client_id;
     char                *user_name;
     char                *password;
+    size_t              client_id_len;
+    size_t              user_name_len;
+    size_t              password_len;
 	unsigned char       will_flag;
     void                *will_options;
     unsigned short      keep_alive_interval;
@@ -42,10 +45,9 @@ typedef struct connect_params {
     unsigned char       mqtt_version;
 } connect_params_t;
 
-
 typedef struct network {
     int                 socket;
-    connect_params_t    connect_params;
+    connect_params_t    *connect_params;
     int                 (*read)(struct network *, unsigned char *, int, int);
     int                 (*write)(struct network *, unsigned char *, int, int);
     int                 (*connect)(struct network *);
@@ -53,7 +55,7 @@ typedef struct network {
 } network_t;
 
 
-void network_init(network_t* n, connect_params_t* connect_params);
+int network_init(network_t* n);
 int network_read(network_t* n, unsigned char* buf, int len, int timeout);
 int network_write(network_t* n, unsigned char* buf, int len, int timeout);
 int network_connect(network_t* n);

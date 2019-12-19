@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-18 21:22:57
+ * @LastEditTime : 2019-12-20 00:18:01
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -106,7 +106,7 @@ void mqtt_close_session(mqtt_client_t* c)
 {
     c->ping_outstanding = 0;
     c->client_state = CLIENT_STATE_INITIALIZED;
-    if (c->connect_data->clean_session)
+    if (c->connect_params->clean_session)
         mqtt_clean_session(c);
 }
 
@@ -114,7 +114,7 @@ int keepalive(mqtt_client_t* c)
 {
     int rc = SUCCESS_ERROR;
 
-    if (c->connect_data->keep_alive_interval == 0)
+    if (c->connect_params->keep_alive_interval == 0)
         goto exit;
 
     if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received))
@@ -254,13 +254,13 @@ static int mqtt_read_packet(mqtt_client_t* c, platform_timer_t* timer)
     int rem_len = 0;
 
     /* 1. read the header byte.  This has the packet type in it */
-    int rc = c->network->read(c->network, c->read_buf, 1, platform_timer_timer_remain(timer));
+    int rc = c->network->read(c->network, c->read_buf, 1, platform_timer_remain(timer));
     if (rc != 1)
         goto exit;
 
     len = 1;
     /* 2. read the remaining length.  This is variable in itself */
-    mqtt_decode_packet(c, &rem_len, platform_timer_timer_remain(timer));
+    mqtt_decode_packet(c, &rem_len, platform_timer_remain(timer));
 
     /* put the original remaining length back into the buffer */
     len += MQTTPacket_encode(c->read_buf + 1, rem_len); 
@@ -271,15 +271,15 @@ static int mqtt_read_packet(mqtt_client_t* c, platform_timer_t* timer)
     }
 
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
-    if (rem_len > 0 && (rc = c->network->read(c->network, c->read_buf + len, rem_len, platform_timer_timer_remain(timer)) != rem_len)) {
+    if (rem_len > 0 && (rc = c->network->read(c->network, c->read_buf + len, rem_len, platform_timer_remain(timer)) != rem_len)) {
         rc = 0;
         goto exit;
     }
 
     header.byte = c->read_buf[0];
     rc = header.bits.type;
-    if (c->connect_data->keep_alive_interval > 0)
-        platform_timer_cutdown(&c->last_received, c->connect_data->keep_alive_interval); // record the fact that we have successfully received a packet
+    if (c->connect_params->keep_alive_interval > 0)
+        platform_timer_cutdown(&c->last_received, c->connect_params->keep_alive_interval); // record the fact that we have successfully received a packet
 exit:
     return rc;
 }
@@ -290,14 +290,14 @@ int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* timer)
     int sent = 0;
 
     while ((sent < length) && (!platform_timer_is_expired(timer))) {
-        len = c->network->write(c->network, &c->write_buf[sent], length, platform_timer_timer_remain(timer));
+        len = c->network->write(c->network, &c->write_buf[sent], length, platform_timer_remain(timer));
         if (len < 0)  // there was an error writing the data
             break;
         sent += len;
     }
 
     if (sent == length) {
-        platform_timer_cutdown(&c->last_sent, c->connect_data->keep_alive_interval); // record the fact that we have successfully sent the packet
+        platform_timer_cutdown(&c->last_sent, c->connect_params->keep_alive_interval); // record the fact that we have successfully sent the packet
         RETURN_ERROR(SUCCESS_ERROR);
     }
 
@@ -342,14 +342,14 @@ int mqtt_connect_with_results(mqtt_client_t* c, mqtt_connack_data_t* connack_dat
     if (SUCCESS_ERROR != rc)
         RETURN_ERROR(rc);
     
-    connect_data.keepAliveInterval = c->connect_data->keep_alive_interval;
-    connect_data.cleansession = c->connect_data->clean_session;
-    connect_data.MQTTVersion = c->connect_data->mqtt_version;
-    connect_data.clientID.cstring= c->connect_data->client_id;
-    connect_data.username.cstring = c->connect_data->user_name;
-    connect_data.password.cstring = c->connect_data->password;
+    connect_data.keepAliveInterval = c->connect_params->keep_alive_interval;
+    connect_data.cleansession = c->connect_params->clean_session;
+    connect_data.MQTTVersion = c->connect_params->mqtt_version;
+    connect_data.clientID.cstring= c->connect_params->client_id;
+    connect_data.username.cstring = c->connect_params->user_name;
+    connect_data.password.cstring = c->connect_params->password;
 
-    platform_timer_cutdown(&c->last_received, c->connect_data->keep_alive_interval);
+    platform_timer_cutdown(&c->last_received, c->connect_params->keep_alive_interval);
 
     platform_mutex_lock(&c->write_lock);
 
@@ -384,6 +384,7 @@ exit:
 
 int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
 {
+    int rc;
     if ((NULL == c) || (NULL == init)) 
         RETURN_ERROR(NULL_VALUE_ERROR);
 
@@ -397,7 +398,6 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     }
     memset(c->network, 0, sizeof(network_t));
 
-    network_init(c->network, &init->connect_params);
 
     if (0 == init->read_buf_size)
         init->read_buf_size = DEFAULT_BUF_SIZE;
@@ -422,8 +422,22 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     
     c->connection_state = 0;
     c->ping_outstanding = 0;
-    c->connect_data = &init->connect_params;
+
+    if (0 == init->connect_params.keep_alive_interval)
+        init->connect_params.keep_alive_interval = KEEP_ALIVE_INTERVAL;
+    if (0 == init->connect_params.mqtt_version)
+        init->connect_params.mqtt_version = MQTT_VERSION;
+    
+    init->connect_params.client_id_len = strlen(init->connect_params.client_id);
+    init->connect_params.user_name_len = strlen(init->connect_params.user_name);
+    init->connect_params.password_len = strlen(init->connect_params.password);
+    
+    c->connect_params = &init->connect_params;
     c->default_message_handler = default_msg_handler;
+
+    c->network->connect_params = c->connect_params;
+    if (rc = network_init(c->network) < 0)
+        RETURN_ERROR(rc);
 
     list_init(&c->msg_handler_list);
     platform_mutex_init(&c->write_lock);
@@ -469,4 +483,26 @@ int mqtt_connect(mqtt_client_t* c)
     mqtt_connack_data_t connack_data;
     return mqtt_connect_with_results(c, &connack_data);
 }
+
+int mqtt_disconnect(mqtt_client_t* c)
+{
+    int rc = FAIL_ERROR;
+    platform_timer_t timer;     // we might wait for incomplete incoming publishes to complete
+    int len = 0;
+
+    platform_timer_init(&timer);
+    platform_timer_cutdown(&timer, c->cmd_timeout);
+
+    platform_mutex_lock(&c->write_lock);
+
+	len = MQTTSerialize_disconnect(c->write_buf, c->write_buf_size);
+    if (len > 0)
+        rc = mqtt_send_packet(c, len, &timer);            // send the disconnect packet
+    mqtt_close_session(c);
+
+    platform_mutex_unlock(&c->write_lock);
+
+    return rc;
+}
+
 

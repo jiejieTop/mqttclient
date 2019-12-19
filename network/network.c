@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:30:54
- * @LastEditTime : 2019-12-18 22:52:52
+ * @LastEditTime : 2019-12-19 21:44:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -26,17 +26,18 @@ void network_disconnect(network_t *n)
 	platform_nettype_disconnect(n);
 }
 
-void network_init(network_t *n, connect_params_t *connect_params)
+int network_init(network_t *n)
 {
     n->socket = -1;
-    n->connect_params.addr = connect_params->addr;
-    n->connect_params.port = connect_params->port;
-    n->connect_params.ca = connect_params->ca;
-
+	if ((NULL == n->connect_params) || (NULL == n->connect_params->addr) || (0 == n->connect_params->port))
+		RETURN_ERROR(NULL_VALUE_ERROR);
+	
     n->read = network_read;
 	n->write = network_write;
 	n->connect = network_connect;
 	n->disconnect = network_disconnect;
+	
+	RETURN_ERROR(SUCCESS_ERROR);
 }
 
 void network_release(network_t* n)

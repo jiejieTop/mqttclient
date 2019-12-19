@@ -29,7 +29,7 @@ char platform_timer_is_expired(platform_timer_t* timer)
 	return ((res.tv_sec < 0) || (res.tv_sec == 0 && res.tv_usec <= 0));
 }
 
-int platform_timer_timer_remain(platform_timer_t* timer)
+int platform_timer_remain(platform_timer_t* timer)
 {
 	struct timeval now, res;
 	gettimeofday(&now, NULL);
