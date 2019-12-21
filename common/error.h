@@ -2,13 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime: 2019-12-17 22:17:08
+ * @LastEditTime : 2019-12-20 21:14:44
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
 typedef enum error {
+    MQTT_SUBSCRIBE_QOS_ERROR = -6,
     BUFFER_OVERFLOW_ERROR = -5,
     CONNECT_FAIL_ERROR = -4,
     MEM_NOT_ENOUGH_ERROR = -3,

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-20 00:14:47
+ * @LastEditTime : 2019-12-20 21:37:11
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -27,7 +27,7 @@
 #define     DEFAULT_CMD_TIMEOUT     2000
 #define     MAX_CMD_TIMEOUT         5000
 #define     MIN_CMD_TIMEOUT         500
-#define     KEEP_ALIVE_INTERVAL     100
+#define     KEEP_ALIVE_INTERVAL     1000
 #define     MQTT_VERSION            4   // 4 is mqtt 3.1.1
 
 typedef enum mqtt_qos {
@@ -113,6 +113,9 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init);
 int mqtt_release(mqtt_client_t* c);
 int mqtt_connect(mqtt_client_t* c);
 int mqtt_disconnect(mqtt_client_t* c);
+int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
+int mqtt_yield(mqtt_client_t* c, int timeout_ms);
+
 
 
 #endif /* _MQTTCLIENT_H_ */

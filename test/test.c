@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2019-12-20 00:18:32
+ * @LastEditTime : 2019-12-20 21:35:39
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -29,17 +29,20 @@ int main(void)
     printf("err = %d\n",err);
 
     err = mqtt_connect(&client);
-    sleep(10);
-
     printf("err = %d\n",err);
 
-    err = mqtt_disconnect(&client);
 
+    err = mqtt_subscribe(&client, "mqtt_topic", 0, NULL);
+    
     printf("err = %d\n",err);
+
+    // err = mqtt_disconnect(&client);
+
+    // printf("err = %d\n",err);
 
     while (1)
     {
-        sleep(100);
+        mqtt_yield(&client, 5000);
     }
     
 

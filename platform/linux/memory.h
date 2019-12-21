@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-14 22:06:35
- * @LastEditTime: 2019-12-14 22:07:56
+ * @LastEditTime : 2019-12-20 20:57:32
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MEMORY_H_
@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-void *memory_malloc(size_t size);
-void memory_free(void *ptr);
+void *platform_memory_alloc(size_t size);
+void platform_memory_free(void *ptr);
 
 #endif
