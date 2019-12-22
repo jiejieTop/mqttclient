@@ -2,13 +2,23 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2019-12-20 21:14:44
+ * @LastEditTime : 2019-12-22 22:32:00
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
 typedef enum error {
+    MQTT_RECONNECT_TIMEOUT_ERROR = -16,
+    MQTT_SUBSCRIBE_NOT_ACK_ERROR = -15,
+    MQTT_NOT_CONNECT_ERROR = -14,
+    MQTT_SUBSCRIBE_ACK_PACKET_ERROR = -13,
+    MQTT_UNSUBSCRIBE_ACK_PACKET_ERROR = -12,
+    MQTT_PUBLISH_ACK_PACKET_ERROR = -11,
+    MQTT_PUBLISH_ACK_TYPE_ERROR = -10,
+    MQTT_REC_PACKET_ERROR = -9,
+    MQTT_BUF_TOO_SHORT_ERROR = -8,
+    MQTT_NOTHING_TO_READ_ERROR = -7,
     MQTT_SUBSCRIBE_QOS_ERROR = -6,
     BUFFER_OVERFLOW_ERROR = -5,
     CONNECT_FAIL_ERROR = -4,

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-20 21:37:11
+ * @LastEditTime : 2019-12-22 23:19:04
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -18,17 +18,19 @@
 #include "error.h"
 #include "mutex.h"
 
-#define     MAX_PACKET_ID           65535
-#define     MAX_MESSAGE_HANDLERS    5
-#define     MQTT_TOPIC_LEN_MAX      128
-#define     MQTT_REPUB_NUM_MAX      20
-#define     MQTT_SUB_NUM_MAX        10
-#define     DEFAULT_BUF_SIZE        1024
-#define     DEFAULT_CMD_TIMEOUT     2000
-#define     MAX_CMD_TIMEOUT         5000
-#define     MIN_CMD_TIMEOUT         500
-#define     KEEP_ALIVE_INTERVAL     1000
-#define     MQTT_VERSION            4   // 4 is mqtt 3.1.1
+#define     MAX_PACKET_ID                       65535
+#define     MAX_MESSAGE_HANDLERS                5
+#define     MQTT_TOPIC_LEN_MAX                  128
+#define     MQTT_REPUB_NUM_MAX                  20
+#define     MQTT_SUB_NUM_MAX                    10
+#define     DEFAULT_BUF_SIZE                    1024
+#define     DEFAULT_CMD_TIMEOUT                 2000
+#define     MAX_CMD_TIMEOUT                     5000
+#define     MIN_CMD_TIMEOUT                     500
+#define     KEEP_ALIVE_INTERVAL                 1000
+#define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
+#define     MQTT_RECONNECT_MAX_DURATION         (60*1000) 
+#define     MQTT_RECONNECT_MIN_DURATION         (1000)
 
 typedef enum mqtt_qos {
     QOS0 = 0,
@@ -68,13 +70,24 @@ typedef void (*message_handler_t)(void* client, message_data_t* msg);
 
 typedef struct message_handlers {
     list_t              list;
+    mqtt_qos_t          qos;
     const char*         topic_filter;
     message_handler_t   handler;
 } message_handlers_t;
 
+typedef struct ack_handlers {
+    list_t              list;
+    platform_timer_t    timer;
+    unsigned int        type;
+    unsigned short      packet_id;
+    message_handlers_t  *handler;
+    unsigned short      payload_len;
+    unsigned char       *payload;
+} ack_handlers_t;
+
 
 typedef struct mqtt_client {
-    unsigned int                packet_id;
+    unsigned short              packet_id;
     unsigned int                cmd_timeout;
     size_t                      read_buf_size;
     size_t                      write_buf_size;
@@ -82,12 +95,15 @@ typedef struct mqtt_client {
     char                        *write_buf;
     platform_mutex_t            write_lock;
     list_t                      msg_handler_list;
+    list_t                      ack_handler_list;
     void                        (*default_message_handler)(void*, message_data_t*);
     network_t                   *network;
     client_state_t              client_state;
     char                        connection_state;
     char                        ping_outstanding;
+    unsigned int                reconnect_try_duration;
     platform_timer_t            ping_timer;
+    platform_timer_t            reconnect_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
     connect_params_t            *connect_params;

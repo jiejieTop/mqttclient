@@ -2,14 +2,15 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-19 21:29:48
+ * @LastEditTime : 2019-12-21 14:06:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
 
-int platform_nettype_read(network_t *n, unsigned char *buf, int len, int timeout)
+int platform_nettype_read(network_t *n, unsigned char *read_buf, int len, int timeout)
 {
     int rc;
+    int bytes = 0;
 	struct timeval tv = {
         timeout / 1000, 
         (timeout % 1000) * 1000
@@ -22,31 +23,24 @@ int platform_nettype_read(network_t *n, unsigned char *buf, int len, int timeout
 
 	setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
 
-	int bytes = 0;
-	while (bytes < len)
-	{
-		rc = recv(n->socket, &buf[bytes], (size_t)(len - bytes), 0);
-		if (rc == -1)
-		{
+	while (bytes < len) {
+		rc = recv(n->socket, &read_buf[bytes], (size_t)(len - bytes), 0);
+		if (rc == -1) {
 			if (errno != EAGAIN && errno != EWOULDBLOCK)
 			  bytes = -1;
 			break;
-		}
-		else if (rc == 0)
-		{
+		} else if (rc == 0)	{
 			bytes = 0;
 			break;
-		}
-		else
+		} else
 			bytes += rc;
 	}
 	return bytes;
 }
 
 
-int platform_nettype_write(network_t *n, unsigned char *buf, int len, int timeout)
+int platform_nettype_write(network_t *n, unsigned char *write_buf, int len, int timeout)
 {
-    int	rc;
 	struct timeval tv = {
         timeout / 1000, 
         (timeout % 1000) * 1000
@@ -59,9 +53,7 @@ int platform_nettype_write(network_t *n, unsigned char *buf, int len, int timeou
 
 	setsockopt(n->socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,sizeof(struct timeval));
 	
-    rc = write(n->socket, buf, len);
-
-	return rc;
+    return write(n->socket, write_buf, len);
 }
 
 
@@ -115,5 +107,6 @@ int platform_nettype_connect(network_t* n)
 
 void platform_nettype_disconnect(network_t* n)
 {
-	close(n->socket);
+    if (NULL != n)
+	    close(n->socket);
 }
