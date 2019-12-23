@@ -14,8 +14,12 @@ set(PROJECT_ROOT_PATH "${PROJECT_SOURCE_DIR}")
 set(LIBRARY_OUTPUT_PATH "${PROJECT_ROOT_PATH}/${OUTDIRS}/lib/")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_ROOT_PATH}/${OUTDIRS}/bin/")
 
+set(CMAKE_C_FLAGS "-lpthread")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g -ggdb")
+
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++11")
+    set(CMAKE_CXX_FLAGS "-lpthread")
     set(CMAKE_CXX_FLAGS "-g")
     set(CMAKE_CXX_FLAGS "-Wall")
     set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -ggdb")

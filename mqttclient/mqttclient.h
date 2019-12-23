@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-22 23:19:04
+ * @LastEditTime : 2019-12-23 20:16:56
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -130,6 +130,7 @@ int mqtt_release(mqtt_client_t* c);
 int mqtt_connect(mqtt_client_t* c);
 int mqtt_disconnect(mqtt_client_t* c);
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
+int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter);
 int mqtt_yield(mqtt_client_t* c, int timeout_ms);
 
 

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-22 23:22:19
+ * @LastEditTime : 2019-12-23 20:16:11
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -11,7 +11,7 @@ static int mqtt_decode_packet(mqtt_client_t* c, int* value, int timeout);
 static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t* timer);
 int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* timer);
 int mqtt_set_msg_handlers(mqtt_client_t* c, const char* topic_filter, message_handler_t handler);
-int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short packet_id, int is_nack, message_handlers_t **handler);
+int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short packet_id, message_handlers_t **handler);
 message_handlers_t *mqtt_msg_handler_create(const char* topic_filter, mqtt_qos_t qos, message_handler_t handler);
 void *mqtt_msg_handler_destory(message_handlers_t *msg_handler);
 int mqtt_msg_handlers_install(mqtt_client_t* c, message_handlers_t *handler);
@@ -248,23 +248,22 @@ int mqtt_pubrel_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 
 int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    list_t *curr, *next;
-    ack_handlers_t *ack_handler;
     int rc = FAIL_ERROR;
     int len = 0;
     int count = 0;
     int granted_qos = 0;
     unsigned short packet_id;
     int is_nack = 0;
-
+    list_t *curr, *next;
+    ack_handlers_t *ack_handler;
     message_handlers_t *msg_handler = NULL;
     
     if (MQTTDeserialize_suback(&packet_id, 1, &count, (int*)&granted_qos, c->read_buf, c->read_buf_size) != 1) 
-        RETURN_ERROR(MQTT_UNSUBSCRIBE_ACK_PACKET_ERROR);
+        RETURN_ERROR(MQTT_SUBSCRIBE_ACK_PACKET_ERROR);
 
     is_nack = (granted_qos == SUBFAIL);
     
-    mqtt_ack_list_unrecord(c, SUBACK, packet_id, is_nack, &msg_handler);
+    mqtt_ack_list_unrecord(c, SUBACK, packet_id, &msg_handler);
     
     if (!msg_handler)
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
@@ -274,7 +273,9 @@ int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
         RETURN_ERROR(MQTT_SUBSCRIBE_NOT_ACK_ERROR);
     }
     
-    mqtt_msg_handlers_install(c, msg_handler);
+    rc = mqtt_msg_handlers_install(c, msg_handler);
+    
+    RETURN_ERROR(rc);
 }
 
 int mqtt_unsuback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
@@ -283,11 +284,17 @@ int mqtt_unsuback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
     message_handlers_t *msg_handler;
     unsigned short packet_id = 0;  // should be the same as the packetid above
 
-    unsigned int i;
     if (MQTTDeserialize_unsuback(&packet_id, c->read_buf, c->read_buf_size) != 1)
-        return MQTT_UNSUBSCRIBE_ACK_PACKET_ERROR;
+        RETURN_ERROR(MQTT_UNSUBSCRIBE_ACK_PACKET_ERROR);
 
+    mqtt_ack_list_unrecord(c, UNSUBACK, packet_id, &msg_handler);
+    
+    if (!msg_handler)
+        RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
+    
+    mqtt_msg_handler_destory(msg_handler);
 
+    RETURN_ERROR(SUCCESS_ERROR);
 }
 
 int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
@@ -309,6 +316,7 @@ int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
             rc = mqtt_suback_packet_handle(c, timer);
             break;
         case UNSUBACK:
+            rc = mqtt_unsuback_packet_handle(c, timer);
             break;
 
         case PUBLISH:
@@ -754,7 +762,7 @@ int mqtt_ack_list_record(mqtt_client_t* c, int type, unsigned short packet_id, u
     RETURN_ERROR(SUCCESS_ERROR);
 }
 
-int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short packet_id, int is_nack, message_handlers_t **handler)
+int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short packet_id, message_handlers_t **handler)
 {
     list_t *curr, *next;
     ack_handlers_t *ack_handler;
@@ -933,3 +941,42 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
 
     RETURN_ERROR(rc);
 }
+
+int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
+{
+    int len = 0;
+    int rc = FAIL_ERROR;
+    platform_timer_t timer;
+    MQTTString topic = MQTTString_initializer;
+    topic.cstring = (char *)topic_filter;
+    message_handlers_t *msg_handler = NULL;
+
+    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
+        goto exit;
+    
+    platform_timer_init(&timer);
+    platform_timer_cutdown(&timer, c->cmd_timeout);
+
+    platform_mutex_lock(&c->write_lock);
+
+    if ((len = MQTTSerialize_unsubscribe(c->write_buf, c->write_buf_size, 0, mqtt_get_next_packet_id(c), 1, &topic)) <= 0)
+        goto exit;
+    if ((rc = mqtt_send_packet(c, len, &timer)) != SUCCESS_ERROR) // send the subscribe packet
+        goto exit; // there was a problem
+
+
+    msg_handler = mqtt_msg_handler_create(topic_filter, 0, NULL);
+    if (NULL == msg_handler)
+        RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
+
+    rc = mqtt_ack_list_record(c, UNSUBACK, mqtt_get_next_packet_id(c), len, msg_handler);
+
+exit:
+    if (rc == FAIL_ERROR)
+        mqtt_close_session(c);
+
+    platform_mutex_unlock(&c->write_lock);
+
+    RETURN_ERROR(rc);
+}
+
