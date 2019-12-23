@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-21 14:06:54
+ * @LastEditTime : 2019-12-23 21:19:13
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -76,7 +76,7 @@ int platform_nettype_connect(network_t* n)
             if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
                 printf("host name: %s, ip addr:%s\n",n->connect_params->addr, addr_str);
         }
-    } else if(ret = 1) {
+    } else if(ret == 1) {
         if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
             printf("host addr: %s\n", addr_str);
     } else {

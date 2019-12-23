@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-23 20:16:11
+ * @LastEditTime : 2019-12-23 21:28:56
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -13,12 +13,12 @@ int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* timer);
 int mqtt_set_msg_handlers(mqtt_client_t* c, const char* topic_filter, message_handler_t handler);
 int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short packet_id, message_handlers_t **handler);
 message_handlers_t *mqtt_msg_handler_create(const char* topic_filter, mqtt_qos_t qos, message_handler_t handler);
-void *mqtt_msg_handler_destory(message_handlers_t *msg_handler);
+void mqtt_msg_handler_destory(message_handlers_t *msg_handler);
 int mqtt_msg_handlers_install(mqtt_client_t* c, message_handlers_t *handler);
 
 static void default_msg_handler(void* client, message_data_t* msg)
 {
-    (void*) client;
+    (void) client;
     printf("%s:%d %s()...\ntopic: %.*s\nmessage:%s\n", 
             __FILE__, __LINE__, __FUNCTION__, 
             msg->topic_name->lenstring.len, msg->topic_name->lenstring.data, (char*)msg->message->payload);
@@ -225,7 +225,7 @@ int mqtt_publish_ack_packet(mqtt_client_t *c, unsigned short packet_id, int pack
 
 int mqtt_pubrec_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    int len = 0, rc = SUCCESS_ERROR;
+    int rc = SUCCESS_ERROR;
     unsigned short packet_id;
     unsigned char dup, packet_type;
 
@@ -244,18 +244,13 @@ int mqtt_pubrel_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 }
 
 
-
-
 int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
     int rc = FAIL_ERROR;
-    int len = 0;
     int count = 0;
     int granted_qos = 0;
     unsigned short packet_id;
     int is_nack = 0;
-    list_t *curr, *next;
-    ack_handlers_t *ack_handler;
     message_handlers_t *msg_handler = NULL;
     
     if (MQTTDeserialize_suback(&packet_id, 1, &count, (int*)&granted_qos, c->read_buf, c->read_buf_size) != 1) 
@@ -280,7 +275,6 @@ int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 
 int mqtt_unsuback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    list_t *curr, *next;
     message_handlers_t *msg_handler;
     unsigned short packet_id = 0;  // should be the same as the packetid above
 
@@ -384,7 +378,7 @@ exit:
 
 void mqtt_packet_drain(mqtt_client_t* c, platform_timer_t *timer, int packet_len)
 {
-    int rc = 0, total_bytes_read = 0, read_len = 0, bytes2read = 0;
+    int total_bytes_read = 0, read_len = 0, bytes2read = 0;
 
     if (packet_len < c->read_buf_size) {
         bytes2read = packet_len;
@@ -555,8 +549,8 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     if (0 == init->write_buf_size)
         init->write_buf_size = DEFAULT_BUF_SIZE;
     
-    c->read_buf = (char*) platform_memory_alloc(init->read_buf_size);
-    c->write_buf = (char*) platform_memory_alloc(init->write_buf_size);
+    c->read_buf = (unsigned char*) platform_memory_alloc(init->read_buf_size);
+    c->write_buf = (unsigned char*) platform_memory_alloc(init->write_buf_size);
     if ((NULL == c->read_buf) || (NULL == c->write_buf)){
         printf("malloc read buffer failed...\n");
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
@@ -587,7 +581,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     c->default_message_handler = default_msg_handler;
 
     c->network->connect_params = c->connect_params;
-    if (rc = network_init(c->network) < 0)
+    if ((rc = network_init(c->network)) < 0)
         RETURN_ERROR(rc);
 
     list_init(&c->msg_handler_list);
@@ -678,7 +672,7 @@ message_handlers_t *mqtt_msg_handler_create(const char* topic_filter, mqtt_qos_t
     return msg_handler;
 }
 
-void *mqtt_msg_handler_destory(message_handlers_t *msg_handler)
+void mqtt_msg_handler_destory(message_handlers_t *msg_handler)
 {
     list_del(&msg_handler->list);
     platform_memory_free(msg_handler);
@@ -735,7 +729,7 @@ ack_handlers_t *mqtt_ack_handler_create(mqtt_client_t* c, int type, unsigned sho
     ack_handler->type = type;
     ack_handler->packet_id = packet_id;
     ack_handler->payload_len = payload_len;
-    ack_handler->payload = (char *)ack_handler + sizeof(ack_handlers_t);
+    ack_handler->payload = (unsigned char *)ack_handler + sizeof(ack_handlers_t);
     ack_handler->handler = handler;
     memcpy(ack_handler->payload, c->write_buf, payload_len);
     
@@ -788,9 +782,6 @@ int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, m
 {
     int rc = FAIL_ERROR;
     int len = 0;
-    int count = 0;
-    int granted_qos = 0;
-    unsigned short packet_id;
     platform_timer_t timer;
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)topic_filter;
@@ -826,13 +817,13 @@ exit:
 }
 
 
-int mqtt_ack_list_scan(mqtt_client_t* c)
+void mqtt_ack_list_scan(mqtt_client_t* c)
 {
     list_t *curr, *next;
     ack_handlers_t *ack_handler;
 
     if (list_empty(&c->ack_handler_list))
-        RETURN_ERROR(SUCCESS_ERROR);
+        return;
 
     LIST_FOR_EACH_SAFE(curr, next, &c->ack_handler_list) {
         ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);

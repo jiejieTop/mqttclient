@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-23 20:16:56
+ * @LastEditTime : 2019-12-23 21:21:43
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -91,8 +91,8 @@ typedef struct mqtt_client {
     unsigned int                cmd_timeout;
     size_t                      read_buf_size;
     size_t                      write_buf_size;
-    char                        *read_buf;
-    char                        *write_buf;
+    unsigned char               *read_buf;
+    unsigned char               *write_buf;
     platform_mutex_t            write_lock;
     list_t                      msg_handler_list;
     list_t                      ack_handler_list;
