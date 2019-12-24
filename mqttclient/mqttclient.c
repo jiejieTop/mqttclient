@@ -2,11 +2,13 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-23 21:28:56
+ * @LastEditTime : 2019-12-24 23:30:55
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
 
+client_state_t mqtt_get_client_state(mqtt_client_t* c);
+void mqtt_set_client_state(mqtt_client_t* c, client_state_t state);
 static int mqtt_decode_packet(mqtt_client_t* c, int* value, int timeout);
 static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t* timer);
 int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* timer);
@@ -27,6 +29,11 @@ static void default_msg_handler(void* client, message_data_t* msg)
 client_state_t mqtt_get_client_state(mqtt_client_t* c)
 {
     return c->client_state;
+}
+
+void mqtt_set_client_state(mqtt_client_t* c, client_state_t state)
+{
+    c->client_state = state;
 }
 
 static int mqtt_get_next_packet_id(mqtt_client_t *c) {
@@ -131,7 +138,9 @@ void mqtt_clean_session(mqtt_client_t* c)
 void mqtt_close_session(mqtt_client_t* c)
 {
     c->ping_outstanding = 0;
-    c->client_state = CLIENT_STATE_INITIALIZED;
+    mqtt_set_client_state(c, CLIENT_STATE_INITIALIZED);
+    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
+    while(1);
     if (c->connect_params->clean_session)
         mqtt_clean_session(c);
 }
@@ -145,16 +154,18 @@ int mqtt_keep_alive(mqtt_client_t* c)
 
     if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received))
     {
-        if (c->ping_outstanding)
+        // printf("%s:%d %s()...c->ping_outstanding = %d\n", __FILE__, __LINE__, __FUNCTION__, c->ping_outstanding);
+        if (c->ping_outstanding) {
+            printf("%s:%d %s()...ping outstanding \n", __FILE__, __LINE__, __FUNCTION__);
+            mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
             rc = FAIL_ERROR; /* PINGRESP not received in keepalive interval */
-        else
-        {
+        } else {
             platform_timer_t timer;
             platform_timer_init(&timer);
             platform_timer_cutdown(&timer, c->cmd_timeout);
             int len = MQTTSerialize_pingreq(c->write_buf, c->write_buf_size);
             if (len > 0 && (rc = mqtt_send_packet(c, len, &timer)) == SUCCESS_ERROR) // send the ping packet
-                c->ping_outstanding = 1;
+                c->ping_outstanding++;
         }
     }
 
@@ -164,7 +175,7 @@ exit:
 
 int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    int len = 0, rc = FAIL_ERROR;
+    int len = 0, rc = SUCCESS_ERROR;
     MQTTString topic_name;
     mqtt_message_t msg;
     int qos;
@@ -172,7 +183,7 @@ int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 
     if (MQTTDeserialize_publish(&msg.dup, &qos, &msg.retained, &msg.id, &topic_name,
         (unsigned char**)&msg.payload, (int*)&msg.payloadlen, c->read_buf, c->read_buf_size) != 1)
-        goto exit;
+        RETURN_ERROR(MQTT_PUBLISH_PACKET_ERROR);
     
     msg.qos = (mqtt_qos_t)qos;
     mqtt_deliver_message(c, &topic_name, &msg);
@@ -182,12 +193,13 @@ int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
             len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBACK, 0, msg.id);
         else if (msg.qos == QOS2)
             len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBREC, 0, msg.id);
-        if (len <= 0)
+        if (len <= 0) {
+            rc = MQTT_SERIALIZE_PUBLISH_ACK_PACKET_ERROR;
             goto exit;
-        else
+        } else
             rc = mqtt_send_packet(c, len, timer);
     }
-
+    
 exit:
     RETURN_ERROR(rc);
 }
@@ -344,8 +356,8 @@ int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
 exit:
     if (rc == SUCCESS_ERROR)
         rc = packet_type;
-    else if (c->connection_state)
-        mqtt_close_session(c);
+    // else if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
+    //     mqtt_close_session(c);
     RETURN_ERROR(rc);
 }
 
@@ -478,8 +490,6 @@ int mqtt_connect_with_results(mqtt_client_t* c)
     mqtt_connack_data_t connack_data = {0};
     MQTTPacket_connectData connect_data = MQTTPacket_connectData_initializer;
 
-    printf("c->buf = %p, size = %ld\n", c->write_buf, c->write_buf_size);
-
     if (NULL == c)
         RETURN_ERROR(NULL_VALUE_ERROR);
 
@@ -519,7 +529,7 @@ int mqtt_connect_with_results(mqtt_client_t* c)
 
 exit:
     if (rc == SUCCESS_ERROR) {
-        c->client_state = CLIENT_STATE_CONNECTED;
+        mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
         c->ping_outstanding = 0;
     }
     
@@ -565,7 +575,6 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     else
         c->cmd_timeout = init->cmd_timeout;
     
-    c->connection_state = 0;
     c->ping_outstanding = 0;
 
     if (0 == init->connect_params.keep_alive_interval)
@@ -645,6 +654,7 @@ int mqtt_disconnect(mqtt_client_t* c)
 	len = MQTTSerialize_disconnect(c->write_buf, c->write_buf_size);
     if (len > 0)
         rc = mqtt_send_packet(c, len, &timer);            // send the disconnect packet
+    
     mqtt_close_session(c);
 
     platform_mutex_unlock(&c->write_lock);
@@ -845,8 +855,9 @@ int mqtt_try_resubscribe(mqtt_client_t* c)
     list_t *curr, *next;
     message_handlers_t *msg_handler;
 
-    if (CLIENT_STATE_CONNECTED == mqtt_get_client_state(c))
-        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
+    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
+    // if (CLIENT_STATE_CONNECTED == mqtt_get_client_state(c))
+    //     RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
     
     if (list_empty(&c->msg_handler_list))
         RETURN_ERROR(SUCCESS_ERROR);
@@ -863,6 +874,7 @@ int mqtt_try_resubscribe(mqtt_client_t* c)
 int mqtt_try_do_reconnect(mqtt_client_t* c)
 {
     int rc = FAIL_ERROR;
+    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
     if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
         rc = mqtt_connect(c);
     
@@ -902,8 +914,8 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
     if (NULL == c)
         RETURN_ERROR(FAIL_ERROR);
 
-    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
-        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
+    // if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
+    //     RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
 
     platform_timer_init(&timer);
     platform_timer_cutdown(&timer, c->cmd_timeout);
@@ -918,18 +930,20 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
         }
         
         rc = mqtt_packet_handle(c, &timer);
-        
+
+        printf("%s:%d %s()...rc = %d\n", __FILE__, __LINE__, __FUNCTION__, rc);
+
         if (rc >= 0) {
             mqtt_ack_list_scan(c);
         } else if (MQTT_NOT_CONNECT_ERROR == rc) {
             printf("%s:%d %s()...mqtt not connect \n", __FILE__, __LINE__, __FUNCTION__);
             c->reconnect_try_duration = MQTT_RECONNECT_MIN_DURATION;
             platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
-        } else if (rc != SUCCESS_ERROR) {
+        } else {
+            // mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
             break;
         }
     }
-
     RETURN_ERROR(rc);
 }
 

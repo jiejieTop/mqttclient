@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-23 21:21:43
+ * @LastEditTime : 2019-12-24 22:50:14
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -27,7 +27,7 @@
 #define     DEFAULT_CMD_TIMEOUT                 2000
 #define     MAX_CMD_TIMEOUT                     5000
 #define     MIN_CMD_TIMEOUT                     500
-#define     KEEP_ALIVE_INTERVAL                 1000
+#define     KEEP_ALIVE_INTERVAL                 60
 #define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_MAX_DURATION         (60*1000) 
 #define     MQTT_RECONNECT_MIN_DURATION         (1000)
@@ -89,8 +89,8 @@ typedef struct ack_handlers {
 typedef struct mqtt_client {
     unsigned short              packet_id;
     unsigned int                cmd_timeout;
-    size_t                      read_buf_size;
-    size_t                      write_buf_size;
+    unsigned int                read_buf_size;
+    unsigned int                write_buf_size;
     unsigned char               *read_buf;
     unsigned char               *write_buf;
     platform_mutex_t            write_lock;
@@ -99,7 +99,6 @@ typedef struct mqtt_client {
     void                        (*default_message_handler)(void*, message_data_t*);
     network_t                   *network;
     client_state_t              client_state;
-    char                        connection_state;
     char                        ping_outstanding;
     unsigned int                reconnect_try_duration;
     platform_timer_t            ping_timer;

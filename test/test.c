@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2019-12-23 20:57:23
+ * @LastEditTime : 2019-12-24 23:14:44
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -18,7 +18,7 @@ client_init_params_t init_params;
 void *mqtt_yield_thread(void *arg)
 {
     while (1) {
-        mqtt_yield(&client, 1000);
+        mqtt_yield(&client, 10000);
     }
     
     pthread_exit(NULL);
@@ -27,7 +27,7 @@ void *mqtt_yield_thread(void *arg)
 void *mqtt_unsubscribe_thread(void *arg)
 {
     sleep(5);
-    mqtt_unsubscribe(&client, "mqtt_topic");
+    // mqtt_unsubscribe(&client, "mqtt_topic");
     pthread_exit(NULL);
 }
 
@@ -56,10 +56,10 @@ int main(void)
 
     err = mqtt_subscribe(&client, "mqtt_topic", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic1/#", 0, NULL);
-    err = mqtt_subscribe(&client, "mqtt_topic2/+/abc", 0, NULL);
-    err = mqtt_subscribe(&client, "mqtt_topic2/+/dd", 0, NULL);
+    err = mqtt_subscribe(&client, "mqtt_topic2/+/abc", 1, NULL);
+    err = mqtt_subscribe(&client, "mqtt_topic2/+/dd", 1, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic2/123/dd", 0, NULL);
-    err = mqtt_subscribe(&client, "mqtt_topic/#", 0, NULL);
+    err = mqtt_subscribe(&client, "mqtt_topic3/#", 2, NULL);
     printf("err = %d\n",err);
 
     res = pthread_create(&thread1, NULL, mqtt_yield_thread, NULL);

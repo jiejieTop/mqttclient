@@ -2,13 +2,15 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2019-12-22 22:32:00
+ * @LastEditTime : 2019-12-23 23:03:53
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
 typedef enum error {
+    MQTT_SERIALIZE_PUBLISH_ACK_PACKET_ERROR = -18,
+    MQTT_PUBLISH_PACKET_ERROR = -17,
     MQTT_RECONNECT_TIMEOUT_ERROR = -16,
     MQTT_SUBSCRIBE_NOT_ACK_ERROR = -15,
     MQTT_NOT_CONNECT_ERROR = -14,
