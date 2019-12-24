@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-23 21:19:13
+ * @LastEditTime : 2019-12-25 00:37:52
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -82,11 +82,13 @@ int platform_nettype_connect(network_t* n)
     } else {
         printf("inet_pton function return %d\n", ret);
     }
-
-    if ((n->socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        printf("create an endpoint for communication fail!\n");
-        RETURN_ERROR(FAIL_ERROR);
-    } 
+    
+    if (-1 == n->socket) {
+        if ((n->socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+            printf("create an endpoint for communication fail!\n");
+            RETURN_ERROR(FAIL_ERROR);
+        }
+    }
 
     bzero(&server, sizeof(server));
 	server.sin_family = AF_INET;
@@ -94,12 +96,13 @@ int platform_nettype_connect(network_t* n)
 	server.sin_addr = addr;
 
     if (connect(n->socket, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) {
-        printf("connect server fail...\n");
+        printf("connect server fail..., n->socket = %d\n", n->socket);
         close(n->socket);
+        n->socket = -1;
         RETURN_ERROR(FAIL_ERROR);
     }
 
-    printf("connect server success...\n");
+    printf("connect server success..., n->socket = %d\n", n->socket);
 
     RETURN_ERROR(SUCCESS_ERROR);
 }
@@ -109,4 +112,5 @@ void platform_nettype_disconnect(network_t* n)
 {
     if (NULL != n)
 	    close(n->socket);
+    n->socket = -1;
 }

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-24 23:30:55
+ * @LastEditTime : 2019-12-25 01:25:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -350,7 +350,7 @@ int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
 
     if (mqtt_keep_alive(c) != SUCCESS_ERROR) {
         //check only keepalive FAIL_ERROR status so that previous FAIL_ERROR status can be considered as FAULT
-        rc = FAIL_ERROR;
+        rc = MQTT_NOT_CONNECT_ERROR;
     }
 
 exit:
@@ -889,8 +889,10 @@ int mqtt_try_reconnect(mqtt_client_t* c)
 {
     int rc = SUCCESS_ERROR;
 
-    if (!platform_timer_is_expired(&c->reconnect_timer))
+    if (!platform_timer_is_expired(&c->reconnect_timer)) {
+        c->reconnect_try_duration = MQTT_RECONNECT_MIN_DURATION;
         RETURN_ERROR(MQTT_RECONNECT_TIMEOUT_ERROR);
+    } 
     
     rc = mqtt_try_do_reconnect(c);
     
@@ -898,9 +900,9 @@ int mqtt_try_reconnect(mqtt_client_t* c)
         RETURN_ERROR(rc);
     
     c->reconnect_try_duration *= 2;
-    if (c->reconnect_try_duration > MQTT_RECONNECT_MAX_DURATION)
-        RETURN_ERROR(MQTT_RECONNECT_TIMEOUT_ERROR);
-    
+    if (c->reconnect_try_duration >= MQTT_RECONNECT_MAX_DURATION)
+        c->reconnect_try_duration = MQTT_RECONNECT_MAX_DURATION;
+
     platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
 
     RETURN_ERROR(rc);
@@ -922,10 +924,11 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
     
     while (!platform_timer_is_expired(&timer)) {
         if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c)) {
-            if (c->reconnect_try_duration > MQTT_RECONNECT_MAX_DURATION)
-                RETURN_ERROR(MQTT_RECONNECT_TIMEOUT_ERROR);
             
             rc = mqtt_try_reconnect(c);
+            if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
+                printf("%s:%d %s()..., mqtt reconnect timeout...\n", __FILE__, __LINE__, __FUNCTION__);
+            }
             continue;
         }
         

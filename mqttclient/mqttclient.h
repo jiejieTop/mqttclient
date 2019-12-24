@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-24 22:50:14
+ * @LastEditTime : 2019-12-25 01:19:25
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -29,7 +29,7 @@
 #define     MIN_CMD_TIMEOUT                     500
 #define     KEEP_ALIVE_INTERVAL                 60
 #define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
-#define     MQTT_RECONNECT_MAX_DURATION         (60*1000) 
+#define     MQTT_RECONNECT_MAX_DURATION         (20*1000) 
 #define     MQTT_RECONNECT_MIN_DURATION         (1000)
 
 typedef enum mqtt_qos {
