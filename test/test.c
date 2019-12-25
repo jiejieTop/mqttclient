@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2019-12-24 23:14:44
+ * @LastEditTime : 2019-12-25 22:35:05
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -17,8 +17,13 @@ client_init_params_t init_params;
 
 void *mqtt_yield_thread(void *arg)
 {
+    int rc;
     while (1) {
-        mqtt_yield(&client, 10000);
+        rc = mqtt_yield(&client, 10000);
+        if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
+            printf("%s:%d %s()..., mqtt reconnect timeout....\n", __FILE__, __LINE__, __FUNCTION__);
+            sleep(3);
+        }
     }
     
     pthread_exit(NULL);
@@ -27,7 +32,7 @@ void *mqtt_yield_thread(void *arg)
 void *mqtt_unsubscribe_thread(void *arg)
 {
     sleep(5);
-    // mqtt_unsubscribe(&client, "mqtt_topic");
+    mqtt_unsubscribe(&client, "mqtt_topic");
     pthread_exit(NULL);
 }
 
@@ -53,7 +58,8 @@ int main(void)
 
     err = mqtt_connect(&client);
     printf("err = %d\n",err);
-
+    
+    err = mqtt_subscribe(&client, "testtopic", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic1/#", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic2/+/abc", 1, NULL);

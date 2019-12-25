@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-25 00:37:52
+ * @LastEditTime : 2019-12-25 22:50:03
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -70,7 +70,7 @@ int platform_nettype_connect(network_t* n)
         printf("get %s ip addr...\n", n->connect_params->addr);
         if ((he = gethostbyname(n->connect_params->addr)) == NULL) {
             printf("get host ip addr error.\n");
-            RETURN_ERROR(FAIL_ERROR);
+            RETURN_ERROR(CONNECT_FAIL_ERROR);
         } else {
             addr = *((struct in_addr *)he->h_addr);
             if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
@@ -86,7 +86,7 @@ int platform_nettype_connect(network_t* n)
     if (-1 == n->socket) {
         if ((n->socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
             printf("create an endpoint for communication fail!\n");
-            RETURN_ERROR(FAIL_ERROR);
+            RETURN_ERROR(CONNECT_FAIL_ERROR);
         }
     }
 
@@ -99,7 +99,7 @@ int platform_nettype_connect(network_t* n)
         printf("connect server fail..., n->socket = %d\n", n->socket);
         close(n->socket);
         n->socket = -1;
-        RETURN_ERROR(FAIL_ERROR);
+        RETURN_ERROR(CONNECT_FAIL_ERROR);
     }
 
     printf("connect server success..., n->socket = %d\n", n->socket);

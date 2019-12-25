@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-25 01:19:25
+ * @LastEditTime : 2019-12-25 20:57:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -29,8 +29,7 @@
 #define     MIN_CMD_TIMEOUT                     500
 #define     KEEP_ALIVE_INTERVAL                 60
 #define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
-#define     MQTT_RECONNECT_MAX_DURATION         (20*1000) 
-#define     MQTT_RECONNECT_MIN_DURATION         (1000)
+#define     MQTT_RECONNECT_DEFAULT_DURATION     1000
 
 typedef enum mqtt_qos {
     QOS0 = 0,
@@ -101,7 +100,6 @@ typedef struct mqtt_client {
     client_state_t              client_state;
     char                        ping_outstanding;
     unsigned int                reconnect_try_duration;
-    platform_timer_t            ping_timer;
     platform_timer_t            reconnect_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
@@ -114,8 +112,9 @@ typedef void (*reconnect_handler_t)(mqtt_client_t *, void *);
 
 typedef struct client_init_params{
 	unsigned int                cmd_timeout;
-    size_t                      read_buf_size;
-    size_t                      write_buf_size;
+    unsigned int                read_buf_size;
+    unsigned int                write_buf_size;
+    unsigned int                reconnect_try_duration;
     connect_params_t            connect_params;
 	disconnect_handler_t        disconnect_handler;
 	reconnect_handler_t         reconnect_handler;
