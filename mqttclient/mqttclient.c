@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-25 22:40:06
+ * @LastEditTime : 2019-12-26 23:19:35
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -21,7 +21,7 @@ int mqtt_msg_handlers_install(mqtt_client_t* c, message_handlers_t *handler);
 static void default_msg_handler(void* client, message_data_t* msg)
 {
     (void) client;
-    printf("%s:%d %s()...\ntopic: %.*s\nmessage:%s\n", 
+    LOG_INFO("%s:%d %s()...\ntopic: %.*s\nmessage:%s\n", 
             __FILE__, __LINE__, __FUNCTION__, 
             msg->topic_name->lenstring.len, msg->topic_name->lenstring.data, (char*)msg->message->payload);
 }
@@ -141,7 +141,7 @@ void mqtt_close_session(mqtt_client_t* c)
 {
     c->ping_outstanding = 0;
     mqtt_set_client_state(c, CLIENT_STATE_INITIALIZED);
-    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
+    LOG_INFO("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
     if (c->connect_params->clean_session)
         mqtt_clean_session(c);
 }
@@ -155,9 +155,9 @@ int mqtt_keep_alive(mqtt_client_t* c)
 
     if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received))
     {
-        // printf("%s:%d %s()...c->ping_outstanding = %d\n", __FILE__, __LINE__, __FUNCTION__, c->ping_outstanding);
+        // LOG_INFO("%s:%d %s()...c->ping_outstanding = %d\n", __FILE__, __LINE__, __FUNCTION__, c->ping_outstanding);
         if (c->ping_outstanding) {
-            printf("%s:%d %s()...ping outstanding \n", __FILE__, __LINE__, __FUNCTION__);
+            LOG_INFO("%s:%d %s()...ping outstanding \n", __FILE__, __LINE__, __FUNCTION__);
             mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
             rc = FAIL_ERROR; /* PINGRESP not received in keepalive interval */
         } else {
@@ -550,7 +550,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     /* network init */
     c->network = (network_t*) platform_memory_alloc(sizeof(network_t));
     if (NULL == c->network) {
-        printf("malloc network failed...\n");
+        LOG_INFO("malloc network failed...\n");
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
     }
     memset(c->network, 0, sizeof(network_t));
@@ -563,7 +563,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     c->read_buf = (unsigned char*) platform_memory_alloc(init->read_buf_size);
     c->write_buf = (unsigned char*) platform_memory_alloc(init->write_buf_size);
     if ((NULL == c->read_buf) || (NULL == c->write_buf)){
-        printf("malloc read buffer failed...\n");
+        LOG_INFO("malloc read buffer failed...\n");
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
     }
 
@@ -705,7 +705,7 @@ int mqtt_msg_handler_is_exist(mqtt_client_t* c, message_handlers_t *handler)
         msg_handler = LIST_ENTRY(curr, message_handlers_t, list);
 
         if ((NULL != msg_handler->topic_filter) && (mqtt_is_topic_equals(msg_handler->topic_filter, handler->topic_filter))) {
-            printf("%s:%d %s()...msg_handler->topic_filter:%s, handler->topic_filter:%s\n", __FILE__, __LINE__, __FUNCTION__, msg_handler->topic_filter, handler->topic_filter);
+            LOG_INFO("%s:%d %s()...msg_handler->topic_filter:%s, handler->topic_filter:%s\n", __FILE__, __LINE__, __FUNCTION__, msg_handler->topic_filter, handler->topic_filter);
             return 1;
         }
     }
@@ -846,7 +846,7 @@ void mqtt_ack_list_scan(mqtt_client_t* c)
         // check whether the ack is timeout
         if (!platform_timer_is_expired(&ack_handler->timer))
             continue;
-        printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
+        LOG_INFO("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
         mqtt_ack_handler_destroy(ack_handler);
     }
 }
@@ -857,7 +857,7 @@ int mqtt_try_resubscribe(mqtt_client_t* c)
     list_t *curr, *next;
     message_handlers_t *msg_handler;
 
-    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
+    LOG_INFO("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
     // if (CLIENT_STATE_CONNECTED == mqtt_get_client_state(c))
     //     RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
     
@@ -876,7 +876,7 @@ int mqtt_try_resubscribe(mqtt_client_t* c)
 int mqtt_try_do_reconnect(mqtt_client_t* c)
 {
     int rc = CONNECT_FAIL_ERROR;
-    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
+    LOG_INFO("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
     if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
         rc = mqtt_connect(c);
     
@@ -920,19 +920,19 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
         if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c)) {
             rc = mqtt_try_reconnect(c);
             if (SUCCESS_ERROR != rc) {
-                printf("%s:%d %s()..., mqtt reconnect failed, rc = %d\n", __FILE__, __LINE__, __FUNCTION__, rc);
+                LOG_INFO("%s:%d %s()..., mqtt reconnect failed, rc = %d\n", __FILE__, __LINE__, __FUNCTION__, rc);
                 RETURN_ERROR(rc);
             }
         }
         
         rc = mqtt_packet_handle(c, &timer);
 
-        printf("%s:%d %s()...rc = %d\n", __FILE__, __LINE__, __FUNCTION__, rc);
+        LOG_INFO("%s:%d %s()...rc = %d\n", __FILE__, __LINE__, __FUNCTION__, rc);
 
         if (rc >= 0) {
             mqtt_ack_list_scan(c);
         } else if (MQTT_NOT_CONNECT_ERROR == rc) {
-            printf("%s:%d %s()...mqtt not connect \n", __FILE__, __LINE__, __FUNCTION__);
+            LOG_INFO("%s:%d %s()...mqtt not connect \n", __FILE__, __LINE__, __FUNCTION__);
             platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
         } else {
             break;

@@ -17,6 +17,7 @@
 #include "network.h"
 #include "error.h"
 #include "mutex.h"
+#include "salof.h"
 
 #define     MAX_PACKET_ID                       65535
 #define     MAX_MESSAGE_HANDLERS                5

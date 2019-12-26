@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2019-12-25 22:35:05
+ * @LastEditTime : 2019-12-26 23:20:04
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -21,7 +21,7 @@ void *mqtt_yield_thread(void *arg)
     while (1) {
         rc = mqtt_yield(&client, 10000);
         if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
-            printf("%s:%d %s()..., mqtt reconnect timeout....\n", __FILE__, __LINE__, __FUNCTION__);
+            LOG_INFO("%s:%d %s()..., mqtt reconnect timeout....\n", __FILE__, __LINE__, __FUNCTION__);
             sleep(3);
         }
     }
@@ -51,13 +51,15 @@ int main(void)
     init_params.connect_params.password = "123456";
     init_params.connect_params.client_id = "clientid";
     init_params.connect_params.clean_session = 1;
-    printf("-------------------hello client----------------------\n");
+    LOG_INFO("-------------------hello client----------------------\n");
+
+    salof_init();
 
     err = mqtt_init(&client, &init_params);
-    printf("err = %d\n",err);
+    LOG_INFO("err = %d\n",err);
 
     err = mqtt_connect(&client);
-    printf("err = %d\n",err);
+    LOG_INFO("err = %d\n",err);
     
     err = mqtt_subscribe(&client, "testtopic", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic", 0, NULL);
@@ -66,17 +68,17 @@ int main(void)
     err = mqtt_subscribe(&client, "mqtt_topic2/+/dd", 1, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic2/123/dd", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic3/#", 2, NULL);
-    printf("err = %d\n",err);
+    LOG_INFO("err = %d\n",err);
 
     res = pthread_create(&thread1, NULL, mqtt_yield_thread, NULL);
     if(res != 0) {
-        printf("create thread fail\n");
+        LOG_INFO("create thread fail\n");
         exit(res);
     }
 
     res = pthread_create(&thread2, NULL, mqtt_unsubscribe_thread, NULL);
     if(res != 0) {
-        printf("create thread fail\n");
+        LOG_INFO("create thread fail\n");
         exit(res);
     }
 

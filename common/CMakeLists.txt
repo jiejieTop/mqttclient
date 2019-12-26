@@ -1,3 +1,5 @@
+set(SUBDIRS "log")
+
 aux_source_directory(. DIR_SRCS)
 
 string(REGEX REPLACE ".*/(.*)" "\\1" LIB_NAME ${CMAKE_CURRENT_SOURCE_DIR}) 
@@ -14,4 +16,6 @@ else()
 endif()
 
 
-
+foreach(subdir ${SUBDIRS})
+    add_subdirectory(${subdir})
+endforeach()
