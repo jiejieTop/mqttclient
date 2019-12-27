@@ -2,10 +2,11 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-26 00:18:18
+ * @LastEditTime : 2019-12-27 03:59:55
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
+#include "log.h"
 
 int platform_nettype_read(network_t *n, unsigned char *read_buf, int len, int timeout)
 {
@@ -67,25 +68,25 @@ int platform_nettype_connect(network_t* n)
 
     ret = inet_pton(AF_INET, n->connect_params->addr, &addr);
     if (ret == 0) {
-        printf("get %s ip addr...\n", n->connect_params->addr);
+        LOG_I("get %s ip addr...", n->connect_params->addr);
         if ((he = gethostbyname(n->connect_params->addr)) == NULL) {
-            printf("get host ip addr error.\n");
+            LOG_E("get host ip addr error.");
             RETURN_ERROR(CONNECT_FAIL_ERROR);
         } else {
             addr = *((struct in_addr *)he->h_addr);
             if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
-                printf("host name: %s, ip addr:%s\n",n->connect_params->addr, addr_str);
+                LOG_I("host name: %s, ip addr:%s",n->connect_params->addr, addr_str);
         }
     } else if(ret == 1) {
         if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
-            printf("host addr: %s\n", addr_str);
+            LOG_I("host addr: %s", addr_str);
     } else {
-        printf("inet_pton function return %d\n", ret);
+        LOG_E("inet_pton function return %d", ret);
     }
     
     if (-1 == n->socket) {
         if ((n->socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-            printf("create an endpoint for communication fail!\n");
+            LOG_E("create an endpoint for communication fail!");
             RETURN_ERROR(CONNECT_FAIL_ERROR);
         }
     }
@@ -96,13 +97,13 @@ int platform_nettype_connect(network_t* n)
 	server.sin_addr = addr;
 
     if (connect(n->socket, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) {
-        printf("connect server fail..., n->socket = %d\n", n->socket);
+        LOG_E("connect server fail..., n->socket = %d", n->socket);
         close(n->socket);
         n->socket = -1;
         RETURN_ERROR(CONNECT_FAIL_ERROR);
     }
 
-    printf("connect server success..., n->socket = %d\n", n->socket);
+    LOG_I("connect server success..., n->socket = %d", n->socket);
 
     RETURN_ERROR(SUCCESS_ERROR);
 }

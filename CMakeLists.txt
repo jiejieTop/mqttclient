@@ -4,7 +4,7 @@ project(mqtt-client)
 
 set(TARGETS "mqtt-client")
 set(SUBDIRS "mqtt" "test" "platform" "network" "common" "mqttclient")
-set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "common/log/arch/linux" "network" "mqttclient")
+set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "network" "mqttclient")
 set(OUTDIRS "build")
 set(LIBNAMES "mqtt" "platform" "network" "common" "salof" "mqttclient")
 set(CMAKE_C_COMPILER "gcc")

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime : 2019-12-26 23:25:21
+ * @LastEditTime : 2019-12-27 14:12:48
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_CONFIG_H_
@@ -22,15 +22,13 @@
 #define         LOG_LEVEL                   DEBUG_LEVEL
 #define         LOG_COLOR                   (1U)
 #define         LOG_TS                      (1U)
-#define         LOG_TAR                     (0U)
+#define         LOG_TAR                     (1U)
 
 #if USE_SALOF
-
 #define         SALOF_BUFF_SIZE             (512U)
 #define         SALOF_FIFO_SIZE             (1024*4U)
 #define         SALOF_TASK_STACK_SIZE       (2048U)
 #define         SALOF_TASK_TICK             (20U)
-
 #endif
 
 #if !defined(SALOF_OS)
@@ -57,8 +55,10 @@
 #elif (SALOF_OS == USE_LINUX)
     #include "pthread.h"
     #include "memory.h"
+    #include <semaphore.h>
     #include <stdio.h>
     #define salof_mutex pthread_mutex_t*
+    #define salof_sem sem_t*
     #define salof_tcb   pthread_t*
     #define SALOF_TASK_PRIO (0U)
 #else
@@ -77,6 +77,10 @@ salof_mutex salof_mutex_create(void);
 void salof_mutex_delete(salof_mutex mutex);
 int salof_mutex_pend(salof_mutex mutex, unsigned int timeout);
 int salof_mutex_post(salof_mutex mutex);
+salof_sem salof_sem_create(void);
+void salof_sem_delete(salof_sem sem);
+int salof_sem_pend(salof_sem sem, unsigned int timeout);
+int salof_sem_post(salof_sem sem);
 unsigned int salof_get_tick(void);
 char *salof_get_task_name(void);
 extern int send_buff(char *buf, int len);

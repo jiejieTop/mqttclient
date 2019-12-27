@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-25 20:57:54
+ * @LastEditTime : 2019-12-27 03:35:40
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -17,7 +17,7 @@
 #include "network.h"
 #include "error.h"
 #include "mutex.h"
-#include "salof.h"
+#include "log.h"
 
 #define     MAX_PACKET_ID                       65535
 #define     MAX_MESSAGE_HANDLERS                5

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-26 19:11:37
- * @LastEditTime : 2019-12-26 22:50:00
+ * @LastEditTime : 2019-12-27 12:34:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "config.h"
@@ -20,18 +20,6 @@ void salof_free(void *mem)
 {
     free(mem);
 }
-
-salof_mutex salof_mutex_create(void)
-{
-    salof_mutex mutex;
-    mutex = salof_alloc(sizeof(pthread_mutex_t));
-    
-    if (NULL != mutex)
-	    pthread_mutex_init(mutex, NULL);
-    
-    return mutex;
-}
-
 
 salof_tcb salof_task_create(const char *name,
                             void (*task_entry)(void *param),
@@ -54,11 +42,21 @@ salof_tcb salof_task_create(const char *name,
     return task;
 }
 
+salof_mutex salof_mutex_create(void)
+{
+    salof_mutex mutex;
+    mutex = salof_alloc(sizeof(pthread_mutex_t));
+    
+    if (NULL != mutex)
+	    pthread_mutex_init(mutex, NULL);
+    
+    return mutex;
+}
+
 void salof_mutex_delete(salof_mutex mutex)
 {
     pthread_mutex_destroy(mutex);
 }
-
 
 int salof_mutex_pend(salof_mutex mutex, unsigned int timeout)
 {
@@ -73,6 +71,33 @@ int salof_mutex_post(salof_mutex mutex)
     return pthread_mutex_unlock(mutex);
 }
 
+salof_sem salof_sem_create(void)
+{
+    salof_sem sem;
+    sem = salof_alloc(sizeof(pthread_mutex_t));
+    
+    if (NULL != sem)
+	    sem_init(sem, 0, 0);
+    
+    return sem;
+}
+
+void salof_sem_delete(salof_sem sem)
+{
+    sem_destroy(sem);
+}
+
+int salof_sem_pend(salof_sem sem, unsigned int timeout)
+{
+    (void) timeout;
+    return sem_wait(sem);
+}
+
+int salof_sem_post(salof_sem sem)
+{
+    return sem_post(sem);
+}
+
 unsigned int salof_get_tick(void)
 {
     return (unsigned int)time(NULL);
@@ -80,7 +105,7 @@ unsigned int salof_get_tick(void)
 
 char *salof_get_task_name(void)
 {
-    return (char*)__FUNCTION__;
+    return NULL;
 }
 
 
@@ -88,6 +113,7 @@ int send_buff(char *buf, int len)
 {
     fputs(buf, stdout);
 	fflush(stdout);
+    return len;
 }
 
 

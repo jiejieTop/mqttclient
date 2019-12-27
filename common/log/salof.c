@@ -88,7 +88,6 @@ void salof_handler( void )
 #if !USE_IDLE_HOOK
 void salof_task(void *parm)
 {   
-    printf("salof_task.......\n");
     (void)parm;
     while(1)
     {

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:54:19
- * @LastEditTime : 2019-12-26 21:42:58
+ * @LastEditTime : 2019-12-27 02:06:57
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "format.h"
@@ -248,7 +248,7 @@ int format_nstr(char *buf, unsigned int size, const char *fmt, va_list ap)
                 }
                 _format_int(buf, &n, size, num, base, width, flags);
             } else if (c == 'p') {
-                num = (signed long long) va_arg(ap, void *);
+                num = (int) va_arg(ap, void *);
                 base = 16;
                 flags |= F_SMALL | F_ALTERNATE;
                 _format_int(buf, &n, size, num, base, width, flags);

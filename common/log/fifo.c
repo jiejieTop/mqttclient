@@ -7,28 +7,23 @@ static unsigned int _flbs(unsigned int x)   /* find last bit set*/
 
     if (!x)
         return 0;
-    if (!(x & 0xffff0000u)) 
-    {
+    if (!(x & 0xffff0000u)) {
         x <<= 16;
         r -= 16;
     }
-    if (!(x & 0xff000000u)) 
-    {
+    if (!(x & 0xff000000u)) {
         x <<= 8;
         r -= 8;
     }
-    if (!(x & 0xf0000000u)) 
-    {
+    if (!(x & 0xf0000000u)) {
         x <<= 4;
         r -= 4;
     }
-    if (!(x & 0xc0000000u)) 
-    {
+    if (!(x & 0xc0000000u)) {
         x <<= 2;
         r -= 2;
     }
-    if (!(x & 0x80000000u)) 
-    {
+    if (!(x & 0x80000000u)) {
         x <<= 1;
         r -= 1;
     }
@@ -37,40 +32,28 @@ static unsigned int _flbs(unsigned int x)   /* find last bit set*/
 
 static unsigned int _fifo_align(unsigned int x)
 {
-	return (1 << (_flbs(x-1)-1));	    //Memory down alignment
+	return (1 << (_flbs(x-1)-1));	    //memory down alignment
 }
 
 fifo_t fifo_create(unsigned int size)
 {
     fifo_t fifo;
 
-    if(0 == size)
-    {
+    if (0 == size)
         return NULL;
-    }
 
-	if(size&(size - 1))
-	{
+    if (size & (size - 1))
 		size = _fifo_align(size);
-	}
 
     fifo = (fifo_t)salof_alloc((sizeof(struct fifo) + size));
-    if(NULL != fifo)
-    {
+
+    if (NULL != fifo) {
         fifo->buff = (unsigned char *)fifo + sizeof(struct fifo);
 
-//        fifo->mutex[FIFO_READ] = salof_mutex_create();
-//        if(NULL == fifo->mutex[FIFO_READ])
-//        {
-//            salof_free(fifo);  
-//            return NULL;
-//        }
-
-        fifo->mutex[FIFO_WRITE] = salof_mutex_create();
-        if(NULL == fifo->mutex[FIFO_WRITE])
-        {
+        fifo->mutex = salof_mutex_create();
+        fifo->sem = salof_sem_create();
+        if ((NULL == fifo->mutex) || (NULL == fifo->sem)) {
             salof_free(fifo);
-            salof_mutex_delete(fifo->mutex[FIFO_READ]);
             return NULL;
         }
 
@@ -91,7 +74,7 @@ unsigned int fifo_write(fifo_t fifo, void *buff, unsigned int len, unsigned int 
     if((!fifo) || (!buff) || (!len))
         return 0;
 
-    err = salof_mutex_pend(fifo->mutex[FIFO_WRITE], timeout);
+    err = salof_mutex_pend(fifo->mutex, timeout);
     if(err == -1)
         return 0;
 
@@ -103,24 +86,21 @@ unsigned int fifo_write(fifo_t fifo, void *buff, unsigned int len, unsigned int 
 
     fifo->in += len;
 
-    salof_mutex_post(fifo->mutex[FIFO_WRITE]);
+    salof_mutex_post(fifo->mutex);
+    salof_sem_post(fifo->sem);
 
     return len;
 }
 
 unsigned int fifo_read(fifo_t fifo, void *buff, unsigned int len, unsigned int timeout)
 {
-    
-//    int err;
     int l;
-    
+
+    salof_sem_pend(fifo->sem, timeout);
+
     if((!fifo) || (!buff) || (!len))
         return 0;
-
-//    err = salof_mutex_pend(fifo->mutex[FIFO_READ], timeout);
-//    if(err == -1)
-//        return 0;
-
+    
     len = FIFO_MIN(len, fifo->in - fifo->out);
 
     l = FIFO_MIN(len, (fifo->size - (fifo->out & (fifo->size -1))));
@@ -128,8 +108,6 @@ unsigned int fifo_read(fifo_t fifo, void *buff, unsigned int len, unsigned int t
     memcpy((unsigned char *)buff + l, fifo->buff, len - l);
 
     fifo->out += len;
-
-//    salof_mutex_post(fifo->mutex[FIFO_READ]);
 
     return len;
 }

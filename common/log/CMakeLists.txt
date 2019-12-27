@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.8)
 
-set(INCDIRS "arch/linux" ${CMAKE_CURRENT_SOURCE_DIR})
+set(INCDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 set(SUBDIRS "arch")
 set(LIBNAMES "arch" "salof")
 set(OUTDIRS "build")

@@ -37,11 +37,11 @@ void salof(const char *fmt, ...);
 #endif
 
 #if LOG_COLOR
-    #define LOG_S(l, c)     PRINT_LOG("\033\n["#c"m["#l"] >> ")
-    #define LOG_E           PRINT_LOG("\033[0m")  
+    #define LOG_START(l, c)     PRINT_LOG("\033\n["#c"m["#l"] >> ")
+    #define LOG_END             PRINT_LOG("\033[0m")  
 #else
-    #define LOG_S(l, c)     PRINT_LOG("\n["#l"] >> ")
-    #define LOG_E       
+    #define LOG_START(l, c)     PRINT_LOG("\n["#l"] >> ")
+    #define LOG_END       
 #endif
 
 #if LOG_TS && LOG_TAR
@@ -57,10 +57,10 @@ void salof(const char *fmt, ...);
 
 #define LOG_LINE(l, c, fmt, ...)        \
     do {                                \
-        LOG_S(l, c);                    \
+        LOG_START(l, c);                \
         LOG_T;                          \
         PRINT_LOG(fmt, ##__VA_ARGS__);  \
-        LOG_E;                          \
+        LOG_END;                        \
     } while (0)
 
 #define BASE_LEVEL      (0)

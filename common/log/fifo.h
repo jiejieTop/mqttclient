@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:54:38
- * @LastEditTime : 2019-12-26 20:10:03
+ * @LastEditTime : 2019-12-27 09:08:18
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _FIFO_H_
@@ -19,9 +19,10 @@
 struct fifo
 {
 	unsigned int    size;       /* fifo size */
-	unsigned int    in;         /* Data input pointer (in % size) */
-	unsigned int    out;        /* Data output pointer (out % size) */
-	salof_mutex     mutex[2];   /* Mutex */       
+	unsigned int    in;         /* data input pointer (in % size) */
+	unsigned int    out;        /* data output pointer (out % size) */
+	salof_mutex     mutex;   	/* mutex */   
+	salof_sem		sem;		/* sem */    
 	void            *buff;    /* data area */
 };
 typedef struct fifo * fifo_t;
