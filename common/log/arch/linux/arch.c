@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-26 19:11:37
- * @LastEditTime : 2019-12-27 12:34:09
+ * @LastEditTime : 2019-12-27 23:44:07
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "config.h"
@@ -74,7 +74,7 @@ int salof_mutex_post(salof_mutex mutex)
 salof_sem salof_sem_create(void)
 {
     salof_sem sem;
-    sem = salof_alloc(sizeof(pthread_mutex_t));
+    sem = salof_alloc(sizeof(sem_t));
     
     if (NULL != sem)
 	    sem_init(sem, 0, 0);

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime : 2019-12-27 14:12:48
+ * @LastEditTime : 2019-12-28 01:52:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_CONFIG_H_
@@ -39,8 +39,9 @@
     #include "FreeRTOS.h"
     #include "task.h"
     #include "semphr.h"
-    #define salof_mutex SemaphoreHandle_t
-    #define salof_tcb   TaskHandle_t
+    #define salof_mutex     SemaphoreHandle_t
+    #define salof_tcb       TaskHandle_t
+    #define salof_sem       salof_mutex
 #if USE_IDLE_HOOK
     #define salof_handler   vApplicationIdleHook
 #endif  
@@ -48,8 +49,9 @@
 
 #elif (SALOF_OS == USE_TENCENTOS)
     #include "tos.h"
-    #define salof_mutex k_mutex_t*
-    #define salof_tcb   k_task_t*
+    #define salof_mutex     k_mutex_t*
+    #define salof_sem       k_sem_t*
+    #define salof_tcb       k_task_t*
     #define SALOF_TASK_PRIO (TOS_CFG_TASK_PRIO_MAX - 2u)
 
 #elif (SALOF_OS == USE_LINUX)
@@ -57,9 +59,9 @@
     #include "memory.h"
     #include <semaphore.h>
     #include <stdio.h>
-    #define salof_mutex pthread_mutex_t*
-    #define salof_sem sem_t*
-    #define salof_tcb   pthread_t*
+    #define salof_mutex     pthread_mutex_t*
+    #define salof_sem       sem_t*
+    #define salof_tcb       pthread_t*
     #define SALOF_TASK_PRIO (0U)
 #else
     #error "not supported OS type"

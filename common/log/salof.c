@@ -1,3 +1,10 @@
+/*
+ * @Author: jiejie
+ * @Github: https://github.com/jiejieTop
+ * @Date: 2019-12-27 23:10:36
+ * @LastEditTime : 2019-12-28 01:03:56
+ * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
+ */
 /** synchronous asynchronous log output framework */
 
 #include "salof.h"
@@ -77,8 +84,7 @@ static int salof_out(char *buf, int len)
 void salof_handler( void )
 {
     _len = fifo_read(_salof_fifo, _out_buff, sizeof(_out_buff), 0);
-    if(_len > 0)
-    {
+    if(_len > 0) {
         salof_out((char *)_out_buff, _len);
         memset(_out_buff, 0, _len);
     }

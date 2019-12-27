@@ -32,7 +32,7 @@ static unsigned int _flbs(unsigned int x)   /* find last bit set*/
 
 static unsigned int _fifo_align(unsigned int x)
 {
-	return (1 << (_flbs(x-1)-1));	    //memory down alignment
+    return (1 << (_flbs(x-1)-1));       //memory down alignment
 }
 
 fifo_t fifo_create(unsigned int size)
@@ -43,7 +43,7 @@ fifo_t fifo_create(unsigned int size)
         return NULL;
 
     if (size & (size - 1))
-		size = _fifo_align(size);
+        size = _fifo_align(size);
 
     fifo = (fifo_t)salof_alloc((sizeof(struct fifo) + size));
 

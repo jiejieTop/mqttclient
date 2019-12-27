@@ -2,10 +2,10 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-26 19:11:40
- * @LastEditTime : 2019-12-26 19:13:14
+ * @LastEditTime : 2019-12-28 01:15:29
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#include "salof_config.h"
+#include "config.h"
 
 
 void *salof_alloc(unsigned int size)
@@ -16,14 +16,8 @@ void *salof_alloc(unsigned int size)
 
 void salof_free(void *mem)
 {
-    tos_mmheap_free(mem);
+    vPortFree(mem);
 }
-
-salof_mutex salof_mutex_create(void)
-{
-    return xSemaphoreCreateMutex();
-}
-
 
 salof_tcb salof_task_create(const char *name,
                             void (*task_entry)(void *param),
@@ -39,6 +33,12 @@ salof_tcb salof_task_create(const char *name,
     return task;
 }
 
+salof_mutex salof_mutex_create(void)
+{
+    return xSemaphoreCreateMutex();
+}
+
+
 void salof_mutex_delete(salof_mutex mutex)
 {
     vSemaphoreDelete(mutex);
@@ -47,7 +47,6 @@ void salof_mutex_delete(salof_mutex mutex)
 
 int salof_mutex_pend(salof_mutex mutex, unsigned int timeout)
 {
-
     if(xSemaphoreTake(mutex, timeout) != pdPASS)
         return -1;
     return 0;
@@ -56,6 +55,31 @@ int salof_mutex_pend(salof_mutex mutex, unsigned int timeout)
 int salof_mutex_post(salof_mutex mutex)
 {
     if(xSemaphoreGive(mutex) != pdPASS)
+        return -1;
+    return 0;
+}
+
+
+salof_sem salof_sem_create(void)
+{
+    return xSemaphoreCreateBinary();
+}
+
+void salof_sem_delete(salof_sem sem)
+{
+    vSemaphoreDelete(sem);
+}
+
+int salof_sem_pend(salof_sem sem, unsigned int timeout)
+{
+    if(xSemaphoreTake(sem, timeout) != pdPASS)
+        return -1;
+    return 0;
+}
+
+int salof_sem_post(salof_sem sem)
+{
+    if(xSemaphoreGive(sem) != pdPASS)
         return -1;
     return 0;
 }
