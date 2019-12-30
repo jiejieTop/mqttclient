@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-27 03:59:55
+ * @LastEditTime : 2019-12-30 22:13:06
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -66,16 +66,16 @@ int platform_nettype_connect(network_t* n)
     struct sockaddr_in server;
     char addr_str[INET_ADDRSTRLEN];
 
-    ret = inet_pton(AF_INET, n->connect_params->addr, &addr);
+    ret = inet_pton(AF_INET, n->network_params->addr, &addr);
     if (ret == 0) {
-        LOG_I("get %s ip addr...", n->connect_params->addr);
-        if ((he = gethostbyname(n->connect_params->addr)) == NULL) {
+        LOG_I("get %s ip addr...", n->network_params->addr);
+        if ((he = gethostbyname(n->network_params->addr)) == NULL) {
             LOG_E("get host ip addr error.");
             RETURN_ERROR(CONNECT_FAIL_ERROR);
         } else {
             addr = *((struct in_addr *)he->h_addr);
             if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
-                LOG_I("host name: %s, ip addr:%s",n->connect_params->addr, addr_str);
+                LOG_I("host name: %s, ip addr:%s",n->network_params->addr, addr_str);
         }
     } else if(ret == 1) {
         if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
@@ -93,7 +93,7 @@ int platform_nettype_connect(network_t* n)
 
     bzero(&server, sizeof(server));
 	server.sin_family = AF_INET;
-	server.sin_port = htons(n->connect_params->port);
+	server.sin_port = htons(n->network_params->port);
 	server.sin_addr = addr;
 
     if (connect(n->socket, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) {

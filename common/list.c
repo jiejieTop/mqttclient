@@ -2,8 +2,8 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 22:46:33
- * @LastEditTime: 2019-12-16 00:38:51
- * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
+ * @LastEditTime : 2019-12-30 21:39:46
+ * @Description: the following code references TencentOS tiny, please keep the author information and source code according to the license.
  */
 
 # include "list.h"

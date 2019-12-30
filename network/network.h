@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime : 2019-12-19 23:29:46
+ * @LastEditTime : 2019-12-30 22:12:29
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -28,26 +28,15 @@
 
 #include "timer.h"
 
-typedef struct connect_params {
+typedef struct network_params {
     char                *addr;
     int                 port;
     char                *ca;
-    char                *client_id;
-    char                *user_name;
-    char                *password;
-    size_t              client_id_len;
-    size_t              user_name_len;
-    size_t              password_len;
-	unsigned char       will_flag;
-    void                *will_options;
-    unsigned short      keep_alive_interval;
-    unsigned char       clean_session;
-    unsigned char       mqtt_version;
-} connect_params_t;
+} network_params_t;
 
 typedef struct network {
     int                 socket;
-    connect_params_t    *connect_params;
+    network_params_t    *network_params;
     int                 (*read)(struct network *, unsigned char *, int, int);
     int                 (*write)(struct network *, unsigned char *, int, int);
     int                 (*connect)(struct network *);

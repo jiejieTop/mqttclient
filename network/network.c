@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:30:54
- * @LastEditTime : 2019-12-20 20:47:16
+ * @LastEditTime : 2019-12-30 22:13:17
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -29,7 +29,7 @@ void network_disconnect(network_t *n)
 int network_init(network_t *n)
 {
     n->socket = -1;
-	if ((NULL == n->connect_params) || (NULL == n->connect_params->addr) || (0 == n->connect_params->port))
+	if ((NULL == n->network_params) || (NULL == n->network_params->addr) || (0 == n->network_params->port))
 		RETURN_ERROR(NULL_VALUE_ERROR);
 	
     n->read = network_read;
