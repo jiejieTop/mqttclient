@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:39:00
- * @LastEditTime : 2019-12-18 22:46:19
+ * @LastEditTime : 2019-12-31 12:22:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETTYPE_H_

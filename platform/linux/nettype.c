@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-30 22:13:06
+ * @LastEditTime : 2019-12-31 12:19:58
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype.h"
@@ -68,9 +68,7 @@ int platform_nettype_connect(network_t* n)
 
     ret = inet_pton(AF_INET, n->network_params->addr, &addr);
     if (ret == 0) {
-        LOG_I("get %s ip addr...", n->network_params->addr);
         if ((he = gethostbyname(n->network_params->addr)) == NULL) {
-            LOG_E("get host ip addr error.");
             RETURN_ERROR(CONNECT_FAIL_ERROR);
         } else {
             addr = *((struct in_addr *)he->h_addr);
@@ -78,8 +76,7 @@ int platform_nettype_connect(network_t* n)
                 LOG_I("host name: %s, ip addr:%s",n->network_params->addr, addr_str);
         }
     } else if(ret == 1) {
-        if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
-            LOG_I("host addr: %s", addr_str);
+        inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str));
     } else {
         LOG_E("inet_pton function return %d", ret);
     }
@@ -97,7 +94,6 @@ int platform_nettype_connect(network_t* n)
 	server.sin_addr = addr;
 
     if (connect(n->socket, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) {
-        LOG_E("connect server fail..., n->socket = %d", n->socket);
         close(n->socket);
         n->socket = -1;
         RETURN_ERROR(CONNECT_FAIL_ERROR);

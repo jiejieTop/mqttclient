@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2019-12-30 22:22:49
+ * @LastEditTime : 2019-12-31 12:56:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -48,6 +48,8 @@ void *mqtt_publish_thread(void *arg)
     msg.payloadlen = strlen(buf);
     while(1) {
         mqtt_publish(&client, "testtopic", &msg);
+        mqtt_publish(&client, "mqtt_topic", &msg);
+        mqtt_publish(&client, "mqtt_topic1/sdasd", &msg);
         sleep(2);
     }
 }
@@ -73,10 +75,10 @@ int main(void)
     log_init();
 
     err = mqtt_init(&client, &init_params);
-    LOG_I("err = %d",err);
+    LOG_E("err = %d",err);
 
     err = mqtt_connect(&client);
-    LOG_I("err = %d",err);
+    LOG_E("err = %d",err);
     
     err = mqtt_subscribe(&client, "testtopic", 2, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic", 0, NULL);
@@ -85,13 +87,13 @@ int main(void)
     err = mqtt_subscribe(&client, "mqtt_topic2/+/dd", 1, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic2/123/dd", 0, NULL);
     err = mqtt_subscribe(&client, "mqtt_topic3/#", 2, NULL);
-    LOG_I("err = %d",err);
+    LOG_E("err = %d",err);
 
-    res = pthread_create(&thread1, NULL, mqtt_yield_thread, NULL);
-    if(res != 0) {
-        LOG_I("create thread1 fail");
-        exit(res);
-    }
+    // res = pthread_create(&thread1, NULL, mqtt_yield_thread, NULL);
+    // if(res != 0) {
+    //     LOG_I("create thread1 fail");
+    //     exit(res);
+    // }
 
     res = pthread_create(&thread2, NULL, mqtt_unsubscribe_thread, NULL);
     if(res != 0) {

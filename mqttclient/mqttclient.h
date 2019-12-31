@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-30 22:11:03
+ * @LastEditTime : 2019-12-31 12:47:14
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -15,6 +15,7 @@
 #include "list.h"
 #include "memory.h"
 #include "network.h"
+#include "thread.h"
 #include "error.h"
 #include "mutex.h"
 #include "log.h"
@@ -31,6 +32,9 @@
 #define     KEEP_ALIVE_INTERVAL                 60
 #define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_DEFAULT_DURATION     1000
+#define     MQTT_THREAD_STACK_SIZE              2048
+#define     MQTT_THREAD_PRIO                    10
+#define     MQTT_THREAD_TICK                    50
 
 typedef enum mqtt_qos {
     QOS0 = 0,
@@ -114,6 +118,7 @@ typedef struct mqtt_client {
     list_t                      msg_handler_list;
     list_t                      ack_handler_list;
     network_t                   *network;
+    platform_thread_t           *thread;
     platform_timer_t            reconnect_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;

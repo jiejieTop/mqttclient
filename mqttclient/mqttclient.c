@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-30 22:25:55
+ * @LastEditTime : 2019-12-31 13:00:10
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -646,6 +646,20 @@ static int mqtt_wait_packet(mqtt_client_t* c, int packet_type, platform_timer_t*
     RETURN_ERROR(rc);
 }
 
+static void mqtt_yield_thread(void *arg)
+{
+    int rc;
+    mqtt_client_t *c = (mqtt_client_t *)arg;
+    // sleep(3);
+    while (1) {
+        rc = mqtt_yield(c, c->cmd_timeout);
+        if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
+            LOG_E("%s:%d %s()..., mqtt reconnect timeout....", __FILE__, __LINE__, __FUNCTION__);
+        }
+    }
+    pthread_exit(NULL);
+}
+
 static int mqtt_connect_with_results(mqtt_client_t* c)
 {
     int len = 0;
@@ -693,6 +707,7 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
 
 exit:
     if (rc == SUCCESS_ERROR) {
+        c->thread = platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK);
         mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
         c->ping_outstanding = 0;
     }
@@ -1009,7 +1024,7 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
         if (rc >= 0) {
             mqtt_ack_list_scan(c);
         } else if (MQTT_NOT_CONNECT_ERROR == rc) {
-            LOG_W("%s:%d %s()... mqtt not connect", __FILE__, __LINE__, __FUNCTION__);
+            LOG_E("%s:%d %s()... mqtt not connect", __FILE__, __LINE__, __FUNCTION__);
             platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
         }
     }
