@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-31 12:47:14
+ * @LastEditTime : 2020-01-01 22:36:39
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -26,10 +26,10 @@
 #define     MQTT_REPUB_NUM_MAX                  20
 #define     MQTT_SUB_NUM_MAX                    10
 #define     DEFAULT_BUF_SIZE                    1024
-#define     DEFAULT_CMD_TIMEOUT                 2000
+#define     DEFAULT_CMD_TIMEOUT                 4000
 #define     MAX_CMD_TIMEOUT                     5000
-#define     MIN_CMD_TIMEOUT                     500
-#define     KEEP_ALIVE_INTERVAL                 60
+#define     MIN_CMD_TIMEOUT                     100
+#define     KEEP_ALIVE_INTERVAL                 1000
 #define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_DEFAULT_DURATION     1000
 #define     MQTT_THREAD_STACK_SIZE              2048
@@ -60,16 +60,17 @@ typedef struct mqtt_message {
     unsigned char       retained;
     unsigned char       dup;
     unsigned short      id;
-    void                *payload;
     size_t              payloadlen;
+    void                *payload;
 } mqtt_message_t;
 
 typedef struct message_data {
-    mqtt_message_t      *message;
     char                topic_name[MQTT_TOPIC_LEN_MAX];
+    mqtt_message_t      *message;
 } message_data_t;
 
 typedef void (*message_handler_t)(void* client, message_data_t* msg);
+typedef void (*reconnect_handler_t)(void* client, void* reconnect_date);
 
 typedef struct message_handlers {
     list_t              list;
@@ -112,6 +113,8 @@ typedef struct mqtt_client {
     unsigned int                read_buf_size;
     unsigned int                write_buf_size;
     unsigned int                reconnect_try_duration;
+    void                        *reconnect_date;
+    reconnect_handler_t         reconnect_handler;
     client_state_t              client_state;
     platform_mutex_t            write_lock;
     platform_mutex_t            global_lock;
@@ -126,15 +129,13 @@ typedef struct mqtt_client {
     void                        (*default_message_handler)(void*, message_data_t*);
 } mqtt_client_t;
 
-
-typedef void (*disconnect_handler_t)(mqtt_client_t *, void *);
-typedef void (*reconnect_handler_t)(mqtt_client_t *, void *);
-
 typedef struct client_init_params{
 	unsigned int                cmd_timeout;
     unsigned int                read_buf_size;
     unsigned int                write_buf_size;
     unsigned int                reconnect_try_duration;
+    void                        *reconnect_date;
+    reconnect_handler_t         reconnect_handler;
     connect_params_t            connect_params;
 } client_init_params_t;
 

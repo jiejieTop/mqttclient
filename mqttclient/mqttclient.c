@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2019-12-31 13:00:10
+ * @LastEditTime : 2020-01-01 23:47:13
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -287,6 +287,7 @@ static int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short pac
         if (handler)
             *handler = ack_handler->handler;
         
+        LOG_W("%s:%d %s()... ack destroy, type = %d", __FILE__, __LINE__, __FUNCTION__, type);
         mqtt_ack_handler_destroy(ack_handler);
     }
     RETURN_ERROR(SUCCESS_ERROR);
@@ -385,7 +386,7 @@ static void mqtt_ack_list_scan(mqtt_client_t* c)
 
         if (!platform_timer_is_expired(&ack_handler->timer))
             continue;
-        LOG_I("%s:%d %s()...", __FILE__, __LINE__, __FUNCTION__);
+        LOG_I("%s:%d %s()..., ack_handler->type = %d, ack_handler->packet_id = %d", __FILE__, __LINE__, __FUNCTION__, ack_handler->type, ack_handler->packet_id);
         mqtt_ack_handler_destroy(ack_handler);
     }
 }
@@ -432,6 +433,8 @@ static int mqtt_try_reconnect(mqtt_client_t* c)
 
     if (platform_timer_is_expired(&c->reconnect_timer)) {
         platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
+        if (NULL != c->reconnect_handler)
+            c->reconnect_handler(c, c->reconnect_date);
         RETURN_ERROR(MQTT_RECONNECT_TIMEOUT_ERROR);
     } 
     
@@ -449,20 +452,35 @@ static int mqtt_publish_ack_packet(mqtt_client_t *c, unsigned short packet_id, i
     platform_mutex_lock(&c->write_lock);
 
     switch (packet_type) {
-        case PUBACK: 
+        // case PUBACK: 
+        //     // len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, packet_type, 0, packet_id);
+        //     break;
+
         case PUBREC: 
-        case PUBREL: 
-            len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, packet_type, 0, packet_id);
-            if (len <= 0 )
-                rc = MQTT_PUBLISH_ACK_PACKET_ERROR;
-            rc = mqtt_send_packet(c, len, &timer);
-            break;  
+            len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBREL, 0, packet_id);
+            LOG_W("%s:%d %s()..., packet_id is %d", __FILE__, __LINE__, __FUNCTION__, packet_id + 1);
+            rc = mqtt_ack_list_record(c, PUBCOMP, packet_id + 1, len, NULL);
+            break;
+            
+        case PUBREL:
+            LOG_W("%s:%d %s()..., MQTTSerialize_ack PUBCOMP", __FILE__, __LINE__, __FUNCTION__);
+            len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBCOMP, 0, packet_id);
+            break;
             
         default:
             rc = MQTT_PUBLISH_ACK_TYPE_ERROR;
-            break;
+            goto exit;
     }
-    
+
+    if (len <= 0 ) {
+        rc = MQTT_PUBLISH_ACK_PACKET_ERROR;
+        goto exit;
+    }
+
+    rc = mqtt_send_packet(c, len, &timer);
+    LOG_W("%s:%d %s()..., mqtt_send_packet rc = %d", __FILE__, __LINE__, __FUNCTION__, rc);
+
+exit:
     platform_mutex_unlock(&c->write_lock);
 
     RETURN_ERROR(rc);
@@ -478,6 +496,7 @@ static int mqtt_puback_and_pubcomp_packet_handle(mqtt_client_t *c, platform_time
         rc = MQTT_REC_PACKET_ERROR;
     
     (void) dup;
+    LOG_W("%s:%d %s()..., type = %d", __FILE__, __LINE__, __FUNCTION__, packet_type);
     rc = mqtt_ack_list_unrecord(c, packet_type, packet_id, NULL);
 
     RETURN_ERROR(rc);
@@ -547,6 +566,8 @@ static int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
     mqtt_deliver_message(c, &topic_name, &msg);
 
     if (msg.qos != QOS0) {
+        platform_mutex_lock(&c->write_lock);
+        
         if (msg.qos == QOS1)
             len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBACK, 0, msg.id);
         else if (msg.qos == QOS2)
@@ -556,8 +577,10 @@ static int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
             goto exit;
         } else
             rc = mqtt_send_packet(c, len, timer);
+        
+        platform_mutex_unlock(&c->write_lock);
     }
-    
+
 exit:
     RETURN_ERROR(rc);
 }
@@ -570,11 +593,14 @@ static int mqtt_pubrec_and_pubrel_packet_handle(mqtt_client_t *c, platform_timer
     unsigned char dup, packet_type;
 
     if (MQTTDeserialize_ack(&packet_type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1)
-        rc = MQTT_REC_PACKET_ERROR;
+        RETURN_ERROR(MQTT_REC_PACKET_ERROR);
 
     (void) dup;
-    rc = mqtt_publish_ack_packet(c, packet_id, packet_type);
     
+    // LOG_I("%s:%d %s()..., type is %d", __FILE__, __LINE__, __FUNCTION__, packet_type);
+    rc = mqtt_publish_ack_packet(c, packet_id, packet_type);
+    rc = mqtt_ack_list_unrecord(c, packet_type, packet_id, NULL);
+
     RETURN_ERROR(rc);
 }
 
@@ -586,6 +612,8 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
     
     rc = mqtt_read_packet(c, &packet_type, timer);
 
+    // LOG_W("%s:%d %s()..., packet_type is %d", __FILE__, __LINE__, __FUNCTION__, packet_type);
+    
     switch (packet_type) {
         case 0: /* timed out reading packet */
             break;
@@ -650,7 +678,6 @@ static void mqtt_yield_thread(void *arg)
 {
     int rc;
     mqtt_client_t *c = (mqtt_client_t *)arg;
-    // sleep(3);
     while (1) {
         rc = mqtt_yield(c, c->cmd_timeout);
         if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
@@ -707,7 +734,8 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
 
 exit:
     if (rc == SUCCESS_ERROR) {
-        c->thread = platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK);
+        if(NULL ==c->thread) 
+            c->thread= platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK);
         mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
         c->ping_outstanding = 0;
     }
@@ -735,9 +763,8 @@ int mqtt_keep_alive(mqtt_client_t* c)
     if (c->connect_params->keep_alive_interval == 0)
         goto exit;
 
-    if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received))
-    {
-        if (c->ping_outstanding) {
+    if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received)) {
+        if (c->ping_outstanding >= 2) {
             LOG_W("%s:%d %s()... ping outstanding", __FILE__, __LINE__, __FUNCTION__);
             mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
             rc = FAIL_ERROR; /* PINGRESP not received in keepalive interval */
@@ -746,8 +773,9 @@ int mqtt_keep_alive(mqtt_client_t* c)
             platform_timer_init(&timer);
             platform_timer_cutdown(&timer, c->cmd_timeout);
             int len = MQTTSerialize_pingreq(c->write_buf, c->write_buf_size);
+            LOG_I("%s:%d %s()... send ping", __FILE__, __LINE__, __FUNCTION__);
             if (len > 0 && (rc = mqtt_send_packet(c, len, &timer)) == SUCCESS_ERROR) // send the ping packet
-                c->ping_outstanding = 1;
+                c->ping_outstanding++;
         }
     }
 
@@ -809,7 +837,10 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     c->connect_params = &init->connect_params;
     c->default_message_handler = default_msg_handler;
     c->reconnect_try_duration = init->reconnect_try_duration;
-    
+
+    c->reconnect_date = init->reconnect_date;
+    c->reconnect_handler = init->reconnect_handler;
+
     c->network->network_params = &init->connect_params.network_params;
     if ((rc = network_init(c->network)) < 0)
         RETURN_ERROR(rc);
@@ -987,7 +1018,8 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
     if (QOS1 == msg->qos) {
         rc = mqtt_ack_list_record(c, PUBACK, mqtt_get_next_packet_id(c), len, NULL);
     } else if (QOS2 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBCOMP, mqtt_get_next_packet_id(c), len, NULL);
+        rc = mqtt_ack_list_record(c, PUBREC, mqtt_get_next_packet_id(c), len, NULL);
+        // rc = mqtt_ack_list_record(c, PUBREC, mqtt_get_next_packet_id(c), len, NULL);
     }
     
 exit:
