@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-01 22:36:39
+ * @LastEditTime : 2020-01-02 23:14:18
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -25,6 +25,7 @@
 #define     MQTT_TOPIC_LEN_MAX                  64
 #define     MQTT_REPUB_NUM_MAX                  20
 #define     MQTT_SUB_NUM_MAX                    10
+#define     MQTT_ACK_HANDLER_NUM_MAX            3
 #define     DEFAULT_BUF_SIZE                    1024
 #define     DEFAULT_CMD_TIMEOUT                 4000
 #define     MAX_CMD_TIMEOUT                     5000
@@ -109,6 +110,7 @@ typedef struct mqtt_client {
     unsigned char               *read_buf;
     unsigned char               *write_buf;
     unsigned char               ping_outstanding;
+    unsigned char               ack_handler_number;
     unsigned int                cmd_timeout;
     unsigned int                read_buf_size;
     unsigned int                write_buf_size;

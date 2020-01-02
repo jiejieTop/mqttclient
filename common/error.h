@@ -2,13 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2019-12-25 22:30:38
+ * @LastEditTime : 2020-01-02 22:25:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
 typedef enum error {
+    MQTT_ACK_HANDLER_NUM_TOO_MUCH = -22,
     MQTT_RESUBSCRIBE_ERROR = -21,
     MQTT_SUBSCRIBE_ERROR = -20,
     MQTT_SEND_PACKET_ERROR = -19,
