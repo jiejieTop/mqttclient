@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-03 09:53:46
+ * @LastEditTime : 2020-01-03 20:28:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -10,7 +10,7 @@
 static void default_msg_handler(void* client, message_data_t* msg)
 {
     (void) client;
-    LOG_I("%s:%d %s()...\ntopic: %s, qos: %d\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, msg->message->qos,(char*)msg->message->payload);
+    // LOG_I("%s:%d %s()...\ntopic: %s, qos: %d\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, msg->message->qos,(char*)msg->message->payload);
 }
 
 static client_state_t mqtt_get_client_state(mqtt_client_t* c)
@@ -307,7 +307,7 @@ static void mqtt_ack_handler_resend(mqtt_client_t* c, ack_handlers_t* ack_handle
     memcpy(c->write_buf, ack_handler->payload, ack_handler->payload_len);
     
     mqtt_send_packet(c, ack_handler->payload_len, &timer);
-    LOG_E("%s:%d %s()... resend %d package", __FILE__, __LINE__, __FUNCTION__, ack_handler->type);
+    LOG_E("%s:%d %s()... resend %d package, packet_id is %d ", __FILE__, __LINE__, __FUNCTION__, ack_handler->type, ack_handler->packet_id);
     platform_mutex_unlock(&c->write_lock);
 }
 
@@ -469,7 +469,7 @@ static void mqtt_ack_list_scan(mqtt_client_t* c)
 
         if (!platform_timer_is_expired(&ack_handler->timer))
             continue;
-        LOG_I("%s:%d %s()..., ack_handler->type = %d, ack_handler->packet_id = %d", __FILE__, __LINE__, __FUNCTION__, ack_handler->type, ack_handler->packet_id);
+        // LOG_I("%s:%d %s()..., ack_handler->type = %d, ack_handler->packet_id = %d", __FILE__, __LINE__, __FUNCTION__, ack_handler->type, ack_handler->packet_id);
 
         if ((ack_handler->type ==  PUBACK) || (ack_handler->type ==  PUBREC) || (ack_handler->type ==  PUBREL) || (ack_handler->type ==  PUBCOMP)) {
             mqtt_ack_handler_resend(c, ack_handler);
@@ -668,8 +668,7 @@ static int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
         if ((rc = mqtt_ack_list_record(c, PUBREL, msg.id + 1, len, NULL)) != MQTT_ACK_NODE_IS_EXIST)
             mqtt_deliver_message(c, &topic_name, &msg);
     }
-        
-exit:
+    
     RETURN_ERROR(rc);
 }
 
@@ -849,7 +848,7 @@ int mqtt_keep_alive(mqtt_client_t* c)
     int rc = SUCCESS_ERROR;
 
     if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received)) {
-        if (c->ping_outstanding) {
+        if (c->ping_outstanding >= 2) {
             LOG_W("%s:%d %s()... ping outstanding", __FILE__, __LINE__, __FUNCTION__);
             mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
             rc = FAIL_ERROR; /* PINGRESP not received in keepalive interval */
@@ -858,7 +857,7 @@ int mqtt_keep_alive(mqtt_client_t* c)
             platform_timer_init(&timer);
             platform_timer_cutdown(&timer, c->cmd_timeout);
             int len = MQTTSerialize_pingreq(c->write_buf, c->write_buf_size);
-            LOG_I("%s:%d %s()... send ping", __FILE__, __LINE__, __FUNCTION__);
+            LOG_W("%s:%d %s()... send ping", __FILE__, __LINE__, __FUNCTION__);
             if (len > 0 && (rc = mqtt_send_packet(c, len, &timer)) == SUCCESS_ERROR) // send the ping packet
                 c->ping_outstanding++;
         }

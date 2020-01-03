@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-03 09:53:36
+ * @LastEditTime : 2020-01-03 20:32:11
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -27,10 +27,10 @@
 #define     MQTT_SUB_NUM_MAX                    10
 #define     MQTT_ACK_HANDLER_NUM_MAX            32
 #define     DEFAULT_BUF_SIZE                    1024
-#define     DEFAULT_CMD_TIMEOUT                 4000
+#define     DEFAULT_CMD_TIMEOUT                 1000
 #define     MAX_CMD_TIMEOUT                     5000
 #define     MIN_CMD_TIMEOUT                     100
-#define     MQTT_KEEP_ALIVE_INTERVAL            60      // unit: second
+#define     MQTT_KEEP_ALIVE_INTERVAL            2      // unit: second
 #define     MQTT_VERSION                        4       // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_DEFAULT_DURATION     1000
 #define     MQTT_THREAD_STACK_SIZE              2048
