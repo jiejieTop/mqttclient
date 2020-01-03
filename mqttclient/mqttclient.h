@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-03 20:32:11
+ * @LastEditTime : 2020-01-04 00:15:46
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -20,17 +20,14 @@
 #include "mutex.h"
 #include "log.h"
 
-#define     MAX_PACKET_ID                       65535
-#define     MAX_MESSAGE_HANDLERS                5
+#define     MQTT_MAX_PACKET_ID                  65535
 #define     MQTT_TOPIC_LEN_MAX                  64
-#define     MQTT_REPUB_NUM_MAX                  20
-#define     MQTT_SUB_NUM_MAX                    10
 #define     MQTT_ACK_HANDLER_NUM_MAX            32
-#define     DEFAULT_BUF_SIZE                    1024
-#define     DEFAULT_CMD_TIMEOUT                 1000
-#define     MAX_CMD_TIMEOUT                     5000
-#define     MIN_CMD_TIMEOUT                     100
-#define     MQTT_KEEP_ALIVE_INTERVAL            2      // unit: second
+#define     MQTT_DEFAULT_BUF_SIZE               1024
+#define     MQTT_DEFAULT_CMD_TIMEOUT            4000
+#define     MQTT_MAX_CMD_TIMEOUT                20000
+#define     MQTT_MIN_CMD_TIMEOUT                1000
+#define     MQTT_KEEP_ALIVE_INTERVAL            60      // unit: second
 #define     MQTT_VERSION                        4       // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_DEFAULT_DURATION     1000
 #define     MQTT_THREAD_STACK_SIZE              2048
