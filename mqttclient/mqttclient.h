@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-02 23:14:18
+ * @LastEditTime : 2020-01-03 09:53:36
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -25,13 +25,13 @@
 #define     MQTT_TOPIC_LEN_MAX                  64
 #define     MQTT_REPUB_NUM_MAX                  20
 #define     MQTT_SUB_NUM_MAX                    10
-#define     MQTT_ACK_HANDLER_NUM_MAX            3
+#define     MQTT_ACK_HANDLER_NUM_MAX            32
 #define     DEFAULT_BUF_SIZE                    1024
 #define     DEFAULT_CMD_TIMEOUT                 4000
 #define     MAX_CMD_TIMEOUT                     5000
 #define     MIN_CMD_TIMEOUT                     100
-#define     KEEP_ALIVE_INTERVAL                 1000
-#define     MQTT_VERSION                        4   // 4 is mqtt 3.1.1
+#define     MQTT_KEEP_ALIVE_INTERVAL            60      // unit: second
+#define     MQTT_VERSION                        4       // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_DEFAULT_DURATION     1000
 #define     MQTT_THREAD_STACK_SIZE              2048
 #define     MQTT_THREAD_PRIO                    10
@@ -128,7 +128,7 @@ typedef struct mqtt_client {
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
     connect_params_t            *connect_params;
-    void                        (*default_message_handler)(void*, message_data_t*);
+    // void                        (*default_message_handler)(void*, message_data_t*);
 } mqtt_client_t;
 
 typedef struct client_init_params{
