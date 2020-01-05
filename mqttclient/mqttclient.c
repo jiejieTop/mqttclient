@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-05 17:51:34
+ * @LastEditTime : 2020-01-05 18:09:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -986,7 +986,7 @@ int mqtt_disconnect(mqtt_client_t* c)
 
     platform_mutex_unlock(&c->write_lock);
 
-    mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
+    mqtt_set_client_state(c, CLIENT_STATE_INVALID);
     
     RETURN_ERROR(rc);
 }
@@ -1132,7 +1132,7 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
     
     while (!platform_timer_is_expired(&timer)) {
         state = mqtt_get_client_state(c);
-        if (CLIENT_STATE_DISCONNECTED ==  state) {
+        if (CLIENT_STATE_INVALID ==  state) {
             RETURN_ERROR(MQTT_CLOSE_SESSION_ERROR);
         } else if (CLIENT_STATE_CONNECTED != state) {
             rc = mqtt_try_reconnect(c);
