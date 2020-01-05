@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-05 18:09:09
+ * @LastEditTime : 2020-01-05 19:43:14
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -772,8 +772,9 @@ static void mqtt_yield_thread(void *arg)
             LOG_E("%s:%d %s()..., mqtt reconnect timeout....", __FILE__, __LINE__, __FUNCTION__);
         }
     }
+    
 exit:
-    pthread_detach(pthread_self());
+    platform_thread_destroy(c->thread);
 }
 
 static int mqtt_connect_with_results(mqtt_client_t* c)

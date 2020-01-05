@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-23 19:26:27
- * @LastEditTime : 2019-12-31 12:39:23
+ * @LastEditTime : 2020-01-05 19:42:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "thread.h"
@@ -29,6 +29,10 @@ platform_thread_t *platform_thread_init( const char *name,
     return thread;
 }
 
-
+void platform_thread_destroy(platform_thread_t* thread)
+{
+    if (NULL != thread)
+        pthread_detach(thread->thread);
+}
 
 
