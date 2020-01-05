@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-05 17:13:00
+ * @LastEditTime : 2020-01-05 17:51:34
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -141,7 +141,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
     header.byte = c->read_buf[0];
     *packet_type = header.bits.type;
     
-    platform_timer_cutdown(&c->last_received, (c->connect_params->keep_alive_interval * 1000)); 
+    platform_timer_cutdown(&c->ping_timer, (c->connect_params->keep_alive_interval * 1000)); 
 
     RETURN_ERROR(SUCCESS_ERROR);
 }
@@ -159,7 +159,7 @@ static int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* time
     }
 
     if (sent == length) {
-        platform_timer_cutdown(&c->last_sent, (c->connect_params->keep_alive_interval * 1000));
+        platform_timer_cutdown(&c->ping_timer, (c->connect_params->keep_alive_interval * 1000));
         RETURN_ERROR(SUCCESS_ERROR);
     }
     
@@ -806,7 +806,7 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     connect_data.username.cstring = c->connect_params->user_name;
     connect_data.password.cstring = c->connect_params->password;
 
-    platform_timer_cutdown(&c->last_received, (c->connect_params->keep_alive_interval * 1000));
+    platform_timer_cutdown(&c->ping_timer, (c->connect_params->keep_alive_interval * 1000));
 
     platform_mutex_lock(&c->write_lock);
 
@@ -843,7 +843,7 @@ int mqtt_keep_alive(mqtt_client_t* c)
 {
     int rc = SUCCESS_ERROR;
 
-    if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received)) {
+    if (platform_timer_is_expired(&c->ping_timer)) {
         if (c->ping_outstanding) {
             LOG_W("%s:%d %s()... ping outstanding", __FILE__, __LINE__, __FUNCTION__);
             mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
@@ -931,8 +931,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     platform_mutex_init(&c->global_lock);
 
     platform_timer_init(&c->reconnect_timer);
-    platform_timer_init(&c->last_sent);
-    platform_timer_init(&c->last_received);
+    platform_timer_init(&c->ping_timer);
 
     RETURN_ERROR(SUCCESS_ERROR);
 }
