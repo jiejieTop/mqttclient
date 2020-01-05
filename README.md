@@ -2,7 +2,7 @@
 **A multi-platform mqtt client**
 
 ## 整体框架
-![整体框架](https://img-blog.csdnimg.cn/20200105174542437.png?)
+![整体框架](https://github.com/jiejieTop/mqttclient/blob/master/png/mqttclient.png?raw=true)
 
 > 备注：目前只实现了linux平台
 
