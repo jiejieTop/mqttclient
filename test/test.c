@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2020-01-05 10:10:36
+ * @LastEditTime : 2020-01-05 17:32:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -15,10 +15,10 @@
 mqtt_client_t client;
 client_init_params_t init_params;
 
-static void reconnect_handler(void* client, void* reconnect_date)
-{
-    LOG_E("%s:%d %s()...mqtt is reconnecting, reconnect_date is %s", __FILE__, __LINE__, __FUNCTION__, (char*)reconnect_date);
-}
+// static void reconnect_handler(void* client, void* reconnect_date)
+// {
+//     LOG_E("%s:%d %s()...mqtt is reconnecting, reconnect_date is %s", __FILE__, __LINE__, __FUNCTION__, (char*)reconnect_date);
+// }
 
 static void topic_test1_handler(void* client, message_data_t* msg)
 {
@@ -33,16 +33,18 @@ static void topic_test1_handler(void* client, message_data_t* msg)
 //     sleep(2);
 //     mqtt_unsubscribe(&client, "test");
 
-//     LOG_E("%s:%d %s()...", __FILE__, __LINE__, __FUNCTION__);
+//     // sleep(10);
 //     mqtt_disconnect(&client);
 
-//     LOG_E("%s:%d %s()...", __FILE__, __LINE__, __FUNCTION__);
+//     sleep(2);
+
+//     mqtt_connect(&client);
+
 //     pthread_exit(NULL);
 // }
 
 void *mqtt_publish_thread(void *arg)
 {
-    error_t err;
     char buf[80] = { 0 };
     mqtt_message_t msg;
     memset(&msg, 0, sizeof(msg));
@@ -52,11 +54,10 @@ void *mqtt_publish_thread(void *arg)
     msg.payload = (void *) buf;
     // msg.payloadlen = strlen(buf);
     while(1) {
-        err = mqtt_publish(&client, "testtopic1", &msg);
+        mqtt_publish(&client, "testtopic1", &msg);
         mqtt_publish(&client, "testtopic2", &msg);
         mqtt_publish(&client, "testtopic3", &msg);
         mqtt_publish(&client, "testtopic4", &msg);
-        // LOG_E("mqtt publish err = %d",err);
         sleep(4);
     }
 }
@@ -65,7 +66,7 @@ int main(void)
 {
     int res;
     error_t err;
-    pthread_t thread1;
+    // pthread_t thread1;
     pthread_t thread2;
 
     init_params.read_buf_size = 1024;
@@ -84,6 +85,9 @@ int main(void)
     err = mqtt_init(&client, &init_params);
 
     err = mqtt_connect(&client);
+
+    LOG_E("client.client_state = %d", client.client_state);
+    
     err = mqtt_subscribe(&client, "testtopic1", QOS2, topic_test1_handler);
     err = mqtt_subscribe(&client, "testtopic2", QOS2, NULL);
     err = mqtt_subscribe(&client, "testtopic3", QOS2, NULL);
@@ -91,7 +95,6 @@ int main(void)
     err = mqtt_subscribe(&client, "testtopic5", QOS1, NULL);
     err = mqtt_subscribe(&client, "testtopic6", QOS2, NULL);
     err = mqtt_subscribe(&client, "testtopic7", QOS0, NULL);
-    // err = mqtt_subscribe(&client, "test", QOS0, NULL);
     LOG_E("mqtt subscribe err = %d",err);
 
     // res = pthread_create(&thread1, NULL, mqtt_unsubscribe_thread, NULL);

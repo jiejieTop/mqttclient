@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 22:46:33
- * @LastEditTime : 2019-12-30 21:39:46
+ * @LastEditTime : 2020-01-05 17:01:51
  * @Description: the following code references TencentOS tiny, please keep the author information and source code according to the license.
  */
 
@@ -66,7 +66,7 @@ void list_move_tail(list_t *node, list_t *list)
     list_add_tail(node, list);
 }
 
-int list_empty(list_t *list)
+int list_is_empty(list_t *list)
 {
     return list->next == list;
 }

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 22:47:55
- * @LastEditTime : 2019-12-22 15:48:05
+ * @LastEditTime : 2020-01-05 17:02:25
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _LIST_H_
@@ -32,7 +32,7 @@ typedef struct list_node {
     LIST_ENTRY((list)->next, type, field)
 
 #define LIST_FIRST_ENTRY_OR_NULL(list, type, field) \
-    (list_empty(list) ? NULL : LIST_FIRST_ENTRY(list, type, field))
+    (list_is_empty(list) ? NULL : LIST_FIRST_ENTRY(list, type, field))
 
 #define LIST_FOR_EACH(curr, list) \
     for (curr = (list)->next; curr != (list); curr = curr->next)
@@ -56,7 +56,7 @@ void list_del(list_t *entry);
 void list_del_init(list_t *entry);
 void list_move(list_t *node, list_t *list);
 void list_move_tail(list_t *node, list_t *list);
-int list_empty(list_t *list);
+int list_is_empty(list_t *list);
 
 #endif /* _LIST_H_ */
 

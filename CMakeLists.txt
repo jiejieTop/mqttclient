@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(mqtt-client1)
+project(mqtt-client)
 
-set(TARGETS "mqtt-client1")
+set(TARGETS "mqtt-client")
 set(SUBDIRS "mqtt" "test" "platform" "network" "common" "mqttclient")
 set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "network" "mqttclient")
 set(OUTDIRS "build")

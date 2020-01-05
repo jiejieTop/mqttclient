@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-05 10:09:54
+ * @LastEditTime : 2020-01-05 17:13:00
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -30,20 +30,11 @@ static int mqtt_ack_handler_is_maximum(mqtt_client_t* c)
     return (c->ack_handler_number >= MQTT_ACK_HANDLER_NUM_MAX) ? 1 : 0;
 }
 
-static int mqtt_add_ack_handler_num(mqtt_client_t* c)
+static void mqtt_add_ack_handler_num(mqtt_client_t* c)
 {
-    int rc = SUCCESS_ERROR;
     platform_mutex_lock(&c->global_lock);
-    if (c->ack_handler_number > MQTT_ACK_HANDLER_NUM_MAX) {
-        rc = MQTT_ACK_HANDLER_NUM_TOO_MUCH;
-        goto exit;
-    }
-    
     c->ack_handler_number++;
-    
-exit:
     platform_mutex_unlock(&c->global_lock);
-    RETURN_ERROR(rc);
 }
 
 static int mqtt_subtract_ack_handler_num(mqtt_client_t* c)
@@ -288,8 +279,10 @@ static ack_handlers_t *mqtt_ack_handler_create(mqtt_client_t* c, int type, unsig
 
 static void mqtt_ack_handler_destroy(ack_handlers_t* ack_handler)
 { 
-    list_del(&ack_handler->list);
-    platform_memory_free(ack_handler);
+    if (NULL != &ack_handler->list) {
+        list_del(&ack_handler->list);
+        platform_memory_free(ack_handler);
+    }
 }
 
 static void mqtt_ack_handler_resend(mqtt_client_t* c, ack_handlers_t* ack_handler)
@@ -312,7 +305,7 @@ static int mqtt_ack_list_node_is_exist(mqtt_client_t* c, int type, unsigned shor
     list_t *curr, *next;
     ack_handlers_t *ack_handler;
 
-    if (list_empty(&c->ack_handler_list))
+    if (list_is_empty(&c->ack_handler_list))
         return 0;
 
     LIST_FOR_EACH_SAFE(curr, next, &c->ack_handler_list) {
@@ -337,10 +330,7 @@ static int mqtt_ack_list_record(mqtt_client_t* c, int type, unsigned short packe
     if (NULL == ack_handler)
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
 
-    if ((rc = mqtt_add_ack_handler_num(c)) != SUCCESS_ERROR) {
-        mqtt_ack_handler_destroy(ack_handler);
-        RETURN_ERROR(rc);
-    }
+    mqtt_add_ack_handler_num(c);
 
     list_add_tail(&ack_handler->list, &c->ack_handler_list);
 
@@ -352,11 +342,8 @@ static int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short pac
     list_t *curr, *next;
     ack_handlers_t *ack_handler;
 
-    if (list_empty(&c->ack_handler_list))
+    if (list_is_empty(&c->ack_handler_list))
         RETURN_ERROR(SUCCESS_ERROR);
-
-    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
-        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
 
     LIST_FOR_EACH_SAFE(curr, next, &c->ack_handler_list) {
         ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);
@@ -393,8 +380,10 @@ static message_handlers_t *mqtt_msg_handler_create(const char* topic_filter, mqt
 
 static void mqtt_msg_handler_destory(message_handlers_t *msg_handler)
 {
-    list_del(&msg_handler->list);
-    platform_memory_free(msg_handler);
+    if (NULL != &msg_handler->list) {
+        list_del(&msg_handler->list);
+        platform_memory_free(msg_handler);
+    }
 }
 
 static int mqtt_msg_handler_is_exist(mqtt_client_t* c, message_handlers_t *handler)
@@ -405,7 +394,7 @@ static int mqtt_msg_handler_is_exist(mqtt_client_t* c, message_handlers_t *handl
     if ((NULL == c) || (NULL == handler))
         return 0;
     
-    if (list_empty(&c->msg_handler_list))
+    if (list_is_empty(&c->msg_handler_list))
         return 0;
 
     LIST_FOR_EACH_SAFE(curr, next, &c->msg_handler_list) {
@@ -439,7 +428,7 @@ static void mqtt_clean_session(mqtt_client_t* c)
     ack_handlers_t *ack_handler;
     message_handlers_t *msg_handler;
     
-    if (!(list_empty(&c->ack_handler_list))) {
+    if (!(list_is_empty(&c->ack_handler_list))) {
         LIST_FOR_EACH_SAFE(curr, next, &c->ack_handler_list) {
             ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);
             platform_memory_free(ack_handler);
@@ -447,7 +436,7 @@ static void mqtt_clean_session(mqtt_client_t* c)
         list_del_init(&c->ack_handler_list);
     }
 
-    if (!(list_empty(&c->msg_handler_list))) {
+    if (!(list_is_empty(&c->msg_handler_list))) {
         LIST_FOR_EACH_SAFE(curr, next, &c->msg_handler_list) {
             msg_handler = LIST_ENTRY(curr, message_handlers_t, list);
             msg_handler->topic_filter = NULL;
@@ -457,20 +446,12 @@ static void mqtt_clean_session(mqtt_client_t* c)
     }
 }
 
-static void mqtt_close_session(mqtt_client_t* c)
-{
-    c->ping_outstanding = 0;
-    mqtt_set_client_state(c, CLIENT_STATE_INVALID);
-    if (c->connect_params->clean_session)
-        mqtt_clean_session(c);
-}
-
 static void mqtt_ack_list_scan(mqtt_client_t* c)
 {
     list_t *curr, *next;
     ack_handlers_t *ack_handler;
 
-    if ((list_empty(&c->ack_handler_list)) || (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c)))
+    if ((list_is_empty(&c->ack_handler_list)) || (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c)))
         return;
 
     LIST_FOR_EACH_SAFE(curr, next, &c->ack_handler_list) {
@@ -495,7 +476,7 @@ static int mqtt_try_resubscribe(mqtt_client_t* c)
 
     LOG_W("%s:%d %s()... mqtt try resubscribe ...", __FILE__, __LINE__, __FUNCTION__);
     
-    if (list_empty(&c->msg_handler_list))
+    if (list_is_empty(&c->msg_handler_list))
         RETURN_ERROR(SUCCESS_ERROR);
     
     LIST_FOR_EACH_SAFE(curr, next, &c->msg_handler_list) {
@@ -707,6 +688,9 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
 
     int rc = SUCCESS_ERROR;
     int packet_type = 0;
+    
+    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
+        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
 
     rc = mqtt_read_packet(c, &packet_type, timer);
     
@@ -781,6 +765,8 @@ static void mqtt_yield_thread(void *arg)
         rc = mqtt_yield(c, c->cmd_timeout);
         if (MQTT_CLOSE_SESSION_ERROR == rc) {
             LOG_E("%s:%d %s()..., mqtt close session....", __FILE__, __LINE__, __FUNCTION__);
+            c->network->disconnect(c->network);
+            mqtt_clean_session(c);
             goto exit;
         } else if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
             LOG_E("%s:%d %s()..., mqtt reconnect timeout....", __FILE__, __LINE__, __FUNCTION__);
@@ -811,6 +797,8 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if (SUCCESS_ERROR != rc)
         RETURN_ERROR(rc);
     
+    mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
+
     connect_data.keepAliveInterval = c->connect_params->keep_alive_interval;
     connect_data.cleansession = c->connect_params->clean_session;
     connect_data.MQTTVersion = c->connect_params->mqtt_version;
@@ -839,8 +827,9 @@ exit:
     if (rc == SUCCESS_ERROR) {
         if(NULL ==c->thread) 
             c->thread= platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK);
-        mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
         c->ping_outstanding = 0;
+    } else {
+        mqtt_set_client_state(c, CLIENT_STATE_INITIALIZED);
     }
     
     platform_mutex_unlock(&c->write_lock);
@@ -995,13 +984,11 @@ int mqtt_disconnect(mqtt_client_t* c)
 	len = MQTTSerialize_disconnect(c->write_buf, c->write_buf_size);
     if (len > 0)
         rc = mqtt_send_packet(c, len, &timer);
-    
-    mqtt_close_session(c);
 
     platform_mutex_unlock(&c->write_lock);
 
-    c->network->disconnect(c->network);
-
+    mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
+    
     RETURN_ERROR(rc);
 }
 
@@ -1146,9 +1133,7 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
     
     while (!platform_timer_is_expired(&timer)) {
         state = mqtt_get_client_state(c);
-
-        if (CLIENT_STATE_INVALID ==  state) {
-            LOG_E("CLIENT STATE INVALID");
+        if (CLIENT_STATE_DISCONNECTED ==  state) {
             RETURN_ERROR(MQTT_CLOSE_SESSION_ERROR);
         } else if (CLIENT_STATE_CONNECTED != state) {
             rc = mqtt_try_reconnect(c);
@@ -1164,6 +1149,9 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
         } else if (MQTT_NOT_CONNECT_ERROR == rc) {
             LOG_E("%s:%d %s()... mqtt not connect", __FILE__, __LINE__, __FUNCTION__);
             platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
+        } else {
+            break;
+            LOG_E("%s:%d %s()... break ", __FILE__, __LINE__, __FUNCTION__);
         }
     }
     

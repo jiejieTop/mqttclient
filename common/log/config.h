@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime : 2020-01-05 10:00:18
+ * @LastEditTime : 2020-01-05 16:16:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_CONFIG_H_
@@ -53,6 +53,7 @@
     #define salof_sem       k_sem_t*
     #define salof_tcb       k_task_t*
     #define SALOF_TASK_PRIO (TOS_CFG_TASK_PRIO_MAX - 2u)
+    #undef  USE_IDLE_HOOK
 
 #elif (SALOF_OS == USE_LINUX)
     #include "pthread.h"
@@ -63,6 +64,8 @@
     #define salof_sem       sem_t*
     #define salof_tcb       pthread_t*
     #define SALOF_TASK_PRIO (0U)
+    #undef  USE_IDLE_HOOK
+    
 #else
     #error "not supported OS type"
 #endif
