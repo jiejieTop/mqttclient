@@ -2,13 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2020-01-03 08:48:03
+ * @LastEditTime : 2020-01-04 22:17:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
 typedef enum error {
+    MQTT_CLOSE_SESSION_ERROR = -24,
     MQTT_ACK_NODE_IS_EXIST = -23,
     MQTT_ACK_HANDLER_NUM_TOO_MUCH = -22,
     MQTT_RESUBSCRIBE_ERROR = -21,
