@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-05 17:50:40
+ * @LastEditTime : 2020-01-06 19:37:25
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -20,7 +20,7 @@
 #include "mutex.h"
 #include "log.h"
 
-#define     MQTT_MAX_PACKET_ID                  65535
+#define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)
 #define     MQTT_TOPIC_LEN_MAX                  64
 #define     MQTT_ACK_HANDLER_NUM_MAX            64
 #define     MQTT_DEFAULT_BUF_SIZE               1024
