@@ -1,4 +1,4 @@
-set(SUBDIRS "log")
+set(SUBDIRS "log" "mbedtls")
 
 aux_source_directory(. DIR_SRCS)
 
