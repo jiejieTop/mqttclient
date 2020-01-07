@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-05 19:43:14
+ * @LastEditTime : 2020-01-07 08:33:16
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -10,7 +10,8 @@
 static void default_msg_handler(void* client, message_data_t* msg)
 {
     (void) client;
-    LOG_I("%s:%d %s()...\ntopic: %s, qos: %d\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, msg->message->qos, (char*)msg->message->payload);
+    LOG_I("%s:%d %s()...\ntopic: %s, qos: %d, messageid: %d\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, 
+            msg->topic_name, msg->message->qos, msg->message->id, (char*)msg->message->payload);
 }
 
 static client_state_t mqtt_get_client_state(mqtt_client_t* c)
@@ -52,7 +53,7 @@ exit:
     RETURN_ERROR(rc);
 }
 
-static int mqtt_get_next_packet_id(mqtt_client_t *c) 
+static unsigned short mqtt_get_next_packet_id(mqtt_client_t *c) 
 {
     platform_mutex_lock(&c->global_lock);
     c->packet_id = (c->packet_id == MQTT_MAX_PACKET_ID) ? 1 : c->packet_id + 1;
@@ -348,7 +349,7 @@ static int mqtt_ack_list_unrecord(mqtt_client_t* c, int type, unsigned short pac
     LIST_FOR_EACH_SAFE(curr, next, &c->ack_handler_list) {
         ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);
 
-        if ((packet_id + 1 != ack_handler->packet_id) || (type != ack_handler->type))
+        if ((packet_id != ack_handler->packet_id) || (type != ack_handler->type))
             continue;
 
         if (handler)
@@ -462,7 +463,7 @@ static void mqtt_ack_list_scan(mqtt_client_t* c)
         
         if ((ack_handler->type ==  PUBACK) || (ack_handler->type ==  PUBREC) || (ack_handler->type ==  PUBREL) || (ack_handler->type ==  PUBCOMP)) {
             mqtt_ack_handler_resend(c, ack_handler);
-            return;
+            continue;
         }
         mqtt_ack_handler_destroy(ack_handler);
     }
@@ -533,7 +534,7 @@ static int mqtt_publish_ack_packet(mqtt_client_t *c, unsigned short packet_id, i
     switch (packet_type) {
         case PUBREC: 
             len = MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBREL, 0, packet_id);
-            rc = mqtt_ack_list_record(c, PUBCOMP, packet_id + 1, len, NULL);
+            rc = mqtt_ack_list_record(c, PUBCOMP, packet_id, len, NULL);
             if (SUCCESS_ERROR != rc)
                 goto exit;
             break;
@@ -659,7 +660,7 @@ static int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
     if (msg.qos != QOS2)
         mqtt_deliver_message(c, &topic_name, &msg);
     else {
-        if ((rc = mqtt_ack_list_record(c, PUBREL, msg.id + 1, len, NULL)) != MQTT_ACK_NODE_IS_EXIST)
+        if ((rc = mqtt_ack_list_record(c, PUBREL, msg.id, len, NULL)) != MQTT_ACK_NODE_IS_EXIST)
             mqtt_deliver_message(c, &topic_name, &msg);
     }
     
@@ -996,6 +997,7 @@ int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, m
 {
     int rc = MQTT_SUBSCRIBE_ERROR;
     int len = 0;
+    unsigned short packet_id;
     platform_timer_t timer;
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)topic_filter;
@@ -1009,7 +1011,9 @@ int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, m
 
     platform_mutex_lock(&c->write_lock);
 
-    len = MQTTSerialize_subscribe(c->write_buf, c->write_buf_size, 0, mqtt_get_next_packet_id(c), 1, &topic, (int*)&qos);
+    packet_id = mqtt_get_next_packet_id(c);
+
+    len = MQTTSerialize_subscribe(c->write_buf, c->write_buf_size, 0, packet_id, 1, &topic, (int*)&qos);
     if (len <= 0)
         goto exit;
     if ((rc = mqtt_send_packet(c, len, &timer)) != SUCCESS_ERROR)
@@ -1022,7 +1026,7 @@ int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, m
     if (NULL == msg_handler)
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
 
-    rc = mqtt_ack_list_record(c, SUBACK, mqtt_get_next_packet_id(c), len, msg_handler);
+    rc = mqtt_ack_list_record(c, SUBACK, packet_id, len, msg_handler);
 
 exit:
 
@@ -1035,6 +1039,7 @@ int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
 {
     int len = 0;
     int rc = FAIL_ERROR;
+    unsigned short packet_id;
     platform_timer_t timer;
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)topic_filter;
@@ -1048,7 +1053,9 @@ int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
 
     platform_mutex_lock(&c->write_lock);
 
-    if ((len = MQTTSerialize_unsubscribe(c->write_buf, c->write_buf_size, 0, mqtt_get_next_packet_id(c), 1, &topic)) <= 0)
+    packet_id = mqtt_get_next_packet_id(c);
+
+    if ((len = MQTTSerialize_unsubscribe(c->write_buf, c->write_buf_size, 0, packet_id, 1, &topic)) <= 0)
         goto exit;
     if ((rc = mqtt_send_packet(c, len, &timer)) != SUCCESS_ERROR)
         goto exit; 
@@ -1057,7 +1064,7 @@ int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
     if (NULL == msg_handler)
         RETURN_ERROR(MEM_NOT_ENOUGH_ERROR);
 
-    rc = mqtt_ack_list_record(c, UNSUBACK, mqtt_get_next_packet_id(c), len, msg_handler);
+    rc = mqtt_ack_list_record(c, UNSUBACK, packet_id, len, msg_handler);
 
 exit:
 
@@ -1104,9 +1111,9 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
         goto exit;
     
     if (QOS1 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBACK, mqtt_get_next_packet_id(c), len, NULL);
+        rc = mqtt_ack_list_record(c, PUBACK, msg->id, len, NULL);
     } else if (QOS2 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBREC, mqtt_get_next_packet_id(c), len, NULL);
+        rc = mqtt_ack_list_record(c, PUBREC, msg->id, len, NULL);
     }
     
 exit:
