@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:30:54
- * @LastEditTime : 2020-01-08 20:39:40
+ * @LastEditTime : 2020-01-08 21:26:02
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_timer.h"
@@ -29,10 +29,10 @@ void network_disconnect(network_t *n)
 
 int network_init(network_t *n)
 {
-    n->socket = -1;
 	if ((NULL == n->network_params) || (NULL == n->network_params->addr) || (0 == n->network_params->port))
 		RETURN_ERROR(NULL_VALUE_ERROR);
 	
+	n->socket = -1;
     n->read = network_read;
 	n->write = network_write;
 	n->connect = network_connect;
