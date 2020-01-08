@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-07 08:33:16
+ * @LastEditTime : 2020-01-09 01:53:20
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -24,6 +24,18 @@ static void mqtt_set_client_state(mqtt_client_t* c, client_state_t state)
     platform_mutex_lock(&c->global_lock);
     c->client_state = state;
     platform_mutex_unlock(&c->global_lock);
+}
+
+static void mqtt_set_publish_dup(unsigned char* buf, unsigned char dup, int qos, unsigned char retained)
+{
+    unsigned char *ptr = buf;
+	MQTTHeader header = {0};
+
+	header.bits.type = PUBLISH;
+	header.bits.dup = dup;
+	header.bits.qos = qos;
+	header.bits.retain = retained;
+	writeChar(&ptr, header.byte); /* write header */
 }
 
 static int mqtt_ack_handler_is_maximum(mqtt_client_t* c)
@@ -142,7 +154,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
     header.byte = c->read_buf[0];
     *packet_type = header.bits.type;
     
-    platform_timer_cutdown(&c->ping_timer, (c->connect_params->keep_alive_interval * 1000)); 
+    platform_timer_cutdown(&c->last_received, (c->connect_params->keep_alive_interval * 1000)); 
 
     RETURN_ERROR(SUCCESS_ERROR);
 }
@@ -160,7 +172,7 @@ static int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* time
     }
 
     if (sent == length) {
-        platform_timer_cutdown(&c->ping_timer, (c->connect_params->keep_alive_interval * 1000));
+        platform_timer_cutdown(&c->last_sent, (c->connect_params->keep_alive_interval * 1000));
         RETURN_ERROR(SUCCESS_ERROR);
     }
     
@@ -690,9 +702,6 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
     int rc = SUCCESS_ERROR;
     int packet_type = 0;
     
-    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
-        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
-
     rc = mqtt_read_packet(c, &packet_type, timer);
     
     platform_timer_init(timer);
@@ -799,8 +808,6 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if (SUCCESS_ERROR != rc)
         RETURN_ERROR(rc);
     
-    mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
-
     connect_data.keepAliveInterval = c->connect_params->keep_alive_interval;
     connect_data.cleansession = c->connect_params->clean_session;
     connect_data.MQTTVersion = c->connect_params->mqtt_version;
@@ -808,7 +815,7 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     connect_data.username.cstring = c->connect_params->user_name;
     connect_data.password.cstring = c->connect_params->password;
 
-    platform_timer_cutdown(&c->ping_timer, (c->connect_params->keep_alive_interval * 1000));
+    platform_timer_cutdown(&c->last_received, (c->connect_params->keep_alive_interval * 1000));
 
     platform_mutex_lock(&c->write_lock);
 
@@ -830,6 +837,7 @@ exit:
         if(NULL ==c->thread) 
             c->thread= platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK);
         c->ping_outstanding = 0;
+        mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
     } else {
         mqtt_set_client_state(c, CLIENT_STATE_INITIALIZED);
     }
@@ -845,7 +853,7 @@ int mqtt_keep_alive(mqtt_client_t* c)
 {
     int rc = SUCCESS_ERROR;
 
-    if (platform_timer_is_expired(&c->ping_timer)) {
+    if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received)) {
         if (c->ping_outstanding) {
             LOG_W("%s:%d %s()... ping outstanding", __FILE__, __LINE__, __FUNCTION__);
             mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
@@ -933,7 +941,8 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     platform_mutex_init(&c->global_lock);
 
     platform_timer_init(&c->reconnect_timer);
-    platform_timer_init(&c->ping_timer);
+    platform_timer_init(&c->last_sent);
+    platform_timer_init(&c->last_received);
 
     RETURN_ERROR(SUCCESS_ERROR);
 }
@@ -1110,10 +1119,14 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
     if ((rc = mqtt_send_packet(c, len, &timer)) != SUCCESS_ERROR)
         goto exit;
     
-    if (QOS1 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBACK, msg->id, len, NULL);
-    } else if (QOS2 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBREC, msg->id, len, NULL);
+    if (QOS0 != msg->qos) {
+        mqtt_set_publish_dup(c->write_buf, 1, msg->qos, msg->retained);
+
+        if (QOS1 == msg->qos) {
+            rc = mqtt_ack_list_record(c, PUBACK, msg->id, len, NULL);
+        } else if (QOS2 == msg->qos) {
+            rc = mqtt_ack_list_record(c, PUBREC, msg->id, len, NULL);
+        }
     }
     
 exit:

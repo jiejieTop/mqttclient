@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-08 20:37:21
+ * @LastEditTime : 2020-01-09 01:57:45
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -123,7 +123,8 @@ typedef struct mqtt_client {
     network_t                   *network;
     platform_thread_t           *thread;
     platform_timer_t            reconnect_timer;
-    platform_timer_t            ping_timer;
+    platform_timer_t            last_sent;
+    platform_timer_t            last_received;
     connect_params_t            *connect_params;
 } mqtt_client_t;
 

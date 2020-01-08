@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2020-01-05 19:43:30
+ * @LastEditTime : 2020-01-09 01:54:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -58,7 +58,7 @@ void *mqtt_publish_thread(void *arg)
         mqtt_publish(&client, "testtopic2", &msg);
         mqtt_publish(&client, "testtopic3", &msg);
         mqtt_publish(&client, "testtopic4", &msg);
-        sleep(4);
+        sleep(2);
     }
 }
 
@@ -73,11 +73,11 @@ int main(void)
     init_params.write_buf_size = 1024;
     // init_params.reconnect_date = "this is a test";
     // init_params.reconnect_handler = reconnect_handler;
-    init_params.connect_params.network_params.addr = "jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
+    init_params.connect_params.network_params.addr = "129.204.201.235";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
     init_params.connect_params.network_params.port = 1883;
-    init_params.connect_params.user_name = "jiejietopdas";
-    init_params.connect_params.password = "123456das";
-    init_params.connect_params.client_id = "clientid-abcd";
+    init_params.connect_params.user_name = "jiejietop";
+    init_params.connect_params.password = "123456";
+    init_params.connect_params.client_id = "clientid";
     init_params.connect_params.clean_session = 1;
 
     log_init();
