@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-06 19:37:25
+ * @LastEditTime : 2020-01-08 20:37:21
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -13,11 +13,12 @@
 
 #include "MQTTPacket.h"
 #include "list.h"
-#include "memory.h"
+#include "platform_timer.h"
+#include "platform_memory.h"
+#include "platform_mutex.h"
+#include "platform_thread.h"
 #include "network.h"
-#include "thread.h"
 #include "error.h"
-#include "mutex.h"
 #include "log.h"
 
 #define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)

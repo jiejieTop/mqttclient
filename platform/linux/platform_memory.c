@@ -5,7 +5,7 @@
  * @LastEditTime : 2019-12-20 20:43:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#include "memory.h"
+#include "platform_memory.h"
 
 
 void *platform_memory_alloc(size_t size)

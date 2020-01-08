@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 22:47:55
- * @LastEditTime : 2020-01-05 17:02:25
+ * @LastEditTime : 2020-01-08 20:39:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _LIST_H_
@@ -17,7 +17,7 @@ typedef struct list_node {
     ((size_t)&(((type *)0)->field))
 
 #define CONTAINER_OF_FIELD(ptr, type, field) \
-    ((type *)((uint8_t *)(ptr) - OFFSET_OF_FIELD(type, field)))
+    ((type *)((unsigned char *)(ptr) - OFFSET_OF_FIELD(type, field)))
 
 #define LIST_NODE(node) \
     { &(node), &(node) }

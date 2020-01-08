@@ -2,11 +2,11 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:39:00
- * @LastEditTime : 2019-12-31 12:22:26
+ * @LastEditTime : 2020-01-08 20:24:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#ifndef _NETTYPE_H_
-#define _NETTYPE_H_
+#ifndef _PLATFORM_NETTYPE_TCP_H_
+#define _PLATFORM_NETTYPE_TCP_H_
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/param.h>

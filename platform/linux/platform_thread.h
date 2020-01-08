@@ -2,11 +2,11 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 18:31:44
- * @LastEditTime : 2020-01-05 19:40:06
+ * @LastEditTime : 2020-01-08 20:24:17
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#ifndef _THREAD_H_
-#define _THREAD_H_
+#ifndef _PLATFORM_THREAD_H_
+#define _PLATFORM_THREAD_H_
 
 #include <pthread.h>
 

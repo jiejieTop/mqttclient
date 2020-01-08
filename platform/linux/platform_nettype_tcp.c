@@ -2,10 +2,10 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2019-12-31 12:19:58
+ * @LastEditTime : 2020-01-08 20:23:22
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#include "nettype.h"
+#include "platform_nettype_tcp.h"
 #include "log.h"
 
 int platform_nettype_read(network_t *n, unsigned char *read_buf, int len, int timeout)

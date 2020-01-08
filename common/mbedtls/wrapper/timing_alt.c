@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-08 19:44:56
- * @LastEditTime : 2020-01-08 19:51:26
+ * @LastEditTime : 2020-01-08 20:49:51
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -11,14 +11,14 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "timer.h"
+#include "platform_timer.h"
 #include "timing_alt.h"
 
 unsigned long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time *val, int reset)
 {
     struct mbedtls_timing_hr_time now;
 
-    now.timer_ms = 1000;//tos_systick_get();
+    now.timer_ms = platform_timer_now();
 
     if (reset) {
         val->timer_ms = now.timer_ms;

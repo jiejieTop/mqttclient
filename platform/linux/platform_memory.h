@@ -5,8 +5,8 @@
  * @LastEditTime : 2019-12-20 20:57:32
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#ifndef _MEMORY_H_
-#define _MEMORY_H_
+#ifndef _PLATFORM_MEMORY_H_
+#define _PLATFORM_MEMORY_H_
 #include <stdlib.h>
 #include <stdio.h>
 #include <stddef.h>
