@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-10 22:16:41
- * @LastEditTime : 2020-01-08 20:47:11
+ * @LastEditTime : 2020-01-08 21:10:40
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -39,6 +39,6 @@ int platform_timer_remain(platform_timer_t* timer)
 
 unsigned long platform_timer_now(void)
 {
-    return (unsigned long) (time(NULL) * 1000);
+    return (unsigned long) time(NULL);
 }
 
