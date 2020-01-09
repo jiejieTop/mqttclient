@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2020-01-09 01:54:38
+ * @LastEditTime : 2020-01-10 00:51:27
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -54,10 +54,11 @@ void *mqtt_publish_thread(void *arg)
     msg.payload = (void *) buf;
     // msg.payloadlen = strlen(buf);
     while(1) {
-        mqtt_publish(&client, "testtopic1", &msg);
-        mqtt_publish(&client, "testtopic2", &msg);
-        mqtt_publish(&client, "testtopic3", &msg);
-        mqtt_publish(&client, "testtopic4", &msg);
+        // mqtt_publish(&client, "testtopic1-acer1", &msg);
+        // mqtt_publish(&client, "testtopic2-acer1", &msg);
+        // mqtt_publish(&client, "testtopic3-acer1", &msg);
+        // mqtt_publish(&client, "testtopic4-acer1", &msg);
+        // LOG_I("random_number is %d",random_number());
         sleep(2);
     }
 }
@@ -75,9 +76,9 @@ int main(void)
     // init_params.reconnect_handler = reconnect_handler;
     init_params.connect_params.network_params.addr = "129.204.201.235";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
     init_params.connect_params.network_params.port = 1883;
-    init_params.connect_params.user_name = "jiejietop";
-    init_params.connect_params.password = "123456";
-    init_params.connect_params.client_id = "clientid";
+    init_params.connect_params.user_name = random_string(10); // random_string(10); //"jiejietop-acer1";
+    init_params.connect_params.password = random_string(10);; //random_string(10); // "123456";
+    init_params.connect_params.client_id = random_string(10);; //random_string(10); // "clientid-acer1";
     init_params.connect_params.clean_session = 1;
 
     log_init();
@@ -88,13 +89,13 @@ int main(void)
 
     LOG_E("client.client_state = %d", client.client_state);
     
-    err = mqtt_subscribe(&client, "testtopic1", QOS2, topic_test1_handler);
-    err = mqtt_subscribe(&client, "testtopic2", QOS2, NULL);
-    err = mqtt_subscribe(&client, "testtopic3", QOS2, NULL);
-    err = mqtt_subscribe(&client, "testtopic4", QOS2, NULL);
-    err = mqtt_subscribe(&client, "testtopic5", QOS1, NULL);
-    err = mqtt_subscribe(&client, "testtopic6", QOS2, NULL);
-    err = mqtt_subscribe(&client, "testtopic7", QOS0, NULL);
+    err = mqtt_subscribe(&client, "testtopic1-acer1", QOS2, topic_test1_handler);
+    err = mqtt_subscribe(&client, "testtopic2-acer1", QOS2, NULL);
+    err = mqtt_subscribe(&client, "testtopic3-acer1", QOS2, NULL);
+    err = mqtt_subscribe(&client, "testtopic4-acer1", QOS2, NULL);
+    err = mqtt_subscribe(&client, "testtopic5-acer1", QOS1, NULL);
+    err = mqtt_subscribe(&client, "testtopic6-acer1", QOS2, NULL);
+    err = mqtt_subscribe(&client, "testtopic7-acer1", QOS0, NULL);
     LOG_E("mqtt subscribe err = %d",err);
 
     // res = pthread_create(&thread1, NULL, mqtt_unsubscribe_thread, NULL);

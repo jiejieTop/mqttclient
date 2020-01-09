@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-09 01:57:45
+ * @LastEditTime : 2020-01-09 20:22:17
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -18,6 +18,7 @@
 #include "platform_mutex.h"
 #include "platform_thread.h"
 #include "network.h"
+#include "random.h"
 #include "error.h"
 #include "log.h"
 
