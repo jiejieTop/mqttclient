@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-09 19:59:19
- * @LastEditTime : 2020-01-09 20:20:28
+ * @LastEditTime : 2020-01-10 08:52:45
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -11,7 +11,7 @@
 
 #define RANDOM_MAX 0x7FFFFFFF
 
-long random_number(void);
-char *random_string(int len);
+int random_number(void);
+char *random_string(unsigned int len);
 
 #endif /* _RANDOM_H_ */
