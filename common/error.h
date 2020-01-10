@@ -2,13 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2020-01-04 22:17:54
+ * @LastEditTime : 2020-01-10 01:01:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
-typedef enum error {
+typedef enum mqtt_error {
+    MQTT_SET_PUBLISH_DUP_FAIL = -25,
     MQTT_CLOSE_SESSION_ERROR = -24,
     MQTT_ACK_NODE_IS_EXIST = -23,
     MQTT_ACK_HANDLER_NUM_TOO_MUCH = -22,
@@ -28,13 +29,13 @@ typedef enum error {
     MQTT_BUF_TOO_SHORT_ERROR = -8,
     MQTT_NOTHING_TO_READ_ERROR = -7,
     MQTT_SUBSCRIBE_QOS_ERROR = -6,
-    BUFFER_OVERFLOW_ERROR = -5,
-    CONNECT_FAIL_ERROR = -4,
-    MEM_NOT_ENOUGH_ERROR = -3,
-    NULL_VALUE_ERROR = -2,
-    FAIL_ERROR = -1,
-    SUCCESS_ERROR = 0
-} error_t;
+    MQTT_BUFFER_OVERFLOW_ERROR = -5,
+    MQTT_CONNECT_FAIL_ERROR = -4,
+    MQTT_MEM_NOT_ENOUGH_ERROR = -3,
+    MQTT_NULL_VALUE_ERROR = -2,
+    MQTT_FAIL_ERROR = -1,
+    MQTT_SUCCESS_ERROR = 0
+} mqtt_error_t;
 
 #define RETURN_ERROR(x) { return x; }
 

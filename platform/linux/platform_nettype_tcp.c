@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:38:52
- * @LastEditTime : 2020-01-08 20:23:22
+ * @LastEditTime : 2020-01-10 00:56:08
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_nettype_tcp.h"
@@ -69,7 +69,7 @@ int platform_nettype_connect(network_t* n)
     ret = inet_pton(AF_INET, n->network_params->addr, &addr);
     if (ret == 0) {
         if ((he = gethostbyname(n->network_params->addr)) == NULL) {
-            RETURN_ERROR(CONNECT_FAIL_ERROR);
+            RETURN_ERROR(MQTT_CONNECT_FAIL_ERROR);
         } else {
             addr = *((struct in_addr *)he->h_addr);
             if(inet_ntop(AF_INET, &addr, addr_str, sizeof(addr_str)) != NULL)
@@ -84,7 +84,7 @@ int platform_nettype_connect(network_t* n)
     if (-1 == n->socket) {
         if ((n->socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
             LOG_E("create an endpoint for communication fail!");
-            RETURN_ERROR(CONNECT_FAIL_ERROR);
+            RETURN_ERROR(MQTT_CONNECT_FAIL_ERROR);
         }
     }
 
@@ -96,12 +96,12 @@ int platform_nettype_connect(network_t* n)
     if (connect(n->socket, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) {
         close(n->socket);
         n->socket = -1;
-        RETURN_ERROR(CONNECT_FAIL_ERROR);
+        RETURN_ERROR(MQTT_CONNECT_FAIL_ERROR);
     }
 
     LOG_I("connect server success..., n->socket = %d", n->socket);
 
-    RETURN_ERROR(SUCCESS_ERROR);
+    RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }
 
 

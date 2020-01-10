@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2020-01-10 00:51:27
+ * @LastEditTime : 2020-01-10 08:21:24
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -54,10 +54,10 @@ void *mqtt_publish_thread(void *arg)
     msg.payload = (void *) buf;
     // msg.payloadlen = strlen(buf);
     while(1) {
-        // mqtt_publish(&client, "testtopic1-acer1", &msg);
-        // mqtt_publish(&client, "testtopic2-acer1", &msg);
-        // mqtt_publish(&client, "testtopic3-acer1", &msg);
-        // mqtt_publish(&client, "testtopic4-acer1", &msg);
+        mqtt_publish(&client, "testtopic1-acer1", &msg);
+        mqtt_publish(&client, "testtopic2-acer1", &msg);
+        mqtt_publish(&client, "testtopic3-acer1", &msg);
+        mqtt_publish(&client, "testtopic4-acer1", &msg);
         // LOG_I("random_number is %d",random_number());
         sleep(2);
     }
@@ -66,7 +66,7 @@ void *mqtt_publish_thread(void *arg)
 int main(void)
 {
     int res;
-    error_t err;
+    mqtt_error_t err;
     // pthread_t thread1;
     pthread_t thread2;
 
