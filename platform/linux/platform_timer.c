@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-10 22:16:41
- * @LastEditTime : 2020-01-08 21:10:40
+ * @LastEditTime : 2020-01-11 01:19:35
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -42,3 +42,7 @@ unsigned long platform_timer_now(void)
     return (unsigned long) time(NULL);
 }
 
+void platform_timer_usleep(unsigned long usec)
+{
+    usleep(usec);
+}

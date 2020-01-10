@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime : 2020-01-08 20:36:29
+ * @LastEditTime : 2020-01-10 22:05:03
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -10,7 +10,7 @@
 
 typedef struct network_params {
     char                *addr;
-    int                 port;
+    char                *port;
     char                *ca;
 } network_params_t;
 
