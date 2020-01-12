@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-08 19:44:56
- * @LastEditTime : 2020-01-08 20:49:51
+ * @LastEditTime : 2020-01-12 11:03:23
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -13,6 +13,11 @@
 
 #include "platform_timer.h"
 #include "timing_alt.h"
+
+unsigned long mbedtls_timing_hardclock( void )
+{
+    return 1600*1000*1000;
+}
 
 unsigned long mbedtls_timing_get_timer(struct mbedtls_timing_hr_time *val, int reset)
 {

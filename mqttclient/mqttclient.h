@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-09 20:22:17
+ * @LastEditTime : 2020-01-11 20:11:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -17,24 +17,11 @@
 #include "platform_memory.h"
 #include "platform_mutex.h"
 #include "platform_thread.h"
+#include "mqtt_config.h"
 #include "network.h"
 #include "random.h"
 #include "error.h"
 #include "log.h"
-
-#define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)
-#define     MQTT_TOPIC_LEN_MAX                  64
-#define     MQTT_ACK_HANDLER_NUM_MAX            64
-#define     MQTT_DEFAULT_BUF_SIZE               1024
-#define     MQTT_DEFAULT_CMD_TIMEOUT            4000
-#define     MQTT_MAX_CMD_TIMEOUT                20000
-#define     MQTT_MIN_CMD_TIMEOUT                1000
-#define     MQTT_KEEP_ALIVE_INTERVAL            20      // unit: second
-#define     MQTT_VERSION                        4       // 4 is mqtt 3.1.1
-#define     MQTT_RECONNECT_DEFAULT_DURATION     1000
-#define     MQTT_THREAD_STACK_SIZE              2048
-#define     MQTT_THREAD_PRIO                    10
-#define     MQTT_THREAD_TICK                    50
 
 typedef enum mqtt_qos {
     QOS0 = 0,
