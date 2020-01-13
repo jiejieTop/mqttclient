@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2020-01-12 00:57:24
+ * @LastEditTime : 2020-01-13 09:03:28
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTT_CONFIG_H_
@@ -27,7 +27,7 @@
 
 
 #define     MQTT_NETWORK_TYPE_TLS               YES
-#define     TLS_HANDSHAKE_TIMEOUT               (5 * 1000)
+#define     MQTT_TLS_HANDSHAKE_TIMEOUT          (5 * 1000)
 
 
 

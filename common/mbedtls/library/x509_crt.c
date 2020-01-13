@@ -2311,9 +2311,12 @@ static int x509_crt_verify_chain(
         if( mbedtls_x509_time_is_past( &child->valid_to ) )
             *flags |= MBEDTLS_X509_BADCERT_EXPIRED;
 
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
+
         if( mbedtls_x509_time_is_future( &child->valid_from ) )
             *flags |= MBEDTLS_X509_BADCERT_FUTURE;
 
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
         /* Stop here for trusted roots (but not for trusted EE certs) */
         if( child_is_trusted )
             return( 0 );
@@ -2321,10 +2324,10 @@ static int x509_crt_verify_chain(
         /* Check signature algorithm: MD & PK algs */
         if( x509_profile_check_md_alg( profile, child->sig_md ) != 0 )
             *flags |= MBEDTLS_X509_BADCERT_BAD_MD;
-
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
         if( x509_profile_check_pk_alg( profile, child->sig_pk ) != 0 )
             *flags |= MBEDTLS_X509_BADCERT_BAD_PK;
-
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
         /* Special case: EE certs that are locally trusted */
         if( ver_chain->len == 1 &&
             x509_crt_check_ee_locally_trusted( child, trust_ca ) == 0 )
@@ -2360,7 +2363,7 @@ find_parent:
             *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
             return( 0 );
         }
-
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
         /* Count intermediate self-issued (not necessarily self-signed) certs.
          * These can occur with some strategies for key rollover, see [SIRO],
          * and should be excluded from max_pathlen checks. */
@@ -2382,11 +2385,11 @@ find_parent:
         /* signature was checked while searching parent */
         if( ! signature_is_good )
             *flags |= MBEDTLS_X509_BADCERT_NOT_TRUSTED;
-
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
         /* check size of signing key */
         if( x509_profile_check_key( profile, &parent->pk ) != 0 )
             *flags |= MBEDTLS_X509_BADCERT_BAD_KEY;
-
+        printf("%s:%d %s()..., flags = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
 #if defined(MBEDTLS_X509_CRL_PARSE_C)
         /* Check trusted CA's CRL for the given crt */
         *flags |= x509_crt_verifycrl( child, parent, ca_crl, profile );
@@ -2501,6 +2504,7 @@ int mbedtls_x509_crt_verify( mbedtls_x509_crt *crt,
                      int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
                      void *p_vrfy )
 {
+    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
     return( mbedtls_x509_crt_verify_restartable( crt, trust_ca, ca_crl,
                 &mbedtls_x509_crt_profile_default, cn, flags,
                 f_vrfy, p_vrfy, NULL ) );
@@ -2517,6 +2521,7 @@ int mbedtls_x509_crt_verify_with_profile( mbedtls_x509_crt *crt,
                      int (*f_vrfy)(void *, mbedtls_x509_crt *, int, uint32_t *),
                      void *p_vrfy )
 {
+    printf("%s:%d %s()...\n", __FILE__, __LINE__, __FUNCTION__);
     return( mbedtls_x509_crt_verify_restartable( crt, trust_ca, ca_crl,
                 profile, cn, flags, f_vrfy, p_vrfy, NULL ) );
 }
@@ -2571,7 +2576,7 @@ int mbedtls_x509_crt_verify_restartable( mbedtls_x509_crt *crt,
     /* Check the chain */
     ret = x509_crt_verify_chain( crt, trust_ca, ca_crl, profile,
                                  &ver_chain, rs_ctx );
-
+    printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
     if( ret != 0 )
         goto exit;
 
@@ -2580,7 +2585,7 @@ int mbedtls_x509_crt_verify_restartable( mbedtls_x509_crt *crt,
 
     /* Build final flags, calling callback on the way if any */
     ret = x509_crt_merge_flags_with_cb( flags, &ver_chain, f_vrfy, p_vrfy );
-
+    printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
 exit:
 #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
     if( rs_ctx != NULL && ret != MBEDTLS_ERR_ECP_IN_PROGRESS )

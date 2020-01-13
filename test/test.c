@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2020-01-12 11:09:56
+ * @LastEditTime : 2020-01-13 09:39:20
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -76,13 +76,16 @@ int main(void)
     init_params.write_buf_size = 1024;
     // init_params.reconnect_date = "this is a test";
     // init_params.reconnect_handler = reconnect_handler;
-    init_params.connect_params.network_params.ca = test_ca_get();
+    init_params.connect_params.network_params.network_tls_params.ca_crt = test_ca_get();
     init_params.connect_params.network_params.addr = "129.204.201.235";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
     init_params.connect_params.network_params.port = "8883";
     init_params.connect_params.user_name = random_string(10); // random_string(10); //"jiejietop-acer1";
     init_params.connect_params.password = random_string(10);; //random_string(10); // "123456";
     init_params.connect_params.client_id = random_string(10);; //random_string(10); // "clientid-acer1";
-    init_params.connect_params.clean_session = 1;
+    init_params.connect_params.network_params.network_tls_params.psk = random_string(10);
+    // init_params.connect_params.network_params.network_tls_params.psk_id = random_string(10);
+    init_params.connect_params.network_params.network_tls_params.psk_length = 10;
+    // init_params.connect_params.clean_session = 1;
 
     log_init();
 

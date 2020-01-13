@@ -5311,7 +5311,7 @@ int mbedtls_ssl_parse_certificate( mbedtls_ssl_context *ssl )
         ssl->state++;
         return( 0 );
     }
-
+    printf("%s:%d %s()..., ssl->state = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ssl->state);
     MBEDTLS_SSL_DEBUG_MSG( 1, ( "should never happen" ) );
     return( MBEDTLS_ERR_SSL_INTERNAL_ERROR );
 }
@@ -5694,6 +5694,7 @@ int mbedtls_ssl_parse_certificate( mbedtls_ssl_context *ssl )
 
     if( ( ret = mbedtls_ssl_read_record( ssl, 1 ) ) != 0 )
     {
+        printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
         /* mbedtls_ssl_read_record may have sent an alert already. We
            let it decide whether to alert. */
         MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_ssl_read_record", ret );
@@ -5702,6 +5703,7 @@ int mbedtls_ssl_parse_certificate( mbedtls_ssl_context *ssl )
 
     if( ( ret = ssl_parse_certificate_chain( ssl ) ) != 0 )
     {
+        printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
 #if defined(MBEDTLS_SSL_SRV_C)
         if( ret == MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE &&
             authmode == MBEDTLS_SSL_VERIFY_OPTIONAL )
@@ -5754,6 +5756,7 @@ crt_verify:
 
         if( ret != 0 )
         {
+            printf("%s:%d %s()..., mbedtls_x509_crt_verify_restartable() ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
             MBEDTLS_SSL_DEBUG_RET( 1, "x509_verify_cert", ret );
         }
 
@@ -5815,7 +5818,7 @@ crt_verify:
         if( ret != 0 )
         {
             uint8_t alert;
-
+printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
             /* The certificate may have been rejected for several reasons.
                Pick one and send the corresponding alert. Which alert to send
                may be a subject of debate in some cases. */
