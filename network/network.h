@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime : 2020-01-13 08:09:47
+ * @LastEditTime : 2020-01-14 03:38:32
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -30,7 +30,7 @@ typedef struct network_params {
     char                        *addr;
     char                        *port;
 #if MQTT_NETWORK_TYPE_TLS
-    network_ssl_params_t        network_tls_params;
+    network_ssl_params_t        network_ssl_params;
     void                        *nettype_tls_params;
 #endif /* MQTT_NETWORK_TYPE_TLS */
 } network_params_t;
