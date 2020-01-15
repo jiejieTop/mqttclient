@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-27 23:10:36
- * @LastEditTime : 2019-12-28 01:03:56
+ * @LastEditTime : 2020-01-16 00:37:56
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 /** synchronous asynchronous log output framework */
@@ -10,7 +10,7 @@
 #include "salof.h"
 
 #ifndef SALOF_BUFF_SIZE
-    #define     SALOF_BUFF_SIZE     (256U)
+    #define     SALOF_BUFF_SIZE     (1024U)
 #endif 
 #ifndef SALOF_FIFO_SIZE
     #define     SALOF_FIFO_SIZE     (2048U)

@@ -45,9 +45,9 @@ void salof(const char *fmt, ...);
 #endif
 
 #if LOG_TS && LOG_TAR
-    #define LOG_T           PRINT_LOG("[TS: %ld] [TAR: %s] ",salof_get_tick(), salof_get_task_name())
+    #define LOG_T           PRINT_LOG("[TS: %d] [TAR: %s] ",salof_get_tick(), salof_get_task_name())
 #elif LOG_TS
-    #define LOG_T           PRINT_LOG("[TS: %ld] ", salof_get_tick())
+    #define LOG_T           PRINT_LOG("[TS: %d] ", salof_get_tick())
 #elif LOG_TAR
     #define LOG_T           PRINT_LOG("[TAR: %s] ", salof_get_task_name())
 #else

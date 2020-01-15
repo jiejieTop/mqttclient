@@ -2,14 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2020-01-14 03:38:50
+ * @LastEditTime : 2020-01-16 00:39:23
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTT_CONFIG_H_
 #define _MQTT_CONFIG_H_
 
-#define     NO                                  0
-#define     YES                                 1
+#define     MQTT_NO                             0
+#define     MQTT_YES                            1
 
 #define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)
 #define     MQTT_TOPIC_LEN_MAX                  64
@@ -26,10 +26,8 @@
 #define     MQTT_THREAD_TICK                    50
 
 
-#define     MQTT_NETWORK_TYPE_TLS               YES
+#define     MQTT_NETWORK_TYPE_TLS               MQTT_YES
 #define     MQTT_TLS_HANDSHAKE_TIMEOUT          (5 * 1000)
-
-
 
 #if MQTT_NETWORK_TYPE_TLS
     #include "mbedtls/config.h"

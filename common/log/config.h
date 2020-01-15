@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime : 2020-01-05 16:16:54
+ * @LastEditTime : 2020-01-16 00:42:12
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_CONFIG_H_
@@ -15,11 +15,11 @@
 #define         USE_LINUX           4
 
 #define         USE_LOG                     (1U)
-#define         USE_SALOF                   (0U)
+#define         USE_SALOF                   (1U)
 #define         SALOF_OS                    USE_LINUX
 #define         USE_IDLE_HOOK               (0U)
 
-#define         LOG_LEVEL                   DEBUG_LEVEL   //WARN_LEVEL DEBUG_LEVEL
+#define         LOG_LEVEL                   WARN_LEVEL   //WARN_LEVEL DEBUG_LEVEL
 #define         LOG_COLOR                   (1U)
 #define         LOG_TS                      (1U)
 #define         LOG_TAR                     (0U)

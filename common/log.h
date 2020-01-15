@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-27 03:25:58
- * @LastEditTime : 2020-01-05 09:58:40
+ * @LastEditTime : 2020-01-15 22:11:21
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _LOG_H_
