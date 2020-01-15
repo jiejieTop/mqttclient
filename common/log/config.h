@@ -15,7 +15,7 @@
 #define         USE_LINUX           4
 
 #define         USE_LOG                     (1U)
-#define         USE_SALOF                   (1U)
+#define         USE_SALOF                   (0U)
 #define         SALOF_OS                    USE_LINUX
 #define         USE_IDLE_HOOK               (0U)
 

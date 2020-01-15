@@ -33,12 +33,12 @@ static int mqtt_set_publish_dup(mqtt_client_t* c, unsigned char dup)
 	MQTTHeader header = {0};
 
     if (NULL == c->write_buf)
-        RETURN_ERROR(MQTT_SET_PUBLISH_DUP_FAIL);
+        RETURN_ERROR(MQTT_SET_PUBLISH_DUP_FAILED);
 
 	header.byte = readChar(&read_data); /* read header */
 
     if (header.bits.type != PUBLISH)
-        RETURN_ERROR(MQTT_SET_PUBLISH_DUP_FAIL);
+        RETURN_ERROR(MQTT_SET_PUBLISH_DUP_FAILED);
     
 	header.bits.dup = dup;
 	writeChar(&write_data, header.byte); /* write header */
@@ -152,7 +152,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
 
     if ((len + remain_len) > c->read_buf_size) {
         mqtt_packet_drain(c, timer, remain_len);
-    	RETURN_ERROR(MQTT_BUF_TOO_SHORT_ERROR);
+    	RETURN_ERROR(MQTT_BUFFER_TOO_SHORT_ERROR);
     }
 
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
@@ -256,7 +256,7 @@ static message_handlers_t *mqtt_get_msg_handler(mqtt_client_t* c, MQTTString* to
 
 static int mqtt_deliver_message(mqtt_client_t* c, MQTTString* topic_name, mqtt_message_t* message)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     message_handlers_t *msg_handler;
     
     msg_handler = mqtt_get_msg_handler(c, topic_name);
@@ -513,7 +513,7 @@ static int mqtt_try_resubscribe(mqtt_client_t* c)
 
 static int mqtt_try_do_reconnect(mqtt_client_t* c)
 {
-    int rc = MQTT_CONNECT_FAIL_ERROR;
+    int rc = MQTT_CONNECT_FAILED_ERROR;
 
     if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
         rc = mqtt_connect(c);
@@ -583,12 +583,12 @@ exit:
 
 static int mqtt_puback_and_pubcomp_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     unsigned short packet_id;
     unsigned char dup, packet_type;
 
     if (MQTTDeserialize_ack(&packet_type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1)
-        rc = MQTT_REC_PACKET_ERROR;
+        rc = MQTT_PUBREC_PACKET_ERROR;
     
     (void) dup;
     rc = mqtt_ack_list_unrecord(c, packet_type, packet_id, NULL);
@@ -598,7 +598,7 @@ static int mqtt_puback_and_pubcomp_packet_handle(mqtt_client_t *c, platform_time
 
 static int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     int count = 0;
     int granted_qos = 0;
     unsigned short packet_id;
@@ -627,7 +627,7 @@ static int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 
 static int mqtt_unsuback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     message_handlers_t *msg_handler;
     unsigned short packet_id = 0;
 
@@ -690,12 +690,12 @@ static int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 
 static int mqtt_pubrec_and_pubrel_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     unsigned short packet_id;
     unsigned char dup, packet_type;
 
     if (MQTTDeserialize_ack(&packet_type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1)
-        RETURN_ERROR(MQTT_REC_PACKET_ERROR);
+        RETURN_ERROR(MQTT_PUBREC_PACKET_ERROR);
 
     (void) dup;
     rc = mqtt_publish_ack_packet(c, packet_id, packet_type);
@@ -764,7 +764,7 @@ exit:
 
 static int mqtt_wait_packet(mqtt_client_t* c, int packet_type, platform_timer_t* timer)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
 
     do {
         if (platform_timer_is_expired(timer))
@@ -798,7 +798,7 @@ exit:
 static int mqtt_connect_with_results(mqtt_client_t* c)
 {
     int len = 0;
-    int rc = MQTT_CONNECT_FAIL_ERROR;
+    int rc = MQTT_CONNECT_FAILED_ERROR;
     platform_timer_t connect_timer;
     mqtt_connack_data_t connack_data = {0};
     MQTTPacket_connectData connect_data = MQTTPacket_connectData_initializer;
@@ -816,6 +816,8 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if (MQTT_SUCCESS_ERROR != rc)
         RETURN_ERROR(rc);
     
+    LOG_I("%s:%d %s()... mqtt connect success...", __FILE__, __LINE__, __FUNCTION__);
+
     connect_data.keepAliveInterval = c->connect_params->keep_alive_interval;
     connect_data.cleansession = c->connect_params->clean_session;
     connect_data.MQTTVersion = c->connect_params->mqtt_version;
@@ -836,9 +838,9 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
         if (MQTTDeserialize_connack(&connack_data.session_present, &connack_data.rc, c->read_buf, c->read_buf_size) == 1)
             rc = connack_data.rc;
         else
-            rc = MQTT_CONNECT_FAIL_ERROR;
+            rc = MQTT_CONNECT_FAILED_ERROR;
     } else
-        rc = MQTT_CONNECT_FAIL_ERROR;
+        rc = MQTT_CONNECT_FAILED_ERROR;
 
 exit:
     if (rc == MQTT_SUCCESS_ERROR) {
@@ -865,7 +867,7 @@ int mqtt_keep_alive(mqtt_client_t* c)
         if (c->ping_outstanding) {
             LOG_W("%s:%d %s()... ping outstanding", __FILE__, __LINE__, __FUNCTION__);
             mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
-            rc = MQTT_FAIL_ERROR; /* PINGRESP not received in keepalive interval */
+            rc = MQTT_FAILED_ERROR; /* PINGRESP not received in keepalive interval */
         } else {
             platform_timer_t timer;
             platform_timer_init(&timer);
@@ -990,7 +992,7 @@ int mqtt_connect(mqtt_client_t* c)
 
 int mqtt_disconnect(mqtt_client_t* c)
 {
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     platform_timer_t timer;
     int len = 0;
 
@@ -1055,7 +1057,7 @@ exit:
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
 {
     int len = 0;
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     unsigned short packet_id;
     platform_timer_t timer;
     MQTTString topic = MQTTString_initializer;
@@ -1093,7 +1095,7 @@ exit:
 int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg)
 {
     int len = 0;
-    int rc = MQTT_FAIL_ERROR;
+    int rc = MQTT_FAILED_ERROR;
     platform_timer_t timer;
     MQTTString topic = MQTTString_initializer;
     topic.cstring = (char *)topic_filter;
@@ -1151,7 +1153,7 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
     platform_timer_t timer;
 
     if (NULL == c)
-        RETURN_ERROR(MQTT_FAIL_ERROR);
+        RETURN_ERROR(MQTT_FAILED_ERROR);
 
     if (0 == timeout_ms)
         timeout_ms = c->cmd_timeout;

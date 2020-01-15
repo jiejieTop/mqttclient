@@ -2568,7 +2568,7 @@ int mbedtls_x509_crt_verify_restartable( mbedtls_x509_crt *crt,
     /* Check the chain */
     ret = x509_crt_verify_chain( crt, trust_ca, ca_crl, profile,
                                  &ver_chain, rs_ctx );
-    printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
+
     if( ret != 0 )
         goto exit;
 
@@ -2577,7 +2577,7 @@ int mbedtls_x509_crt_verify_restartable( mbedtls_x509_crt *crt,
 
     /* Build final flags, calling callback on the way if any */
     ret = x509_crt_merge_flags_with_cb( flags, &ver_chain, f_vrfy, p_vrfy );
-    printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
+    
 exit:
 #if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ECP_RESTARTABLE)
     if( rs_ctx != NULL && ret != MBEDTLS_ERR_ECP_IN_PROGRESS )

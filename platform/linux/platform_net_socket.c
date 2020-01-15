@@ -9,7 +9,7 @@
 
 int platform_net_socket_connect(const char *host, const char *port, int proto)
 {
-    int fd, ret = PLATFORM_ERR_NET_UNKNOWN_HOST;
+    int fd, ret = MQTT_SOCKET_UNKNOWN_HOST;
     struct addrinfo hints, *addr_list, *cur;
     
     /* Do name resolution with both IPv6 and IPv4 */
@@ -25,7 +25,7 @@ int platform_net_socket_connect(const char *host, const char *port, int proto)
     for (cur = addr_list; cur != NULL; cur = cur->ai_next) {
         fd = socket(cur->ai_family, cur->ai_socktype, cur->ai_protocol);
         if (fd < 0) {
-            ret = PLATFORM_ERR_NET_SOCKET_FAILED;
+            ret = MQTT_SOCKET_FAILED;
             continue;
         }
 
@@ -35,9 +35,9 @@ int platform_net_socket_connect(const char *host, const char *port, int proto)
         }
 
         close(fd);
-        ret = PLATFORM_ERR_NET_CONNECT_FAILED;
+        ret = MQTT_CONNECT_FAILED_ERROR;
     }
-    printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
+
     freeaddrinfo(addr_list);
     return ret;
 }

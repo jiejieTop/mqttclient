@@ -3530,7 +3530,7 @@ int mbedtls_ssl_handshake_client_step( mbedtls_ssl_context *ssl )
         ssl->state = MBEDTLS_SSL_SERVER_NEW_SESSION_TICKET;
     }
 #endif
-    printf("%s:%d %s()..., ssl->state = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ssl->state);
+    
     switch( ssl->state )
     {
         case MBEDTLS_SSL_HELLO_REQUEST:
@@ -3630,7 +3630,7 @@ int mbedtls_ssl_handshake_client_step( mbedtls_ssl_context *ssl )
            MBEDTLS_SSL_DEBUG_MSG( 1, ( "invalid state %d", ssl->state ) );
            return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
    }
-    printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
+
     return( ret );
 }
 #endif /* MBEDTLS_SSL_CLI_C */

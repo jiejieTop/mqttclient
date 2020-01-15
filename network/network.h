@@ -14,14 +14,16 @@
 typedef struct network_ssl_params {
     const char		            *ca_crt;
     size_t 		                ca_crt_len;
-#ifdef AUTH_MODE_CERT
+#if defined(MBEDTLS_FS_IO)
     const char                  *cert_file;            // public certificate file
     const char                  *key_file;             // pravite certificate file
 #else
+#if defined(MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED)
     const char                  *psk;                  // PSK string
     const char                  *psk_id;               // PSK ID
-#endif
     size_t                      psk_length;            // PSK length
+#endif
+#endif
     unsigned int                timeout_ms;            // SSL handshake timeout in millisecond
 } network_ssl_params_t;
 #endif /* MQTT_NETWORK_TYPE_TLS */

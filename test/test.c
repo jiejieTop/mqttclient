@@ -76,9 +76,9 @@ int main(void)
     init_params.write_buf_size = 1024;
     // init_params.reconnect_date = "this is a test";
     // init_params.reconnect_handler = reconnect_handler;
-    // init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();
-    init_params.connect_params.network_params.addr = "129.204.201.235";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
-    init_params.connect_params.network_params.port = "1883";
+    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();
+    init_params.connect_params.network_params.addr = "www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
+    init_params.connect_params.network_params.port = "8883";
     init_params.connect_params.user_name = random_string(10); // random_string(10); //"jiejietop-acer1";
     init_params.connect_params.password = random_string(10);; //random_string(10); // "123456";
     init_params.connect_params.client_id = random_string(10);; //random_string(10); // "clientid-acer1";
