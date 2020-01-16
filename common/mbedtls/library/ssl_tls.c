@@ -5756,7 +5756,6 @@ crt_verify:
 
         if( ret != 0 )
         {
-            printf("%s:%d %s()..., mbedtls_x509_crt_verify_restartable() ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
             MBEDTLS_SSL_DEBUG_RET( 1, "x509_verify_cert", ret );
         }
 
@@ -5818,7 +5817,6 @@ crt_verify:
         if( ret != 0 )
         {
             uint8_t alert;
-printf("%s:%d %s()..., ret = 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, ret);
             /* The certificate may have been rejected for several reasons.
                Pick one and send the corresponding alert. Which alert to send
                may be a subject of debate in some cases. */
