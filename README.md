@@ -7,6 +7,11 @@
 > 备注：目前只实现了linux平台，TencentOS tiny与RT-Thread正在移植中
 
 ## linux平台下测试使用
+### 安装cmake：
+```bash
+sudo apt-get install cmake
+```
+
 ### 配置
 在`mqttclient/test/test.c`文件中修改以下内容：
 ```c
@@ -19,8 +24,8 @@
 ```
 
 ### 打开salof
-`salof`全称是：`Synchronous Asynchronous Log Output Framework`（同步异步日志输出框架）
-![salof](https://github.com/jiejieTop/salof/blob/master/png/framework.jpg)
+[salof](https://github.com/jiejieTop/salof) 全称是：`Synchronous Asynchronous Log Output Framework`（同步异步日志输出框架）
+
 它是一个异步日志输出库，在空闲时候输出对应的日志信息，并且该库与mqttclient无缝衔接，如果不需要则将 `LOG_IS_SALOF` 定义为0即可。
 ```c
 #define LOG_IS_SALOF    0
