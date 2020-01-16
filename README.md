@@ -1,10 +1,55 @@
 # mqttclient
-**A multi-platform mqtt client**
+**一个基于socket API之上的跨平台MQTT客户端**
 
 ## 整体框架
 ![整体框架](https://github.com/jiejieTop/mqttclient/blob/master/png/mqttclient.png?raw=true)
 
-> 备注：目前只实现了linux平台
+> 备注：目前只实现了linux平台，TencentOS tiny与RT-Thread正在移植中
+
+## linux平台下测试使用
+### 配置
+在`mqttclient/test/test.c`文件中修改以下内容：
+```c
+    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();    /* CA证书 */
+    init_params.connect_params.network_params.addr = "xxxxxxx";                             /* 服务器域名 */
+    init_params.connect_params.network_params.port = "8883";
+    init_params.connect_params.user_name = "xxxxxxx";                                       /* 用户名 */
+    init_params.connect_params.password = "xxxxxxx";                                        /* 密码 */
+    init_params.connect_params.client_id = "xxxxxxx";                                       /* 客户端id */
+```
+
+### 打开salof
+`salof`全称是：`Synchronous Asynchronous Log Output Framework`（同步异步日志输出框架）
+![salof](https://github.com/jiejieTop/salof/blob/master/png/framework.jpg)
+它是一个异步日志输出库，在空闲时候输出对应的日志信息，并且该库与mqttclient无缝衔接，如果不需要则将 `LOG_IS_SALOF` 定义为0即可。
+```c
+#define LOG_IS_SALOF    0
+```
+在`mqttclient/common/log/config.h`配置文件中打开对应的日志输出级别：
+```c
+#define BASE_LEVEL      (0)
+#define ASSERT_LEVEL    (BASE_LEVEL + 1)            /* 日志输出级别：断言级别（非常高优先级） */
+#define ERR_LEVEL       (ASSERT_LEVEL + 1)          /* 日志输出级别：错误级别（高优先级） */
+#define WARN_LEVEL      (ERR_LEVEL + 1)             /* 日志输出级别：警告级别（中优先级） */
+#define INFO_LEVEL      (WARN_LEVEL + 1)            /* 日志输出级别：信息级别（低优先级） */
+#define DEBUG_LEVEL     (INFO_LEVEL + 1)            /* 日志输出级别：调试级别（更低优先级） */
+
+#define         SALOF_OS                    USE_LINUX       /* 选择对应的平台：Linux/FreeRTOS/TencentOS */
+#define         LOG_LEVEL                   WARN_LEVEL      /* 日志输出级别 */
+```
+
+### mqttclient的配置
+配置文件是：`mqttclient/mqtt_config.h`，在这里可以根据自身需求配置对应的信息。
+如是否选择`mbedtls`加密层：
+```c
+#define     MQTT_NETWORK_TYPE_TLS               MQTT_YES
+```
+
+### 编译 & 运行
+```bash
+./build.sh
+```
+运行`build.sh`脚本后会在 `./build/bin/`目录下生成可执行文件`mqtt-client`，直接运行即可。
 
 ## 设计思想
 - 整体采用分层式设计，代码实现采用异步设计方式，降低耦合。
@@ -305,4 +350,5 @@ mqtt_publish_ack_packet(c, packet_id, packet_type);
 mqtt_ack_list_unrecord(c, UNSUBACK, packet_id, &msg_handler)
 ```
 
+## 在后台测试
 nohup ./mqtt-client > log.out 2>&1 &
