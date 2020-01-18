@@ -2,14 +2,13 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-13 07:01:19
+ * @LastEditTime : 2020-01-18 13:54:57
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
 
 static void default_msg_handler(void* client, message_data_t* msg)
 {
-    (void) client;
     LOG_I("%s:%d %s()...\ntopic: %s, qos: %d, messageid: %d\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, 
             msg->topic_name, msg->message->qos, msg->message->id, (char*)msg->message->payload);
 }

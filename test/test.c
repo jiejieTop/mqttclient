@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2020-01-16 00:40:13
+ * @LastEditTime : 2020-01-18 13:54:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -88,6 +88,8 @@ int main(void)
     mqtt_init(&client, &init_params);
 
     mqtt_connect(&client);
+
+    LOG_D("mqtt connect success...");
     
     mqtt_subscribe(&client, "testtopic1-acer3", QOS2, topic_test1_handler);
     mqtt_subscribe(&client, "testtopic2-acer3", QOS2, NULL);
@@ -97,7 +99,7 @@ int main(void)
     mqtt_subscribe(&client, "testtopic6-acer3", QOS2, NULL);
     mqtt_subscribe(&client, "testtopic7-acer3", QOS0, NULL);
 
-
+    //  LOG_E("create mqtt publish thread fail");
     // res = pthread_create(&thread1, NULL, mqtt_unsubscribe_thread, NULL);
     // if(res != 0) {
     //     LOG_I("create thread2 fail");
