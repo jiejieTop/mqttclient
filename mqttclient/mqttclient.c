@@ -2,15 +2,18 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-18 13:54:57
+ * @LastEditTime : 2020-02-14 23:19:52
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
 
+#define     MQTT_MIN_PAYLOAD_SIZE   2               
+#define     MQTT_MAX_PAYLOAD_SIZE   268435455       // MQTT imposes a maximum payload size of 268435455 bytes.
+
 static void default_msg_handler(void* client, message_data_t* msg)
 {
-    LOG_I("%s:%d %s()...\ntopic: %s, qos: %d, messageid: %d\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, 
-            msg->topic_name, msg->message->qos, msg->message->id, (char*)msg->message->payload);
+    LOG_I("%s:%d %s()...\ntopic: %s, qos: %d, \nmessage:%s", __FILE__, __LINE__, __FUNCTION__, 
+            msg->topic_name, msg->message->qos, (char*)msg->message->payload);
 }
 
 static client_state_t mqtt_get_client_state(mqtt_client_t* c)
@@ -155,7 +158,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
     }
 
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
-    if ((remain_len > 0) && (rc = c->network->read(c->network, c->read_buf + len, remain_len, platform_timer_remain(timer)) != remain_len))
+    if ((remain_len > 0) && ((rc = c->network->read(c->network, c->read_buf + len, remain_len, platform_timer_remain(timer))) != remain_len))
         RETURN_ERROR(MQTT_NOTHING_TO_READ_ERROR);
 
     header.byte = c->read_buf[0];
@@ -896,9 +899,9 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     }
     memset(c->network, 0, sizeof(network_t));
 
-    if (0 == init->read_buf_size)
+    if ((MQTT_MIN_PAYLOAD_SIZE <= init->read_buf_size) || (MQTT_MAX_PAYLOAD_SIZE >= init->read_buf_size))
         init->read_buf_size = MQTT_DEFAULT_BUF_SIZE;
-    if (0 == init->write_buf_size)
+    if ((MQTT_MIN_PAYLOAD_SIZE <= init->write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE >= init->read_buf_size))
         init->write_buf_size = MQTT_DEFAULT_BUF_SIZE;
     
     c->read_buf = (unsigned char*) platform_memory_alloc(init->read_buf_size);
@@ -1078,7 +1081,7 @@ int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
     if ((rc = mqtt_send_packet(c, len, &timer)) != MQTT_SUCCESS_ERROR)
         goto exit; 
 
-    msg_handler = mqtt_msg_handler_create(topic_filter, 0, NULL);
+    msg_handler = mqtt_msg_handler_create((const char*)topic_filter, QOS0, NULL);
     if (NULL == msg_handler)
         RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
 
@@ -1180,7 +1183,6 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
             platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
         } else {
             break;
-            LOG_E("%s:%d %s()... break ", __FILE__, __LINE__, __FUNCTION__);
         }
     }
     
