@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-02-14 23:19:52
+ * @LastEditTime : 2020-02-16 02:50:32
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -523,6 +523,8 @@ static int mqtt_try_do_reconnect(mqtt_client_t* c)
     if (MQTT_SUCCESS_ERROR == rc) {
         rc = mqtt_try_resubscribe(c);
     }
+
+    LOG_I("%s:%d %s()... mqtt try connect result is %#x", __FILE__, __LINE__, __FUNCTION__, rc);
     
     RETURN_ERROR(rc);
 }
@@ -754,8 +756,11 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
             goto exit;
     }
 
-    if (mqtt_keep_alive(c) != MQTT_SUCCESS_ERROR)
+    if (mqtt_keep_alive(c) != MQTT_SUCCESS_ERROR) {
+        mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
         rc = MQTT_NOT_CONNECT_ERROR;
+    }
+        
     
 exit:
     if (rc == MQTT_SUCCESS_ERROR)
@@ -868,7 +873,6 @@ int mqtt_keep_alive(mqtt_client_t* c)
     if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received)) {
         if (c->ping_outstanding) {
             LOG_W("%s:%d %s()... ping outstanding", __FILE__, __LINE__, __FUNCTION__);
-            mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
             rc = MQTT_FAILED_ERROR; /* PINGRESP not received in keepalive interval */
         } else {
             platform_timer_t timer;
