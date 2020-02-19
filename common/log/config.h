@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime : 2020-01-18 13:50:21
+ * @LastEditTime: 2020-02-19 00:39:10
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_CONFIG_H_
@@ -48,7 +48,7 @@
     #define SALOF_TASK_PRIO (0U)
 
 #elif (SALOF_OS == USE_TENCENTOS)
-    #include "tos.h"
+    #include "tos_k.h"
     #define salof_mutex     k_mutex_t*
     #define salof_sem       k_sem_t*
     #define salof_tcb       k_task_t*

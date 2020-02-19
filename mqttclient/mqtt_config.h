@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime : 2020-01-16 00:39:23
+ * @LastEditTime: 2020-02-19 01:01:58
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTT_CONFIG_H_
@@ -22,14 +22,16 @@
 #define     MQTT_VERSION                        4       // 4 is mqtt 3.1.1
 #define     MQTT_RECONNECT_DEFAULT_DURATION     1000
 #define     MQTT_THREAD_STACK_SIZE              2048
-#define     MQTT_THREAD_PRIO                    10
+#define     MQTT_THREAD_PRIO                    5
 #define     MQTT_THREAD_TICK                    50
 
 
 #define     MQTT_NETWORK_TYPE_TLS               MQTT_YES
-#define     MQTT_TLS_HANDSHAKE_TIMEOUT          (5 * 1000)
 
 #if MQTT_NETWORK_TYPE_TLS
+
+    #define MQTT_TLS_HANDSHAKE_TIMEOUT  (5 * 1000)
+
     #include "mbedtls/config.h"
     #include "mbedtls/ssl.h"
     #include "mbedtls/entropy.h"

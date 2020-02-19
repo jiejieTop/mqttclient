@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:35
- * @LastEditTime : 2020-01-16 00:17:56
+ * @LastEditTime: 2020-02-19 23:54:34
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_nettype_tls.h"
@@ -10,14 +10,15 @@
 #include "platform_memory.h"
 #include "platform_timer.h"
 #include "random.h"
+
+#if MQTT_NETWORK_TYPE_TLS
+
 #include "mbedtls/ssl.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/net_sockets.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/error.h"
 #include "mbedtls/debug.h"
-
-#if MQTT_NETWORK_TYPE_TLS
 
 #if !defined(MBEDTLS_FS_IO)
 static const int ciphersuites[] = { MBEDTLS_TLS_PSK_WITH_AES_128_CBC_SHA, MBEDTLS_TLS_PSK_WITH_AES_256_CBC_SHA, 0 };
@@ -26,6 +27,7 @@ static const int ciphersuites[] = { MBEDTLS_TLS_PSK_WITH_AES_128_CBC_SHA, MBEDTL
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 static int server_certificate_verify(void *hostname, mbedtls_x509_crt *crt, int depth, uint32_t *flags)
 {
+    LOG_I("%s:%d %s()... server_certificate_verify failed returned 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
     return *flags;
 }
 #endif
@@ -81,8 +83,8 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
     if (NULL != n->network_params.network_ssl_params.ca_crt) {
         n->network_params.network_ssl_params.ca_crt_len = strlen(n->network_params.network_ssl_params.ca_crt);
 
-        if ((rc = mbedtls_x509_crt_parse(&(nettype_tls_params->ca_cert), (const unsigned char *)n->network_params.network_ssl_params.ca_crt,
-                                          (n->network_params.network_ssl_params.ca_crt_len + 1)))) {
+        if (0 != (rc = (mbedtls_x509_crt_parse(&(nettype_tls_params->ca_cert), (unsigned char *)n->network_params.network_ssl_params.ca_crt,
+                                          (n->network_params.network_ssl_params.ca_crt_len + 1))))) {
             LOG_E("%s:%d %s()... parse ca crt failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             RETURN_ERROR(rc);
         }
@@ -124,9 +126,6 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
                                     n->network_params.network_ssl_params.psk_length, (const unsigned char *) psk_id, strlen( psk_id ));
         
         mbedtls_ssl_conf_ciphersuites(&(nettype_tls_params->ssl_conf), ciphersuites);
-    } else {
-        LOG_I("%s:%d %s()... psk or pskid is empty! | psk = %s | psd_id = %s", __FILE__, __LINE__, __FUNCTION__, 
-                n->network_params.network_ssl_params.psk, n->network_params.network_ssl_params.psk_id);
     }
 	
 	if (0 != rc) {
