@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:35
- * @LastEditTime: 2020-02-19 23:54:34
+ * @LastEditTime : 2020-02-20 01:12:49
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_nettype_tls.h"
@@ -27,7 +27,8 @@ static const int ciphersuites[] = { MBEDTLS_TLS_PSK_WITH_AES_128_CBC_SHA, MBEDTL
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 static int server_certificate_verify(void *hostname, mbedtls_x509_crt *crt, int depth, uint32_t *flags)
 {
-    LOG_I("%s:%d %s()... server_certificate_verify failed returned 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
+    if (0 != *flags)
+        LOG_E("%s:%d %s()... server_certificate_verify failed returned 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
     return *flags;
 }
 #endif

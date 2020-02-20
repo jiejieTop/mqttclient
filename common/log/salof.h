@@ -71,7 +71,7 @@ void salof(const char *fmt, ...);
 #define DEBUG_LEVEL     (INFO_LEVEL + 1)
 
 #ifndef LOG_LEVEL
-    #define LOG_LEVEL   WARN_LEVEL
+    #define LOG_LEVEL   DEBUG_LEVEL
 #endif 
 
 #if LOG_LEVEL < DEBUG_LEVEL
