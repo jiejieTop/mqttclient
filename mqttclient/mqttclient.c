@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-02-16 02:50:32
+ * @LastEditTime: 2020-02-23 16:19:58
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -32,18 +32,18 @@ static int mqtt_set_publish_dup(mqtt_client_t* c, unsigned char dup)
 {
     unsigned char *read_data = c->write_buf;
     unsigned char *write_data = c->write_buf;
-	MQTTHeader header = {0};
+    MQTTHeader header = {0};
 
     if (NULL == c->write_buf)
         RETURN_ERROR(MQTT_SET_PUBLISH_DUP_FAILED);
 
-	header.byte = readChar(&read_data); /* read header */
+    header.byte = readChar(&read_data); /* read header */
 
     if (header.bits.type != PUBLISH)
         RETURN_ERROR(MQTT_SET_PUBLISH_DUP_FAILED);
     
-	header.bits.dup = dup;
-	writeChar(&write_data, header.byte); /* write header */
+    header.bits.dup = dup;
+    writeChar(&write_data, header.byte); /* write header */
 
     RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }
@@ -141,6 +141,9 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
     if (NULL == packet_type)
         RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
 
+    platform_timer_init(timer);
+    platform_timer_cutdown(timer, c->cmd_timeout);
+
     /* 1. read the header byte.  This has the packet type in it */
     rc = c->network->read(c->network, c->read_buf, len, platform_timer_remain(timer));
     if (rc != len)
@@ -154,7 +157,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
 
     if ((len + remain_len) > c->read_buf_size) {
         mqtt_packet_drain(c, timer, remain_len);
-    	RETURN_ERROR(MQTT_BUFFER_TOO_SHORT_ERROR);
+        RETURN_ERROR(MQTT_BUFFER_TOO_SHORT_ERROR);
     }
 
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
@@ -174,9 +177,12 @@ static int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* time
     int len = 0;
     int sent = 0;
 
+    platform_timer_init(timer);
+    platform_timer_cutdown(timer, c->cmd_timeout);
+
     while ((sent < length) && (!platform_timer_is_expired(timer))) {
         len = c->network->write(c->network, &c->write_buf[sent], length, platform_timer_remain(timer));
-        if (len < 0)  // there was an error writing the data
+        if (len <= 0)  // there was an error writing the data
             break;
         sent += len;
     }
@@ -785,7 +791,15 @@ static int mqtt_wait_packet(mqtt_client_t* c, int packet_type, platform_timer_t*
 static void mqtt_yield_thread(void *arg)
 {
     int rc;
+    client_state_t state;
     mqtt_client_t *c = (mqtt_client_t *)arg;
+
+    state = mqtt_get_client_state(c);
+        if (CLIENT_STATE_CONNECTED !=  state) {
+            LOG_W("%s:%d %s()..., mqtt is not connected to the server...",  __FILE__, __LINE__, __FUNCTION__);
+            platform_thread_stop(c->thread);
+    }
+
     while (1) {
         rc = mqtt_yield(c, c->cmd_timeout);
         if (MQTT_CLOSE_SESSION_ERROR == rc) {
@@ -851,10 +865,20 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
 
 exit:
     if (rc == MQTT_SUCCESS_ERROR) {
-        if(NULL ==c->thread) 
+        if(NULL == c->thread) {
             c->thread= platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK);
+
+            if (NULL != c->thread) {
+                mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
+                platform_thread_startup(c->thread);
+                platform_thread_start(c->thread);
+            }
+        } else {
+            mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
+        }
+
         c->ping_outstanding = 0;
-        mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
+
     } else {
         mqtt_set_client_state(c, CLIENT_STATE_INITIALIZED);
     }
@@ -1007,7 +1031,7 @@ int mqtt_disconnect(mqtt_client_t* c)
 
     platform_mutex_lock(&c->write_lock);
 
-	len = MQTTSerialize_disconnect(c->write_buf, c->write_buf_size);
+    len = MQTTSerialize_disconnect(c->write_buf, c->write_buf_size);
     if (len > 0)
         rc = mqtt_send_packet(c, len, &timer);
 
@@ -1189,6 +1213,6 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms)
             break;
         }
     }
-    
+
     RETURN_ERROR(rc);
 }
