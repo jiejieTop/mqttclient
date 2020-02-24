@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2020-01-11 20:11:47
+ * @LastEditTime: 2020-02-24 06:42:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -93,10 +93,10 @@ typedef struct connect_params {
 
 typedef struct mqtt_client {
     unsigned short              packet_id;
-    unsigned char               *read_buf;
-    unsigned char               *write_buf;
     unsigned char               ping_outstanding;
     unsigned char               ack_handler_number;
+    unsigned char               *read_buf;
+    unsigned char               *write_buf;
     unsigned int                cmd_timeout;
     unsigned int                read_buf_size;
     unsigned int                write_buf_size;
