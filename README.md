@@ -4,7 +4,7 @@
 ## 整体框架
 ![整体框架](https://github.com/jiejieTop/mqttclient/blob/master/png/mqttclient.png?raw=true)
 
-> 备注：目前只实现了linux平台，TencentOS tiny与RT-Thread正在移植中
+**目前已实现了Linux、TencentOS tiny、RT-Thread平台，除此之外TencentOS tiny的at框架亦可以使用，并且稳定性极好！**
 
 ## linux平台下测试使用
 ### 安装cmake：
@@ -17,7 +17,7 @@ sudo apt-get install cmake
 ```c
     init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();    /* CA证书 */
     init_params.connect_params.network_params.addr = "xxxxxxx";                             /* 服务器域名 */
-    init_params.connect_params.network_params.port = "8883";
+    init_params.connect_params.network_params.port = "8883";                                /* 服务器端口号 */
     init_params.connect_params.user_name = "xxxxxxx";                                       /* 用户名 */
     init_params.connect_params.password = "xxxxxxx";                                        /* 密码 */
     init_params.connect_params.client_id = "xxxxxxx";                                       /* 客户端id */
@@ -27,10 +27,13 @@ sudo apt-get install cmake
 [salof](https://github.com/jiejieTop/salof) 全称是：`Synchronous Asynchronous Log Output Framework`（同步异步日志输出框架）
 
 它是一个异步日志输出库，在空闲时候输出对应的日志信息，并且该库与mqttclient无缝衔接，如果不需要则将 `LOG_IS_SALOF` 定义为0即可。
+
 ```c
 #define LOG_IS_SALOF    0
 ```
+
 在`mqttclient/common/log/config.h`配置文件中打开对应的日志输出级别：
+
 ```c
 #define BASE_LEVEL      (0)
 #define ASSERT_LEVEL    (BASE_LEVEL + 1)            /* 日志输出级别：断言级别（非常高优先级） */
@@ -44,11 +47,72 @@ sudo apt-get install cmake
 ```
 
 ### mqttclient的配置
+
 配置文件是：`mqttclient/mqtt_config.h`，在这里可以根据自身需求配置对应的信息。
-如是否选择`mbedtls`加密层：
+
+是否选择`mbedtls`加密层：
 ```c
 #define     MQTT_NETWORK_TYPE_TLS               MQTT_YES
 ```
+
+配置mqtt等待应答列表的最大值，对于qos1 qos2服务质量有要求的可以将其设置大一点，当然也必须资源跟得上，它主要是保证qos1 qos2的mqtt报文能准确到达服务器。
+
+```c
+#define     MQTT_ACK_HANDLER_NUM_MAX            64
+```
+
+选择MQTT协议的版本，默认为4，表示使用MQTT 3.1.1版本，而3则表示为MQTT 3.1版本。
+
+```c
+#define     MQTT_VERSION                        4           // 4 is mqtt 3.1.1
+```
+
+设置默认的保活时间，它主要是保证MQTT客户端与服务器的保持活性连接，单位为 秒 ，比如MQTT客户端与服务器100S没有发送数据了，有没有接收到数据，此时MQTT客户端会发送一个ping包，确认一下这个会话是否存在，如果收到服务器的应答，那么说明这个会话还是存在的，可以随时收发数据，而如果不存在了，就清除会话。
+
+```c
+#define     MQTT_KEEP_ALIVE_INTERVAL            100         // unit: second
+```
+
+默认的命令超时，它主要是用于socket读写超时，在MQTT初始化时可以指定:
+
+```
+#define     MQTT_DEFAULT_CMD_TIMEOUT            4000
+```
+
+默认主题的长度，主题是支持通配符的，如果主题太长则会被截断：
+
+```c
+#define     MQTT_TOPIC_LEN_MAX                  64
+```
+
+默认的算法数据缓冲区的大小，如果要发送大量数据则修改大一些，在MQTT初始化时可以指定：
+
+```c
+#define     MQTT_DEFAULT_BUF_SIZE               1024
+```
+
+线程相关的配置，如线程栈，线程优先级，线程时间片等：
+在linux环境下可以是不需要理会这些参数的，而在RTOS平台则需要配置，如果不使用mbedtls，线程栈2048字节已足够，而使用mbedtls加密后，需要配置4096字节以上。
+```c
+#define     MQTT_THREAD_STACK_SIZE              2048    // 线程栈
+#define     MQTT_THREAD_PRIO                    5       // 线程优先级
+#define     MQTT_THREAD_TICK                    50      // 线程时间片
+```
+
+默认的重连时间间隔，当发生掉线时，会以这个时间间隔尝试重连：
+```c
+#define     MQTT_RECONNECT_DEFAULT_DURATION     1000
+```
+
+其他不需要怎么配置的东西：
+```c
+#define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)    // mqtt报文id
+#define     MQTT_MAX_CMD_TIMEOUT                20000           //最大的命令超时参数
+#define     MQTT_MIN_CMD_TIMEOUT                1000            //最小的命令超时参数
+```
+
+> ps：以上参数基本不需要怎么配置的，直接用即可~
+
 
 ### 编译 & 运行
 ```bash
@@ -79,10 +143,10 @@ int mqtt_yield(mqtt_client_t* c, int timeout_ms);
 ```c
 typedef struct mqtt_client {
     unsigned short              packet_id;
-    unsigned char               *read_buf;
-    unsigned char               *write_buf;
     unsigned char               ping_outstanding;
     unsigned char               ack_handler_number;
+    unsigned char               *read_buf;
+    unsigned char               *write_buf;
     unsigned int                cmd_timeout;
     unsigned int                read_buf_size;
     unsigned int                write_buf_size;
@@ -97,10 +161,12 @@ typedef struct mqtt_client {
     network_t                   *network;
     platform_thread_t           *thread;
     platform_timer_t            reconnect_timer;
-    platform_timer_t            ping_timer;
+    platform_timer_t            last_sent;
+    platform_timer_t            last_received;
     connect_params_t            *connect_params;
 } mqtt_client_t;
 ```
+
 该结构主要维护以下内容：
 1. 读写数据缓冲区`read_buf、write_buf`
 2. 命令超时时间`cmd_timeout`（主要是读写阻塞时间、等待响应的时间、重连等待时间）
@@ -108,7 +174,7 @@ typedef struct mqtt_client {
 4. 维护消息处理列表`msg_handler_list`，这是`mqtt`协议必须实现的内容，所有来自服务器的`publish`报文都会被处理（前提是订阅了对应的消息）
 5. 维护一个网卡接口`network`
 6. 维护一个内部线程`thread`，所有来自服务器的mqtt包都会在这里被处理！
-7. 两个定时器，分别是掉线重连定时器与保活定时器`reconnect_timer、ping_timer`
+7. 两个定时器，分别是掉线重连定时器与保活定时器`reconnect_timer、last_sent、last_received`
 8. 一些连接的参数`connect_params`
 
 ## 初始化
@@ -150,6 +216,7 @@ mqtt_wait_packet(c, CONNACK, &connect_timer)
 ```c
 platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK)
 ```
+
 ## 订阅报文
 ```c
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler)
@@ -169,6 +236,7 @@ mqtt_msg_handler_create(topic_filter, qos, handler)
 ```c
 mqtt_ack_list_record(c, SUBACK, mqtt_get_next_packet_id(c), len, msg_handler)
 ```
+
 ## 取消订阅
 与订阅报文的逻辑基本差不多的~
 
@@ -191,6 +259,7 @@ mqtt_send_packet(c, len, &timer)
         rc = mqtt_ack_list_record(c, PUBREC, mqtt_get_next_packet_id(c), len, NULL);
     }
 ```
+
 ## 内部线程
 ```c
 static void mqtt_yield_thread(void *arg)
