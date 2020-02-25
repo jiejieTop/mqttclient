@@ -1,6 +1,7 @@
 #ifndef _SALOF_H_
 #define _SALOF_H_
 
+#include "salof_defconfig.h"
 #include "format.h"
 #include "fifo.h"
 #include <stdio.h>
@@ -21,18 +22,16 @@ void salof(const char *fmt, ...);
 #if USE_LOG
 
 #if USE_SALOF
-    #define     PRINT_LOG       salof
+    #define     PRINT_LOG           salof
 #else
+
 #if ((!USE_SALOF)&&(!PRINT_LOG))
-    #define         PRINT_LOG                       printf
+    #define         PRINT_LOG       printf
 #endif
 
 #ifndef PRINT_LOG
     #error "If the USE_LOG macro definition is turned on, you must define PRINT_LOG as the LOG output, such as #definePRINT_LOG printf"
 #endif
-#endif
-
-#if LOG_TS || LOG_TAR
 
 #endif
 

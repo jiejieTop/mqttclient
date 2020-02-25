@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-02-24 06:42:38
+ * @LastEditTime: 2020-02-25 08:47:51
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -17,7 +17,7 @@
 #include "platform_memory.h"
 #include "platform_mutex.h"
 #include "platform_thread.h"
-#include "mqtt_config.h"
+#include "mqtt_defconfig.h"
 #include "network.h"
 #include "random.h"
 #include "error.h"

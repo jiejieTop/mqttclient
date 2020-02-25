@@ -11,7 +11,7 @@
 #include "platform_timer.h"
 #include "random.h"
 
-#if MQTT_NETWORK_TYPE_TLS
+#ifdef MQTT_NETWORK_TYPE_TLS
 
 #include "mbedtls/ssl.h"
 #include "mbedtls/entropy.h"

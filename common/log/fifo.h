@@ -2,13 +2,13 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:54:38
- * @LastEditTime : 2019-12-28 01:04:08
+ * @LastEditTime: 2020-02-25 08:10:01
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _FIFO_H_
 #define _FIFO_H_
 
-#include "config.h"
+#include "salof_defconfig.h"
 
 #define			FIFO_READ		0
 #define			FIFO_WRITE		1

@@ -2,10 +2,10 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-26 19:11:37
- * @LastEditTime : 2019-12-27 23:44:07
+ * @LastEditTime: 2020-02-25 04:01:18
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#include "config.h"
+#include "salof_defconfig.h"
 #include <stdlib.h>
 #include "pthread.h"
 #include "memory.h"

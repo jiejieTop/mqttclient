@@ -2,14 +2,30 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime: 2020-02-23 16:54:42
+ * @LastEditTime: 2020-02-25 09:25:35
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTT_CONFIG_H_
 #define _MQTT_CONFIG_H_
 
-#define     MQTT_NO                             0
-#define     MQTT_YES                            1
+#define             LOG_IS_SALOF
+
+#define             LOG_LEVEL                   DEBUG_LEVEL   //WARN_LEVEL DEBUG_LEVEL
+
+#ifdef LOG_IS_SALOF
+    #define         USE_LOG                     (1U)
+    #define         USE_SALOF                   (1U)
+    #define         SALOF_OS                    USE_LINUX
+    #define         USE_IDLE_HOOK               (0U)
+    #define         LOG_COLOR                   (1U)
+    #define         LOG_TS                      (1U)
+    #define         LOG_TAR                     (0U)
+    #define         SALOF_BUFF_SIZE             (512U)
+    #define         SALOF_FIFO_SIZE             (1024*4U)
+    #define         SALOF_TASK_STACK_SIZE       (2048U)
+    #define         SALOF_TASK_TICK             (50U)
+#endif
+
 
 #define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)
 #define     MQTT_TOPIC_LEN_MAX                  64
@@ -26,19 +42,6 @@
 #define     MQTT_THREAD_TICK                    50
 
 
-#define     MQTT_NETWORK_TYPE_TLS               MQTT_YES
-
-#if MQTT_NETWORK_TYPE_TLS
-
-    #define MQTT_TLS_HANDSHAKE_TIMEOUT  (5 * 1000)
-
-    #include "mbedtls/config.h"
-    #include "mbedtls/ssl.h"
-    #include "mbedtls/entropy.h"
-    #include "mbedtls/net_sockets.h"
-    #include "mbedtls/ctr_drbg.h"
-    #include "mbedtls/error.h"
-    #include "mbedtls/debug.h"
-#endif /* MQTT_NETWORK_TYPE_TLS */
+#define     MQTT_NETWORK_TYPE_TLS
 
 #endif /* _MQTT_CONFIG_H_ */
