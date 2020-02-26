@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-02-24 09:58:53
+ * @LastEditTime: 2020-02-26 21:34:03
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -953,9 +953,9 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     }
     memset(c->network, 0, sizeof(network_t));
 
-    if ((MQTT_MIN_PAYLOAD_SIZE <= init->read_buf_size) || (MQTT_MAX_PAYLOAD_SIZE >= init->read_buf_size))
+    if ((MQTT_MIN_PAYLOAD_SIZE >= init->read_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= init->read_buf_size))
         init->read_buf_size = MQTT_DEFAULT_BUF_SIZE;
-    if ((MQTT_MIN_PAYLOAD_SIZE <= init->write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE >= init->read_buf_size))
+    if ((MQTT_MIN_PAYLOAD_SIZE >= init->write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= init->read_buf_size))
         init->write_buf_size = MQTT_DEFAULT_BUF_SIZE;
     
     c->read_buf = (unsigned char*) platform_memory_alloc(init->read_buf_size);
