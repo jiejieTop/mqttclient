@@ -6,10 +6,6 @@
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "salof_defconfig.h"
-#include <stdlib.h>
-#include "pthread.h"
-#include "memory.h"
-#include <stdio.h>
 
 #if USE_LOG
 

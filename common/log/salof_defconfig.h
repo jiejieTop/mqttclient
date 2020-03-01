@@ -110,6 +110,7 @@
     #include "pthread.h"
     #include "memory.h"
     #include <semaphore.h>
+    #include <stdlib.h>
     #include <stdio.h>
     #define salof_mutex     pthread_mutex_t*
     #define salof_sem       sem_t*
