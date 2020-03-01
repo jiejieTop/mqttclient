@@ -10,6 +10,12 @@
 
 #include "salof_config.h"
 
+#ifndef USE_LOG
+    #define         USE_LOG                     (0U)
+#endif
+
+#if USE_LOG
+
 #define         USE_RTT             1
 #define         USE_FREERTOS        2
 #define         USE_TENCENTOS       3
@@ -22,16 +28,8 @@
 #define         INFO_LEVEL          (WARN_LEVEL + 1)
 #define         DEBUG_LEVEL         (INFO_LEVEL + 1)
 
-#ifndef USE_LOG
-    #define         USE_LOG                     (1U)
-#endif
-
 #ifndef USE_SALOF
     #define         USE_SALOF                   (1U)
-#endif
-
-#ifndef SALOF_OS
-    #define         SALOF_OS                    USE_LINUX
 #endif
 
 #ifndef USE_IDLE_HOOK
@@ -75,7 +73,7 @@
 #endif
 
 #if !defined(SALOF_OS)
-    #error "SALOF_OS isn't defined in 'cmb_cfg.h'"
+    #error "SALOF_OS isn't defined in 'salof_config.h'"
 #endif
 
 #if (SALOF_OS == USE_FREERTOS)
@@ -142,6 +140,8 @@ int salof_sem_post(salof_sem sem);
 unsigned int salof_get_tick(void);
 char *salof_get_task_name(void);
 extern int send_buff(char *buf, int len);
+
+#endif
 
 #endif // !_SALOF_DEFCONFIG_H_
 

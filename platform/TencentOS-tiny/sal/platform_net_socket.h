@@ -10,6 +10,7 @@
 
 #include "network.h"
 #include "error.h"
+#include "stddef.h"
 
 #define PLATFORM_NET_PROTO_TCP  0 /**< The TCP transport protocol */
 #define PLATFORM_NET_PROTO_UDP  1 /**< The UDP transport protocol */
@@ -20,8 +21,5 @@ int platform_net_socket_recv_timeout(int fd, unsigned char *buf, int len, int ti
 int platform_net_socket_write(int fd, void *buf, size_t len);
 int platform_net_socket_write_timeout(int fd, unsigned char *buf, int len, int timeout);
 int platform_net_socket_close(int fd);
-int platform_net_socket_set_block(int fd);
-int platform_net_socket_set_nonblock(int fd);
-int platform_net_socket_setsockopt(int fd, int level, int optname, const void *optval, socklen_t optlen);
 
 #endif /* _PLATFORM_NET_SOCKET_H_ */

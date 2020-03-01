@@ -7,6 +7,12 @@
  */
 #include "platform_net_socket.h"
 
+#include "lwip/opt.h"
+#include "lwip/sys.h"
+#include "lwip/api.h"
+#include <lwip/sockets.h>
+#include "lwip/netdb.h"
+
 int platform_net_socket_connect(const char *host, const char *port, int proto)
 {
     int fd, ret = MQTT_SOCKET_UNKNOWN_HOST;

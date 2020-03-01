@@ -11,6 +11,8 @@
 #include "memory.h"
 #include <stdio.h>
 
+#if USE_LOG
+
 void *salof_alloc(unsigned int size)
 {
     return malloc((size_t)size);
@@ -116,4 +118,4 @@ int send_buff(char *buf, int len)
     return len;
 }
 
-
+#endif

@@ -5,8 +5,10 @@
  * @LastEditTime : 2019-12-28 01:51:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#include "config.h"
+#include "salof_defconfig.h"
+#include "tos_k.h"
 
+#if USE_LOG
 
 void *salof_alloc(unsigned int size)
 {
@@ -119,3 +121,4 @@ char *salof_get_task_name(void)
     return k_curr_task->name;
 }
 
+#endif 

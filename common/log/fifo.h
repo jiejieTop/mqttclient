@@ -10,6 +10,8 @@
 
 #include "salof_defconfig.h"
 
+#if USE_LOG
+
 #define			FIFO_READ		0
 #define			FIFO_WRITE		1
 
@@ -32,6 +34,8 @@ unsigned int fifo_write(fifo_t fifo, void *buff, unsigned int len, unsigned int 
 unsigned int fifo_read(fifo_t fifo, void *buff, unsigned int len, unsigned int timeout);
 unsigned int fifo_read_able(fifo_t fifo);
 unsigned int fifo_write_able(fifo_t fifo);
+
+#endif
 
 #endif // !_FIFO_H_
 

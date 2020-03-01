@@ -8,6 +8,8 @@
 #include "format.h"
 #include "salof_defconfig.h"
 
+#if USE_LOG
+
 static int _get_atoi(const char **str)
 {
     int n;
@@ -280,9 +282,6 @@ int format_nstr(char *buf, unsigned int size, const char *fmt, va_list ap)
     return n;
 }
 
-
-
-
-
+#endif
 
 
