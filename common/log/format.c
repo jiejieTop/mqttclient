@@ -8,7 +8,7 @@
 #include "format.h"
 #include "salof_defconfig.h"
 
-#if USE_LOG
+#ifdef USE_LOG
 
 static int _get_atoi(const char **str)
 {

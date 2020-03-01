@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime: 2020-02-25 08:26:37
+ * @LastEditTime: 2020-03-02 01:32:32
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_DEFCONFIG_H_
@@ -10,11 +10,7 @@
 
 #include "salof_config.h"
 
-#ifndef USE_LOG
-    #define         USE_LOG                     (0U)
-#endif
-
-#if USE_LOG
+#ifdef USE_LOG
 
 #define         USE_RTT             1
 #define         USE_FREERTOS        2

@@ -10,7 +10,7 @@
 
 #include "salof_defconfig.h"
 
-#if USE_LOG
+#ifdef USE_LOG
 
 #define			FIFO_READ		0
 #define			FIFO_WRITE		1

@@ -19,7 +19,7 @@ void salof(const char *fmt, ...);
 #define     FC_DARK     36
 #define     FC_WHITE    37
 
-#if USE_LOG
+#ifdef USE_LOG
 
 #if USE_SALOF
     #define     PRINT_LOG           salof

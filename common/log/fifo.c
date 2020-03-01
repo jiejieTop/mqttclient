@@ -1,7 +1,7 @@
 #include "fifo.h"
 #include <string.h>
 
-#if USE_LOG
+#ifdef USE_LOG
 
 static unsigned int _flbs(unsigned int x)   /* find last bit set*/
 {
