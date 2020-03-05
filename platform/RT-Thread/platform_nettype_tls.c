@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:35
- * @LastEditTime : 2020-02-20 01:21:42
+ * @LastEditTime: 2020-03-05 23:51:34
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_nettype_tls.h"
@@ -275,7 +275,7 @@ int platform_nettype_tls_read(network_t *n, unsigned char *buf, int len, int tim
         if (rc > 0) {
             read_len += rc;
         } else if ((rc == 0) || ((rc != MBEDTLS_ERR_SSL_WANT_WRITE) && (rc != MBEDTLS_ERR_SSL_WANT_READ) && (rc != MBEDTLS_ERR_SSL_TIMEOUT))) {
-            LOG_E("%s:%d %s()... mbedtls_ssl_read failed: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            // LOG_E("%s:%d %s()... mbedtls_ssl_read failed: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             break;
         } 
     } while((!platform_timer_is_expired(&timer)) && (read_len < len));
