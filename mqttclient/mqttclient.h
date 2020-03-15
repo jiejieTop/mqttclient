@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-02-25 08:47:51
+ * @LastEditTime: 2020-03-15 01:12:28
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -35,6 +35,7 @@ typedef enum client_state {
 	CLIENT_STATE_INITIALIZED = 0,
 	CLIENT_STATE_CONNECTED = 1,
 	CLIENT_STATE_DISCONNECTED = 2,
+    CLIENT_STATE_CLEAN_SESSION = 3
 }client_state_t;
 
 typedef struct mqtt_connack_data {
