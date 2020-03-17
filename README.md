@@ -49,6 +49,7 @@
 | 发布版本 | 描述 | 
 | --- | --- |
 | [v1.0.0] | 初次发布，完成基本概念及其稳定性验证 |
+| [v1.0.1] | 修复主动与服务器断开连接时的逻辑 |
 
 ## 问题
 
@@ -79,7 +80,7 @@ sudo apt-get install cmake
 
 ### mbedtls
 
-默认不打开mbedtls。
+默认打开mbedtls。
 
 [salof](https://github.com/jiejieTop/salof) 全称是：`Synchronous Asynchronous Log Output Framework`（同步异步日志输出框架），它是一个同步异步日志输出框架，在空闲时候输出对应的日志信息，并且该库与mqttclient无缝衔接。
 
