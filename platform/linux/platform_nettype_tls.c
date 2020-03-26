@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:35
- * @LastEditTime: 2020-03-05 23:50:53
+ * @LastEditTime: 2020-03-21 16:48:15
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_nettype_tls.h"
@@ -108,12 +108,12 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
     if (n->network_params.network_ssl_params.cert_file != NULL && n->network_params.network_ssl_params.key_file != NULL) {
             if ((rc = mbedtls_x509_crt_parse_file(&(nettype_tls_params->client_cert), n->network_params.network_ssl_params.cert_file)) != 0) {
             LOG_E("%s:%d %s()... load client cert file failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
-            return PLATFORM_ERR_SSL_CERT;
+            return MQTT_SSL_CERT_ERROR;
         }
 
         if ((rc = mbedtls_pk_parse_keyfile(&(nettype_tls_params->private_key), n->network_params.network_ssl_params.key_file, "")) != 0) {
             LOG_E("%s:%d %s()... load client key file failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
-            return PLATFORM_ERR_SSL_CERT;
+            return MQTT_SSL_CERT_ERROR;
         }
     } else {
         LOG_I("%s:%d %s()... cert_file/key_file is empty! | cert_file = %s | key_file = %s", __FILE__, __LINE__, __FUNCTION__,
