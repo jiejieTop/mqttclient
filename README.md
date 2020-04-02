@@ -54,8 +54,8 @@
 
 | 发布版本 | 描述 | 
 | --- | --- |
-| [v1.0.0] | 初次发布，完成基本概念及其稳定性验证 |
-| [v1.0.1] | 修复主动与服务器断开连接时的逻辑 |
+| [v1.0.0] | 初次发布，完成基本框架及其稳定性验证 |
+| [v1.0.1] | 修复主动与服务器断开连接时的逻辑处理 |
 
 ## 问题
 
@@ -63,9 +63,7 @@
 
 ## 版权和许可
 
-mqttclient 由 [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 许可 提供。
-
-简单谈谈关于开源协议的描述，[Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 鼓励代码共享和尊重原作者的著作权，可以自由的使用，修改源代码，也可以将修改后的代码作为开源或者专有软件再发布（作为开源或闭源商业软件），**但本源码必须保留作者版权声明**。
+mqttclient 遵循 [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 开源协议。鼓励代码共享和尊重原作者的著作权，可以自由的使用、修改源代码，也可以将修改后的代码作为开源或闭源软件发布，**但必须保留原作者版权声明**。
 
 ## linux平台下测试使用
 ### 安装cmake：
