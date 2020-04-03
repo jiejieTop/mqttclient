@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-03-15 01:33:01
+ * @LastEditTime: 2020-04-03 03:33:21
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -578,7 +578,7 @@ static int mqtt_try_reconnect(mqtt_client_t* c)
 
     rc = mqtt_try_do_reconnect(c);
 
-    if (platform_timer_is_expired(&c->reconnect_timer)) {
+    if ((MQTT_SUCCESS_ERROR != rc) && (platform_timer_is_expired(&c->reconnect_timer))) {
         platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
         if (NULL != c->reconnect_handler)
             c->reconnect_handler(c, c->reconnect_date);
@@ -882,9 +882,6 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if (CLIENT_STATE_CONNECTED == mqtt_get_client_state(c))
         RETURN_ERROR(MQTT_SUCCESS_ERROR);
 
-    platform_timer_init(&connect_timer);
-    platform_timer_cutdown(&connect_timer, c->cmd_timeout);
-
     rc = c->network->connect(c->network);
     if (MQTT_SUCCESS_ERROR != rc)
         RETURN_ERROR(rc);
@@ -905,6 +902,9 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     /* serialize connect packet */
     if ((len = MQTTSerialize_connect(c->write_buf, c->write_buf_size, &connect_data)) <= 0)
         goto exit;
+        
+    platform_timer_init(&connect_timer);
+    platform_timer_cutdown(&connect_timer, c->cmd_timeout);
 
     /* send connect packet */
     if ((rc = mqtt_send_packet(c, len, &connect_timer)) != MQTT_SUCCESS_ERROR)
