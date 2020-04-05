@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-03 03:33:21
+ * @LastEditTime: 2020-04-05 16:34:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1052,11 +1052,23 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
 
 int mqtt_release(mqtt_client_t* c)
 {
+    platform_timer_t timer;
+
     if (NULL == c)
         RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
-    
-    while (CLIENT_STATE_INVALID != mqtt_get_client_state(c));   /* wait for the clean session to complete */
 
+    platform_timer_init(&timer);
+    platform_timer_cutdown(&timer, c->cmd_timeout);
+    
+    /* wait for the clean session to complete */
+    while ((CLIENT_STATE_INVALID != mqtt_get_client_state(c))) {
+        // platform_timer_usleep(1000);            // 1ms avoid compiler optimization.
+        if (platform_timer_is_expired(&timer)) {
+            LOG_E("%s:%d %s()... mqtt release failed...", __FILE__, __LINE__, __FUNCTION__);
+            RETURN_ERROR(MQTT_FAILED_ERROR)
+        }    
+    }
+    
     if (NULL != c->network) {
         platform_memory_free(c->network);
         c->network = NULL;
