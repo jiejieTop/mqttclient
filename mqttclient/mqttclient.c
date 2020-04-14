@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-05 16:34:09
+ * @LastEditTime: 2020-04-14 14:13:25
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -448,9 +448,6 @@ static int mqtt_msg_handler_is_exist(mqtt_client_t* c, message_handlers_t *handl
     list_t *curr, *next;
     message_handlers_t *msg_handler;
 
-    if ((NULL == c) || (NULL == handler))
-        return 0;
-    
     if (list_is_empty(&c->msg_handler_list))
         return 0;
 
@@ -459,7 +456,8 @@ static int mqtt_msg_handler_is_exist(mqtt_client_t* c, message_handlers_t *handl
 
         /* determine whether a node already exists by mqtt topic, but wildcards are not supported */
         if ((NULL != msg_handler->topic_filter) && (mqtt_is_topic_equals(msg_handler->topic_filter, handler->topic_filter))) {
-            LOG_W("%s:%d %s()...msg_handler->topic_filter: %s, handler->topic_filter: %s", __FILE__, __LINE__, __FUNCTION__, msg_handler->topic_filter, handler->topic_filter);
+            LOG_W("%s:%d %s()...msg_handler->topic_filter: %s, handler->topic_filter: %s", 
+                  __FILE__, __LINE__, __FUNCTION__, msg_handler->topic_filter, handler->topic_filter);
             return 1;
         }
     }
@@ -469,6 +467,9 @@ static int mqtt_msg_handler_is_exist(mqtt_client_t* c, message_handlers_t *handl
 
 static int mqtt_msg_handlers_install(mqtt_client_t* c, message_handlers_t *handler)
 {
+    if ((NULL == c) || (NULL == handler))
+        RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
+    
     if (mqtt_msg_handler_is_exist(c, handler)) {
         mqtt_msg_handler_destory(handler);
         RETURN_ERROR(MQTT_SUCCESS_ERROR);
@@ -673,6 +674,7 @@ static int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
     
     if (is_nack) {
         mqtt_msg_handler_destory(msg_handler);  /* subscribe topic failed, destory message handler */
+        LOG_D("subscribe topic failed...");
         RETURN_ERROR(MQTT_SUBSCRIBE_NOT_ACK_ERROR);
     }
     
@@ -836,6 +838,54 @@ static int mqtt_wait_packet(mqtt_client_t* c, int packet_type, platform_timer_t*
             break; 
         rc = mqtt_packet_handle(c, timer);
     } while (rc != packet_type && rc >= 0);
+
+    RETURN_ERROR(rc);
+}
+
+static int mqtt_yield(mqtt_client_t* c, int timeout_ms)
+{
+    int rc = MQTT_SUCCESS_ERROR;
+    client_state_t state;
+    platform_timer_t timer;
+
+    if (NULL == c)
+        RETURN_ERROR(MQTT_FAILED_ERROR);
+
+    if (0 == timeout_ms)
+        timeout_ms = c->cmd_timeout;
+
+    platform_timer_init(&timer);
+    platform_timer_cutdown(&timer, timeout_ms);
+    
+    while (!platform_timer_is_expired(&timer)) {
+        state = mqtt_get_client_state(c);
+        if (CLIENT_STATE_CLEAN_SESSION ==  state) {
+            RETURN_ERROR(MQTT_CLEAN_SESSION_ERROR);
+        } else if (CLIENT_STATE_CONNECTED != state) {
+            /* mqtt not connect, need reconnect */
+            rc = mqtt_try_reconnect(c);
+
+            if (MQTT_RECONNECT_TIMEOUT_ERROR == rc)
+                RETURN_ERROR(rc);
+            continue;
+        }
+        
+        /* mqtt connected, handle mqtt packet */
+        rc = mqtt_packet_handle(c, &timer);
+
+        if (rc >= 0) {
+            /* scan ack list, destroy ack handler that have timed out or resend them */
+            mqtt_ack_list_scan(c);
+
+        } else if (MQTT_NOT_CONNECT_ERROR == rc) {
+            LOG_E("%s:%d %s()... mqtt not connect", __FILE__, __LINE__, __FUNCTION__);
+            
+            /* reconnect timer cutdown */
+            platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
+        } else {
+            break;
+        }
+    }
 
     RETURN_ERROR(rc);
 }
@@ -1252,50 +1302,25 @@ exit:
 }
 
 
-int mqtt_yield(mqtt_client_t* c, int timeout_ms)
+int mqtt_list_subscribe_topic(mqtt_client_t* c)
 {
-    int rc = MQTT_SUCCESS_ERROR;
-    client_state_t state;
-    platform_timer_t timer;
-
-    if (NULL == c)
-        RETURN_ERROR(MQTT_FAILED_ERROR);
-
-    if (0 == timeout_ms)
-        timeout_ms = c->cmd_timeout;
-
-    platform_timer_init(&timer);
-    platform_timer_cutdown(&timer, timeout_ms);
+    int i = 0;
+    list_t *curr, *next;
+    message_handlers_t *msg_handler;
     
-    while (!platform_timer_is_expired(&timer)) {
-        state = mqtt_get_client_state(c);
-        if (CLIENT_STATE_CLEAN_SESSION ==  state) {
-            RETURN_ERROR(MQTT_CLEAN_SESSION_ERROR);
-        } else if (CLIENT_STATE_CONNECTED != state) {
-            /* mqtt not connect, need reconnect */
-            rc = mqtt_try_reconnect(c);
+    if (NULL == c)
+        RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
 
-            if (MQTT_RECONNECT_TIMEOUT_ERROR == rc)
-                RETURN_ERROR(rc);
-            continue;
-        }
-        
-        /* mqtt connected, handle mqtt packet */
-        rc = mqtt_packet_handle(c, &timer);
+    if (list_is_empty(&c->msg_handler_list))
+        LOG_I("%s:%d %s()... there are no subscribed topics...", __FILE__, __LINE__, __FUNCTION__);
 
-        if (rc >= 0) {
-            /* scan ack list, destroy ack handler that have timed out or resend them */
-            mqtt_ack_list_scan(c);
-
-        } else if (MQTT_NOT_CONNECT_ERROR == rc) {
-            LOG_E("%s:%d %s()... mqtt not connect", __FILE__, __LINE__, __FUNCTION__);
-            
-            /* reconnect timer cutdown */
-            platform_timer_cutdown(&c->reconnect_timer, c->reconnect_try_duration);
-        } else {
-            break;
+    LIST_FOR_EACH_SAFE(curr, next, &c->msg_handler_list) {
+        msg_handler = LIST_ENTRY(curr, message_handlers_t, list);
+        /* determine whether a node already exists by mqtt topic, but wildcards are not supported */
+        if (NULL != msg_handler->topic_filter) {
+            LOG_I("%s:%d %s()...[%d] subscribe topic: %s", __FILE__, __LINE__, __FUNCTION__, ++i ,msg_handler->topic_filter);
         }
     }
-
-    RETURN_ERROR(rc);
+    
+    RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }

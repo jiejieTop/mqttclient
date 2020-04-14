@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-03-15 01:12:28
+ * @LastEditTime: 2020-04-14 09:45:41
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -135,8 +135,7 @@ int mqtt_disconnect(mqtt_client_t* c);
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter);
 int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg);
-int mqtt_yield(mqtt_client_t* c, int timeout_ms);
-
+int mqtt_list_subscribe_topic(mqtt_client_t* c);
 
 
 #endif /* _MQTTCLIENT_H_ */
