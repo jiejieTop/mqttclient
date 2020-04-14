@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-14 14:13:25
+ * @LastEditTime: 2020-04-14 16:11:40
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1129,9 +1129,9 @@ int mqtt_release(mqtt_client_t* c)
         c->read_buf = NULL;
     }
 
-    if (NULL != c->read_buf) {
-        platform_memory_free(c->read_buf);
-        c->read_buf = NULL;
+    if (NULL != c->write_buf) {
+        platform_memory_free(c->write_buf);
+        c->write_buf = NULL;
     }
 
     memset(c, 0, sizeof(mqtt_client_t));
