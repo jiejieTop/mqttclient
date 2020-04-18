@@ -55,8 +55,9 @@ RT-Thread | [https://github.com/jiejieTop/kawaii-mqtt](https://github.com/jiejie
 
 Release version | Description |
 | --- | --- |
-[v1.0.0] | Initial release, verification of basic concepts and stability |
-[v1.0.1] | Fix logic when actively disconnecting from the server |
+| [v1.0.0] | Initial release, verification of basic concepts and stability |
+| [v1.0.1] | Fix logic when actively disconnecting from the server |
+| [v1.0.2] | Add a new feature-interceptor, fix some minor bugs |
 
 ## Question
 
