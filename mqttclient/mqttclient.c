@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-15 16:17:03
+ * @LastEditTime: 2020-04-18 12:29:40
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -296,6 +296,11 @@ static int mqtt_deliver_message(mqtt_client_t* c, MQTTString* topic_name, mqtt_m
         message_data_t md;
         mqtt_new_message_data(&md, topic_name, message);    /* make a message data */
         msg_handler->handler(c, &md);       /* deliver the message */
+        rc = MQTT_SUCCESS_ERROR;
+    } else if (NULL != c->interceptor_handler) {
+        message_data_t md;
+        mqtt_new_message_data(&md, topic_name, message);    /* make a message data */
+        c->interceptor_handler(c, &md);
         rc = MQTT_SUCCESS_ERROR;
     }
     
@@ -1080,6 +1085,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
 
     c->reconnect_date = init->reconnect_date;
     c->reconnect_handler = init->reconnect_handler;
+    c->interceptor_handler = NULL;
 
     // c->network->network_params = &init->connect_params.network_params;
     if ((rc = network_init(c->network, &init->connect_params.network_params)) < 0)
@@ -1320,5 +1326,15 @@ int mqtt_list_subscribe_topic(mqtt_client_t* c)
         }
     }
     
+    RETURN_ERROR(MQTT_SUCCESS_ERROR);
+}
+
+int mqtt_set_interceptor_handler(mqtt_client_t* c, interceptor_handler_t handler)
+{
+    if (NULL == handler)
+        RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
+    
+    c->interceptor_handler = handler;
+
     RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }
