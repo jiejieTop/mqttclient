@@ -1,8 +1,8 @@
 /*
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
- * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-04-18 12:34:18
+ * @Date: 2020-04-18 12:37:34
+ * @LastEditTime: 2020-04-18 12:38:03
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -17,7 +17,7 @@ extern const char *test_ca_get();
 mqtt_client_t client;
 client_init_params_t init_params;
 
-static void topic1_handler(void* client, message_data_t* msg)
+static void topic_test1_handler(void* client, message_data_t* msg)
 {
     (void) client;
     LOG_I("-----------------------------------------------------------------------------------");
@@ -31,20 +31,12 @@ void *mqtt_publish_thread(void *arg)
     mqtt_message_t msg;
     memset(&msg, 0, sizeof(msg));
     sprintf(buf, "welcome to mqttclient, this is a publish test...");
-
-    sleep(2);
-
-    mqtt_list_subscribe_topic(&client);
-
-    msg.qos = 2;
+    
+    msg.qos = 0;
     msg.payload = (void *) buf;
     while(1) {
         sprintf(buf, "welcome to mqttclient, this is a publish test, a rand number: %d ...", random_number());
-
-        mqtt_publish(&client, "topic1", &msg);
-        mqtt_publish(&client, "topic2", &msg);
-        mqtt_publish(&client, "topic3", &msg);
-        
+        mqtt_publish(&client, "temp_hum", &msg);
         sleep(4);
     }
 }
@@ -66,23 +58,22 @@ int main(void)
     init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();
     init_params.connect_params.network_params.port = "8883";
 #else
-    init_params.connect_params.network_params.port = "1883";
+    init_params.connect_params.network_params.port = "6002";    // onenet platform
 #endif
-    init_params.connect_params.network_params.addr = "www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
+    init_params.connect_params.network_params.addr = "183.230.40.39"; //"www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
 
-    init_params.connect_params.user_name = random_string(10); // random_string(10); //"jiejietop-acer1";
-    init_params.connect_params.password = random_string(10); //random_string(10); // "123456";
-    init_params.connect_params.client_id = random_string(10); //random_string(10); // "clientid-acer1";
+    init_params.connect_params.user_name = "217537"; // random_string(10); //"jiejietop-acer1";
+    init_params.connect_params.password = "mqtt"; //random_string(10); // "123456";
+    init_params.connect_params.client_id = "518750428"; //random_string(10); // "clientid-acer1";
     init_params.connect_params.clean_session = 1;
 
     mqtt_init(&client, &init_params);
 
     mqtt_connect(&client);
     
-    mqtt_subscribe(&client, "testtopic1", QOS0, topic1_handler);
-    mqtt_subscribe(&client, "testtopic2", QOS1, NULL);
-    mqtt_subscribe(&client, "testtopic3", QOS2, NULL);
+    mqtt_subscribe(&client, "temp_hum", QOS0, NULL);
 
+    mqtt_set_interceptor_handler(&client, topic_test1_handler);     // set interceptor handler
     
     res = pthread_create(&thread2, NULL, mqtt_publish_thread, NULL);
     if(res != 0) {
