@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-18 12:29:40
+ * @LastEditTime: 2020-04-23 15:12:36
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1269,7 +1269,7 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
 
     platform_mutex_lock(&c->write_lock);
 
-    if (msg->qos == QOS1 || msg->qos == QOS2) {
+    if (msg->qos != QOS0) {
         if (mqtt_ack_handler_is_maximum(c)) {
             rc = MQTT_ACK_HANDLER_NUM_TOO_MUCH; /* the recorded ack handler has reached the maximum */
             goto exit;
