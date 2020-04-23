@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-04-18 12:34:18
+ * @LastEditTime: 2020-04-23 15:03:32
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -36,13 +36,18 @@ void *mqtt_publish_thread(void *arg)
 
     mqtt_list_subscribe_topic(&client);
 
-    msg.qos = 2;
     msg.payload = (void *) buf;
+    
     while(1) {
         sprintf(buf, "welcome to mqttclient, this is a publish test, a rand number: %d ...", random_number());
 
+        msg.qos = 0;
         mqtt_publish(&client, "topic1", &msg);
+
+        msg.qos = 1;
         mqtt_publish(&client, "topic2", &msg);
+
+        msg.qos = 2;
         mqtt_publish(&client, "topic3", &msg);
         
         sleep(4);
@@ -79,10 +84,9 @@ int main(void)
 
     mqtt_connect(&client);
     
-    mqtt_subscribe(&client, "testtopic1", QOS0, topic1_handler);
-    mqtt_subscribe(&client, "testtopic2", QOS1, NULL);
-    mqtt_subscribe(&client, "testtopic3", QOS2, NULL);
-
+    mqtt_subscribe(&client, "topic1", QOS0, topic1_handler);
+    mqtt_subscribe(&client, "topic2", QOS1, NULL);
+    mqtt_subscribe(&client, "topic3", QOS2, NULL);
     
     res = pthread_create(&thread2, NULL, mqtt_publish_thread, NULL);
     if(res != 0) {
