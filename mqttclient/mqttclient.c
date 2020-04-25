@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-23 15:12:36
+ * @LastEditTime: 2020-04-25 17:46:43
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -571,7 +571,7 @@ static int mqtt_try_do_reconnect(mqtt_client_t* c)
         rc = mqtt_try_resubscribe(c);   /* resubscribe */
     }
 
-    LOG_I("%s:%d %s()... mqtt try connect result is %#x", __FILE__, __LINE__, __FUNCTION__, rc);
+    LOG_I("%s:%d %s()... mqtt try connect result is -0x%04x", __FILE__, __LINE__, __FUNCTION__, -rc);
     
     RETURN_ERROR(rc);
 }
@@ -1269,7 +1269,7 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
 
     platform_mutex_lock(&c->write_lock);
 
-    if (msg->qos != QOS0) {
+    if (QOS0 != msg->qos) {
         if (mqtt_ack_handler_is_maximum(c)) {
             rc = MQTT_ACK_HANDLER_NUM_TOO_MUCH; /* the recorded ack handler has reached the maximum */
             goto exit;
@@ -1301,6 +1301,13 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
     
 exit:
     platform_mutex_unlock(&c->write_lock);
+
+    if ((MQTT_ACK_HANDLER_NUM_TOO_MUCH == rc) || (MQTT_MEM_NOT_ENOUGH_ERROR == rc)) {
+        LOG_W("%s:%d %s()... there is not enough memory space to record...", __FILE__, __LINE__, __FUNCTION__);
+
+        /* record too much retransmitted data, may be disconnected, need to reconnect */
+        mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
+    }
 
     RETURN_ERROR(rc);     
 }
