@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-23 19:26:27
- * @LastEditTime : 2020-02-15 23:32:25
+ * @LastEditTime: 2020-04-25 08:44:24
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_thread.h"
@@ -61,7 +61,7 @@ void platform_thread_start(platform_thread_t* thread)
 void platform_thread_destroy(platform_thread_t* thread)
 {
     if (NULL != thread)
-        rt_thread_delete(&(thread->thread));
+        rt_thread_detach(&(thread->thread));
 
     platform_memory_free(&(thread->thread));
     platform_memory_free(&(thread->thread.stack_addr));

@@ -2,11 +2,22 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:39:00
- * @LastEditTime: 2020-02-19 01:02:51
+ * @LastEditTime: 2020-04-25 08:51:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _PLATFORM_NET_SOCKET_H_
 #define _PLATFORM_NET_SOCKET_H_
+
+#ifdef MQTT_NETSOCKET_USE_SAL
+
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sal_socket.h>
+#include <netdb.h>
+#include <sal_netdb.h>
+#include <string.h>
+
+#else 
 
 #include "lwip/opt.h"
 #include "lwip/sys.h"
@@ -14,8 +25,7 @@
 #include <lwip/sockets.h>
 #include "lwip/netdb.h"
 
-#include "network.h"
-#include "error.h"
+#endif // MQTT_NETSOCKET_USE_SAL
 
 #define PLATFORM_NET_PROTO_TCP  0 /**< The TCP transport protocol */
 #define PLATFORM_NET_PROTO_UDP  1 /**< The UDP transport protocol */
