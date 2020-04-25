@@ -2,14 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-10 23:45:59
- * @LastEditTime : 2020-01-13 02:48:53
+ * @LastEditTime: 2020-04-25 17:50:21
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_net_socket.h"
 
 int platform_net_socket_connect(const char *host, const char *port, int proto)
 {
-    int fd, ret = MQTT_SOCKET_UNKNOWN_HOST;
+    int fd, ret = MQTT_SOCKET_UNKNOWN_HOST_ERROR;
     struct addrinfo hints, *addr_list, *cur;
     
     /* Do name resolution with both IPv6 and IPv4 */
@@ -25,7 +25,7 @@ int platform_net_socket_connect(const char *host, const char *port, int proto)
     for (cur = addr_list; cur != NULL; cur = cur->ai_next) {
         fd = socket(cur->ai_family, cur->ai_socktype, cur->ai_protocol);
         if (fd < 0) {
-            ret = MQTT_SOCKET_FAILED;
+            ret = MQTT_SOCKET_FAILED_ERROR;
             continue;
         }
 
