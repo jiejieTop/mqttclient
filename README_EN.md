@@ -177,6 +177,15 @@ Other things that don't need to be configured:
 ```
 After running the`build.sh` script, the executable file` mqtt-client` will be generated in the`./Build/bin/` directory, and you can run it directly.
 
+### Compile into a dynamic library libmqttclient.so
+
+`` `bash
+./make-libmqttclient.sh
+`` `
+
+After running the `make-libmqttclient.sh` script, a dynamic library file` libmqttclient.so` will be generated in the `. / Libmqttclient / lib` directory and installed into the system ’s` / usr / lib` directory, the relevant header files have Copy to the `. / Libmqttclient / include` directory, when compiling the application, you only need to link the dynamic library` -lmqttclient`, the configuration file of the dynamic library is configured according to `. / Test / mqtt_config.h`
+
+
 ## Design thinking
 -The overall design is layered, and the code is implemented asynchronously to reduce coupling.
 -Message processing is handled by callback: user specifies`[subscribed topic]` and specified`[message processing function]`

@@ -169,10 +169,20 @@ sudo apt-get install cmake
 > ps：以上参数基本不需要怎么配置的，直接用即可~
 
 ### 编译 & 运行
+
 ```bash
 ./build.sh
 ```
+
 运行`build.sh`脚本后会在 `./build/bin/`目录下生成可执行文件`mqtt-client`，直接运行即可。
+
+### 编译成动态库libmqttclient.so
+
+```bash
+./make-libmqttclient.sh
+```
+
+运行`make-libmqttclient.sh`脚本后会在 `./libmqttclient/lib`目录下生成一个动态库文件`libmqttclient.so`，并安装到系统的`/usr/lib `目录下，相关头文件已经拷贝到`./libmqttclient/include`目录下，编译应用程序的时候只需要链接动态库即可`-lmqttclient`，动态库的配置文件根据`./test/mqtt_config.h`配置的。
 
 ## 设计思想
 - 整体采用分层式设计，代码实现采用异步设计方式，降低耦合。
