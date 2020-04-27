@@ -14,7 +14,7 @@ set(EXECUTABLE_OUTPUT_PATH "${PROJECT_ROOT_PATH}/${OUTDIRS}/bin/")
 SET(CMAKE_BUILD_TYPE "Release")   # Debug Release
 
 set(CMAKE_C_COMPILER "gcc")
-set(CMAKE_CXX_COMPILER "clang++" )
+set(CMAKE_CXX_COMPILER "g++" )
 
 set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS "-lpthread")
