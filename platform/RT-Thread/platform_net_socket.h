@@ -9,7 +9,7 @@
 #define _PLATFORM_NET_SOCKET_H_
 
 #include "network.h"
-#include "error.h"
+#include "mqtt_error.h"
 
 #ifdef MQTT_NETSOCKET_USE_SAL
 

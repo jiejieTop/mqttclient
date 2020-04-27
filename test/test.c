@@ -20,9 +20,9 @@ client_init_params_t init_params;
 static void topic1_handler(void* client, message_data_t* msg)
 {
     (void) client;
-    LOG_I("-----------------------------------------------------------------------------------");
-    LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, (char*)msg->message->payload);
-    LOG_I("-----------------------------------------------------------------------------------");
+    MQTT_LOG_I("-----------------------------------------------------------------------------------");
+    MQTT_LOG_I("%s:%d %s()...\ntopic: %s\nmessage:%s", __FILE__, __LINE__, __FUNCTION__, msg->topic_name, (char*)msg->message->payload);
+    MQTT_LOG_I("-----------------------------------------------------------------------------------");
 }
 
 void *mqtt_publish_thread(void *arg)
@@ -62,7 +62,7 @@ int main(void)
     
     printf("\nwelcome to mqttclient test...\n");
 
-    log_init();
+    mqtt_log_init();
 
     init_params.read_buf_size = 1024;
     init_params.write_buf_size = 1024;
@@ -90,7 +90,7 @@ int main(void)
     
     res = pthread_create(&thread2, NULL, mqtt_publish_thread, NULL);
     if(res != 0) {
-        LOG_E("create mqtt publish thread fail");
+        MQTT_LOG_E("create mqtt publish thread fail");
         exit(res);
     }
 

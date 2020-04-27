@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:35
- * @LastEditTime: 2020-03-05 23:51:34
+ * @LastEditTime: 2020-04-27 23:41:03
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_nettype_tls.h"
@@ -28,7 +28,7 @@ static const int ciphersuites[] = { MBEDTLS_TLS_PSK_WITH_AES_128_CBC_SHA, MBEDTL
 static int server_certificate_verify(void *hostname, mbedtls_x509_crt *crt, int depth, uint32_t *flags)
 {
     if (0 != *flags)
-        LOG_E("%s:%d %s()... server_certificate_verify failed returned 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
+        MQTT_LOG_E("%s:%d %s()... server_certificate_verify failed returned 0x%04x\n", __FILE__, __LINE__, __FUNCTION__, *flags);
     return *flags;
 }
 #endif
@@ -68,13 +68,13 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
 
     if ((rc = mbedtls_ctr_drbg_seed(&(nettype_tls_params->ctr_drbg), mbedtls_entropy_func,
                                     &(nettype_tls_params->entropy), NULL, 0)) != 0) {
-        LOG_E("mbedtls_ctr_drbg_seed failed returned 0x%04x", (rc < 0 )? -rc : rc);
+        MQTT_LOG_E("mbedtls_ctr_drbg_seed failed returned 0x%04x", (rc < 0 )? -rc : rc);
         RETURN_ERROR(rc);
     }
 
     if ((rc = mbedtls_ssl_config_defaults(&(nettype_tls_params->ssl_conf), MBEDTLS_SSL_IS_CLIENT,
                                            MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_PRESET_DEFAULT)) != 0) {
-        LOG_E("mbedtls_ssl_config_defaults failed returned 0x%04x", (rc < 0 )? -rc : rc);
+        MQTT_LOG_E("mbedtls_ssl_config_defaults failed returned 0x%04x", (rc < 0 )? -rc : rc);
         RETURN_ERROR(rc);
     }
 
@@ -86,7 +86,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
 
         if (0 != (rc = (mbedtls_x509_crt_parse(&(nettype_tls_params->ca_cert), (unsigned char *)n->network_params.network_ssl_params.ca_crt,
                                           (n->network_params.network_ssl_params.ca_crt_len + 1))))) {
-            LOG_E("%s:%d %s()... parse ca crt failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            MQTT_LOG_E("%s:%d %s()... parse ca crt failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             RETURN_ERROR(rc);
         }
     }
@@ -95,7 +95,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
 
     if ((rc = mbedtls_ssl_conf_own_cert(&(nettype_tls_params->ssl_conf),
                                          &(nettype_tls_params->client_cert), &(nettype_tls_params->private_key))) != 0) {
-        LOG_E("%s:%d %s()... mbedtls_ssl_conf_own_cert failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+        MQTT_LOG_E("%s:%d %s()... mbedtls_ssl_conf_own_cert failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
         RETURN_ERROR(rc);
     }
     
@@ -107,12 +107,12 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
 #if defined(MBEDTLS_FS_IO)
     if (n->network_params.network_ssl_params.cert_file != NULL && n->network_params.network_ssl_params.key_file != NULL) {
             if ((rc = mbedtls_x509_crt_parse_file(&(nettype_tls_params->client_cert), n->network_params.network_ssl_params.cert_file)) != 0) {
-            LOG_E("%s:%d %s()... load client cert file failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            MQTT_LOG_E("%s:%d %s()... load client cert file failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             return PLATFORM_ERR_SSL_CERT;
         }
 
         if ((rc = mbedtls_pk_parse_keyfile(&(nettype_tls_params->private_key), n->network_params.network_ssl_params.key_file, "")) != 0) {
-            LOG_E("%s:%d %s()... load client key file failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            MQTT_LOG_E("%s:%d %s()... load client key file failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             return PLATFORM_ERR_SSL_CERT;
         }
     } else {
@@ -130,7 +130,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
     }
 	
 	if (0 != rc) {
-		LOG_E("%s:%d %s()... mbedtls_ssl_conf_psk fail: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+		MQTT_LOG_E("%s:%d %s()... mbedtls_ssl_conf_psk fail: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
 		return rc;
 	}
 #endif
@@ -139,13 +139,13 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
     mbedtls_ssl_conf_read_timeout(&(nettype_tls_params->ssl_conf), n->network_params.network_ssl_params.timeout_ms);
 
     if ((rc = mbedtls_ssl_setup(&(nettype_tls_params->ssl), &(nettype_tls_params->ssl_conf))) != 0) {
-        LOG_E("mbedtls_ssl_setup failed returned 0x%04x", (rc < 0 )? -rc : rc);
+        MQTT_LOG_E("mbedtls_ssl_setup failed returned 0x%04x", (rc < 0 )? -rc : rc);
         RETURN_ERROR(rc);
     }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     if ((rc = mbedtls_ssl_set_hostname(&(nettype_tls_params->ssl), n->network_params.addr)) != 0) {
-        LOG_E("%s:%d %s()... mbedtls_ssl_set_hostname failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+        MQTT_LOG_E("%s:%d %s()... mbedtls_ssl_set_hostname failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
         RETURN_ERROR(rc);
     }
 #endif
@@ -177,10 +177,10 @@ int platform_nettype_tls_connect(network_t* n)
 
     while ((rc = mbedtls_ssl_handshake(&(nettype_tls_params->ssl))) != 0) {
         if (rc != MBEDTLS_ERR_SSL_WANT_READ && rc != MBEDTLS_ERR_SSL_WANT_WRITE) {
-            LOG_E("%s:%d %s()...mbedtls handshake failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            MQTT_LOG_E("%s:%d %s()...mbedtls handshake failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
             if (rc == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
-                LOG_E("%s:%d %s()...unable to verify the server's certificate", __FILE__, __LINE__, __FUNCTION__);
+                MQTT_LOG_E("%s:%d %s()...unable to verify the server's certificate", __FILE__, __LINE__, __FUNCTION__);
             }
 #endif
             goto exit;
@@ -188,7 +188,7 @@ int platform_nettype_tls_connect(network_t* n)
     }
 
     if ((rc = mbedtls_ssl_get_verify_result(&(nettype_tls_params->ssl))) != 0) {
-        LOG_E("%s:%d %s()...mbedtls_ssl_get_verify_result returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+        MQTT_LOG_E("%s:%d %s()...mbedtls_ssl_get_verify_result returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
         goto exit;
     }
 
@@ -247,7 +247,7 @@ int platform_nettype_tls_write(network_t *n, unsigned char *buf, int len, int ti
         if (rc > 0) {
             write_len += rc;
         } else if ((rc == 0) || ((rc != MBEDTLS_ERR_SSL_WANT_WRITE) && (rc != MBEDTLS_ERR_SSL_WANT_READ) && (rc != MBEDTLS_ERR_SSL_TIMEOUT))) {
-            LOG_E("%s:%d %s()... mbedtls_ssl_write failed: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            MQTT_LOG_E("%s:%d %s()... mbedtls_ssl_write failed: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             break;
         } 
     } while((!platform_timer_is_expired(&timer)) && (write_len < len));
@@ -275,7 +275,7 @@ int platform_nettype_tls_read(network_t *n, unsigned char *buf, int len, int tim
         if (rc > 0) {
             read_len += rc;
         } else if ((rc == 0) || ((rc != MBEDTLS_ERR_SSL_WANT_WRITE) && (rc != MBEDTLS_ERR_SSL_WANT_READ) && (rc != MBEDTLS_ERR_SSL_TIMEOUT))) {
-            // LOG_E("%s:%d %s()... mbedtls_ssl_read failed: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
+            // MQTT_LOG_E("%s:%d %s()... mbedtls_ssl_read failed: 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
             break;
         } 
     } while((!platform_timer_is_expired(&timer)) && (read_len < len));

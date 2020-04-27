@@ -39,7 +39,7 @@
 
 ![整体框架](png/mqttclient.png)
 
-**目前已实现了Linux、TencentOS tiny、RT-Thread平台（已做成软件包，名字为`kawaii-mqtt`），除此之外TencentOS tiny的AT框架亦可以使用（RAM消耗不足15K），并且稳定性极好！**
+**目前已实现了Linux、TencentOS tiny、FreeRTOS、RT-Thread平台（已做成软件包，名字为`kawaii-mqtt`），除此之外TencentOS tiny的AT框架亦可以使用（RAM消耗不足15K），并且稳定性极好！**
 
 
 | 平台           | 代码位置 |
@@ -57,6 +57,7 @@
 | [v1.0.0] | 初次发布，完成基本框架及其稳定性验证 |
 | [v1.0.1] | 修复主动与服务器断开连接时的逻辑处理 |
 | [v1.0.2] | 添加新特性——拦截器，修复一些小bug |
+| [v1.0.3] | 避免造成全局污染修改了log、list相关函数的命名 |
 
 ## 问题
 
@@ -200,7 +201,8 @@ int mqtt_disconnect(mqtt_client_t* c);
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter);
 int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg);
-int mqtt_yield(mqtt_client_t* c, int timeout_ms);
+int mqtt_list_subscribe_topic(mqtt_client_t* c);
+int mqtt_set_interceptor_handler(mqtt_client_t* c, interceptor_handler_t handler);
 ```
 ## 核心
 **mqtt_client_t 结构**
@@ -221,14 +223,15 @@ typedef struct mqtt_client {
     client_state_t              client_state;
     platform_mutex_t            write_lock;
     platform_mutex_t            global_lock;
-    list_t                      msg_handler_list;
-    list_t                      ack_handler_list;
+    mqtt_list_t                 msg_handler_list;
+    mqtt_list_t                 ack_handler_list;
     network_t                   *network;
     platform_thread_t           *thread;
     platform_timer_t            reconnect_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
     connect_params_t            *connect_params;
+    interceptor_handler_t       interceptor_handler;
 } mqtt_client_t;
 ```
 

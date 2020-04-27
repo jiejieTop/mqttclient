@@ -9,7 +9,7 @@
 #define _PLATFORM_NET_SOCKET_H_
 
 #include "network.h"
-#include "error.h"
+#include "mqtt_error.h"
 #include "stddef.h"
 
 #define PLATFORM_NET_PROTO_TCP  0 /**< The TCP transport protocol */

@@ -2,14 +2,14 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:39:00
- * @LastEditTime: 2020-04-27 16:46:27
+ * @LastEditTime: 2020-04-27 23:46:54
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _PLATFORM_NET_SOCKET_H_
 #define _PLATFORM_NET_SOCKET_H_
 
 #include "network.h"
-#include "error.h"
+#include "mqtt_error.h"
 
 #include "lwip/opt.h"
 #include "lwip/sys.h"

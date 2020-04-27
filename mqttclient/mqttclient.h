@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-18 12:29:23
+ * @LastEditTime: 2020-04-27 23:31:09
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -12,7 +12,7 @@
 #include <string.h>
 
 #include "MQTTPacket.h"
-#include "list.h"
+#include "mqtt_list.h"
 #include "platform_timer.h"
 #include "platform_memory.h"
 #include "platform_mutex.h"
@@ -20,8 +20,8 @@
 #include "mqtt_defconfig.h"
 #include "network.h"
 #include "random.h"
-#include "error.h"
-#include "log.h"
+#include "mqtt_error.h"
+#include "mqtt_log.h"
 
 typedef enum mqtt_qos {
     QOS0 = 0,
@@ -62,14 +62,14 @@ typedef void (*message_handler_t)(void* client, message_data_t* msg);
 typedef void (*reconnect_handler_t)(void* client, void* reconnect_date);
 
 typedef struct message_handlers {
-    list_t              list;
+    mqtt_list_t         list;
     mqtt_qos_t          qos;
     const char*         topic_filter;
     message_handler_t   handler;
 } message_handlers_t;
 
 typedef struct ack_handlers {
-    list_t              list;
+    mqtt_list_t         list;
     platform_timer_t    timer;
     unsigned int        type;
     unsigned short      packet_id;
@@ -108,8 +108,8 @@ typedef struct mqtt_client {
     client_state_t              client_state;
     platform_mutex_t            write_lock;
     platform_mutex_t            global_lock;
-    list_t                      msg_handler_list;
-    list_t                      ack_handler_list;
+    mqtt_list_t                 msg_handler_list;
+    mqtt_list_t                 ack_handler_list;
     network_t                   *network;
     platform_thread_t           *thread;
     platform_timer_t            reconnect_timer;

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 13:39:00
- * @LastEditTime : 2020-01-12 00:22:22
+ * @LastEditTime: 2020-04-27 23:32:44
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _PLATFORM_NET_SOCKET_H_
@@ -26,7 +26,7 @@
 #include <signal.h>
 
 #include "network.h"
-#include "error.h"
+#include "mqtt_error.h"
 
 #define PLATFORM_NET_PROTO_TCP  0 /**< The TCP transport protocol */
 #define PLATFORM_NET_PROTO_UDP  1 /**< The UDP transport protocol */

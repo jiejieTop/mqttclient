@@ -40,7 +40,7 @@ Has a very clear layered framework.
 
 ![Overall Frame](png/mqttclient.png)
 
-**Linux, TencentOS tiny, and RT-Thread platforms have been implemented (packages have been made and named `kawaii-mqtt` ). In addition, TencentOS tiny's AT framework can also be used (RAM consumption is less than 15K). And the stability is excellent!**
+**Linux, TencentOS tiny, FreeRTOS, and RT-Thread platforms have been implemented (packages have been made and named `kawaii-mqtt` ). In addition, TencentOS tiny's AT framework can also be used (RAM consumption is less than 15K). And the stability is excellent!**
 
 
 | Platform | Code Location |
@@ -58,6 +58,7 @@ Release version | Description |
 | [v1.0.0] | Initial release, verification of basic concepts and stability |
 | [v1.0.1] | Fix logic when actively disconnecting from the server |
 | [v1.0.2] | Add a new feature-interceptor, fix some minor bugs |
+| [v1.0.3] | To avoid global pollution, modify the naming of log and list related functions |
 
 ## Question
 
@@ -194,15 +195,16 @@ After running the `make-libmqttclient.sh` script, a dynamic library file` libmqt
 ## API
 `mqttclient` has a very simple` api` interface
 ```c
-int mqtt_keep_alive (mqtt_client_t*c);
-int mqtt_init (mqtt_client_t*c, client_init_params_t*init);
-int mqtt_release (mqtt_client_t*c);
-int mqtt_connect (mqtt_client_t*c);
-int mqtt_disconnect (mqtt_client_t*c);
-int mqtt_subscribe (mqtt_client_t*c, const char*topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
-int mqtt_unsubscribe (mqtt_client_t*c, const char*topic_filter);
-int mqtt_publish (mqtt_client_t*c, const char*topic_filter, mqtt_message_t*msg);
-int mqtt_yield (mqtt_client_t*c, int timeout_ms);
+int mqtt_keep_alive(mqtt_client_t* c);
+int mqtt_init(mqtt_client_t* c, client_init_params_t* init);
+int mqtt_release(mqtt_client_t* c);
+int mqtt_connect(mqtt_client_t* c);
+int mqtt_disconnect(mqtt_client_t* c);
+int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
+int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter);
+int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg);
+int mqtt_list_subscribe_topic(mqtt_client_t* c);
+int mqtt_set_interceptor_handler(mqtt_client_t* c, interceptor_handler_t handler);
 ```
 
 ## Core
@@ -211,28 +213,29 @@ int mqtt_yield (mqtt_client_t*c, int timeout_ms);
 
 ```c
 typedef struct mqtt_client {
-    unsigned short packet_id;
-    unsigned char ping_outstanding;
-    unsigned char ack_handler_number;
-    unsigned char*read_buf;
-    unsigned char*write_buf;
-    unsigned int cmd_timeout;
-    unsigned int read_buf_size;
-    unsigned int write_buf_size;
-    unsigned int reconnect_try_duration;
-    void*reconnect_date;
-    reconnect_handler_t reconnect_handler;
-    client_state_t client_state;
-    platform_mutex_t write_lock;
-    platform_mutex_t global_lock;
-    list_t msg_handler_list;
-    list_t ack_handler_list;
-    network_t*network;
-    platform_thread_t*thread;
-    platform_timer_t reconnect_timer;
-    platform_timer_t last_sent;
-    platform_timer_t last_received;
-    connect_params_t*connect_params;
+    unsigned short              packet_id;
+    unsigned char               ping_outstanding;
+    unsigned char               ack_handler_number;
+    unsigned char               *read_buf;
+    unsigned char               *write_buf;
+    unsigned int                cmd_timeout;
+    unsigned int                read_buf_size;
+    unsigned int                write_buf_size;
+    unsigned int                reconnect_try_duration;
+    void                        *reconnect_date;
+    reconnect_handler_t         reconnect_handler;
+    client_state_t              client_state;
+    platform_mutex_t            write_lock;
+    platform_mutex_t            global_lock;
+    mqtt_list_t                 msg_handler_list;
+    mqtt_list_t                 ack_handler_list;
+    network_t                   *network;
+    platform_thread_t           *thread;
+    platform_timer_t            reconnect_timer;
+    platform_timer_t            last_sent;
+    platform_timer_t            last_received;
+    connect_params_t            *connect_params;
+    interceptor_handler_t       interceptor_handler;
 } mqtt_client_t;
 ```
 

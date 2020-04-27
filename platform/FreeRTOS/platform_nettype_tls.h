@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:44
- * @LastEditTime: 2020-02-25 03:37:57
+ * @LastEditTime: 2020-04-27 23:46:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -12,8 +12,8 @@
 #include "platform_net_socket.h"
 #include "mqtt_defconfig.h"
 #include "network.h"
-#include "error.h"
-#include "log.h"
+#include "mqtt_error.h"
+#include "mqtt_log.h"
 
 #ifdef MQTT_NETWORK_TYPE_TLS
 
