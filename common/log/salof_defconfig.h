@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime: 2020-03-02 01:32:32
+ * @LastEditTime: 2020-04-28 00:46:37
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_DEFCONFIG_H_
@@ -18,8 +18,7 @@
 #define         USE_LINUX           4
 
 #define         BASE_LEVEL          (0)
-#define         ASSERT_LEVEL        (BASE_LEVEL + 1)
-#define         ERR_LEVEL           (ASSERT_LEVEL + 1)
+#define         ERR_LEVEL           (BASE_LEVEL + 1)
 #define         WARN_LEVEL          (ERR_LEVEL + 1)
 #define         INFO_LEVEL          (WARN_LEVEL + 1)
 #define         DEBUG_LEVEL         (INFO_LEVEL + 1)

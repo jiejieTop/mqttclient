@@ -63,8 +63,7 @@ void salof(const char *fmt, ...);
     } while (0)
 
 #define BASE_LEVEL      (0)
-#define ASSERT_LEVEL    (BASE_LEVEL + 1)
-#define ERR_LEVEL       (ASSERT_LEVEL + 1)
+#define ERR_LEVEL       (BASE_LEVEL + 1)
 #define WARN_LEVEL      (ERR_LEVEL + 1)
 #define INFO_LEVEL      (WARN_LEVEL + 1)
 #define DEBUG_LEVEL     (INFO_LEVEL + 1)
@@ -97,14 +96,6 @@ void salof(const char *fmt, ...);
     #define LOG_ERR(fmt, ...)       LOG_LINE(E, FC_RED, fmt, ##__VA_ARGS__)
 #endif
 
-#if LOG_LEVEL < ASSERT_LEVEL
-    #define LOG_ASSERT(fmt, ...)
-    #define ASSERT(x)
-#else
-    #define LOG_ASSERT(fmt, ...)    LOG_LINE(A, FC_RED, fmt, ##__VA_ARGS__)
-    #define ASSERT(x)     if((x)==0) LOG_ASSERT("%s, %d\n",__FILE__,__LINE__)
-#endif
-
 #if LOG_LEVEL < BASE_LEVEL
     #define LOG(fmt, ...)
 #else
@@ -116,7 +107,6 @@ void salof(const char *fmt, ...);
 #define LOG_WARN(fmt, ...)
 #define LOG_ERR(fmt, ...)
 #define LOG(fmt, ...)
-#define ASSERT(x)
 #endif
 
 #endif // !_SALOF_H_
