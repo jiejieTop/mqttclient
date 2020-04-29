@@ -182,9 +182,9 @@ After running the`build.sh` script, the executable file` mqtt-client` will be ge
 
 ### Compile into a dynamic library libmqttclient.so
 
-`` `bash
+```bash
 ./make-libmqttclient.sh
-`` `
+```
 
 After running the `make-libmqttclient.sh` script, a dynamic library file` libmqttclient.so` will be generated in the `. / Libmqttclient / lib` directory and installed into the system ’s` / usr / lib` directory, the relevant header files have Copy to the `. / Libmqttclient / include` directory, when compiling the application, you only need to link the dynamic library` -lmqttclient`, the configuration file of the dynamic library is configured according to `. / Test / mqtt_config.h`
 
@@ -242,15 +242,15 @@ typedef struct mqtt_client {
 ```
 
 This structure mainly maintains the following:
-1. Read and write data buffers`read_buf, write_buf`
-2. Command timeout`cmd_timeout` (mainly read and write blocking time, waiting time for response, reconnection waiting time)
-3. Maintain the`ack` linked list` ack_handler_list`, which is the core of asynchronous implementation, and all the messages waiting for response will be mounted on this linked list
-4. Maintain the message processing list`msg_handler_list`, which is the content that the` mqtt` protocol must implement. All`publish` messages from the server will be processed (provided that the corresponding messages are subscribed)
-5. Maintain a network card interface`network`
+1. Read and write data buffers`read_buf, write_buf`.
+2. Command timeout`cmd_timeout` (mainly read and write blocking time, waiting time for response, reconnection waiting time).
+3. Maintain the`ack` linked list` ack_handler_list`, which is the core of asynchronous implementation, and all the messages waiting for response will be mounted on this linked list.
+4. Maintain the message processing list`msg_handler_list`, which is the content that the` mqtt` protocol must implement. All`publish` messages from the server will be processed (provided that the corresponding messages are subscribed).
+5. Maintain a network card interface`network`.
 6. Maintain an internal thread`thread`, all mqtt packages from the server will be processed here!
-7. Two timers, namely the reconnect timer and keep-alive timer`reconnect_timer, last_sent, last_received`
-8. Some connection parameters`connect_params`
-
+7. Two timers, namely the reconnect timer and keep-alive timer`reconnect_timer, last_sent, last_received`.
+8. Some connection parameters`connect_params`.
+9. interceptor_handler is interceptor callback function.
 
 ## mqttclient implementation
 
