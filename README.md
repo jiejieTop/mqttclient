@@ -2,197 +2,200 @@
 [![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE)
 ![](https://img.shields.io/badge/platform-Linux|Windows|Mac|Embedded-orange.svg)
 
-[English Documents](README_EN.md)
+[中文说明](README_CN.md)
 
 # mqttclient
 
-**一个基于socket API之上的跨平台MQTT客户端**
+**A high-performance, high-stability, cross-platform MQTT client**
 
-基于socket API的MQTT客户端，可以在嵌入式设备（FreeRTOS/LiteOS/RT-Thread/TencentOS tiny）、Linux、Windows、Mac上使用，拥有非常简洁的API接口，以极少的资源实现QOS2的服务质量，并且无缝衔接了mbedtls加密库。
+A high-performance, high-stability, cross-platform MQTT client, developed based on the socket API, can be used on embedded devices (FreeRTOS / LiteOS / RT-Thread / TencentOS tiny), Linux, Windows, Mac, with a very concise The API interface realizes the quality of service of QOS2 with very few resources, and seamlessly connects the mbedtls encryption library.
 
-## 优势：
-- **基于标准BSD socket之上开发**，只要是兼容BSD socket的系统均可使用。
+## Advantage:
 
-- **稳定**：无论是`掉线重连`，`丢包重发`，都是严格`遵循MQTT协议标准`执行，除此之外对**大数据量**的测试无论是收是发，都是非常稳定（一次发送`135K`数据，3秒一次），高频测试也是非常稳定（7个主题同时收发，每秒一次，也就是1秒14个mqtt报文，服务质量QoS0、QoS1、QoS2都有）。因为作者以极少的资源设计了`记录机制`，对采用QoS1服务质量的报文必须保证到达一次，当发布的主题（qos1、qos2都适用）没有被服务器收到时会自动重发，而对QoS2服务质量的报文保证有且只有处理一次（如果不相信它稳定性的同学可以自己去修改源码，专门为QoS2服务质量去做测试，故意不回复`PUBREC`包，让服务器重发QoS2报文，且看看客户端是否有且只有处理一次），而对于掉线重连的稳定性，这种则是**基本操作**了，没啥好说的，在自动重连后还会自动重新订阅主题，保证主题不会丢失，因此在测试中稳定性极好。
+- **Developed based on standard BSD socket**, as long as it is compatible with BSD socket system.
 
-- **轻量级**：整个代码工程极其简单，不使用mbedtls情况下，占用资源极少，作者曾使用esp8266模组与云端通信，整个工程代码消耗的RAM不足15k（包括系统占用的开销，对数据的处理开销，而此次还是未优化的情况下，还依旧完美保留了掉线重连的稳定性，但是对应qos1、qos2服务质量的报文则未做测试，因为STM32F103C8T6芯片资源实在是太少了，折腾不起）。
+- **Stable**: Whether it is`reconnecting offline` or` retransmitting lost packets`, it is strictly performed according to the MQTT protocol standard. Besides, the test of**large data amount**is Sending and receiving are very stable (send`135K` data at a time, once every 3 seconds), and the high-frequency test is also very stable (seven topics are sent and received at once, once per second, which is 14 mqtt messages per second, and the quality of service (QoS0, QoS1, QoS2 all). Because the author designed the`recording mechanism` with very few resources, it must ensure that the packets using QoS1 quality of service arrive once. When the published topic (both qos1 and qos2) is not received by the server, it will be automatically resent. The QoS2 quality of service packet is guaranteed to be processed only once. (If you do not believe in its stability, you can modify the source code to test the QoS2 quality of service. You will not reply the`PUBREC` packet, and let the server resend QoS2. Message, and see if the client has processed it only once), and for the stability of disconnection and reconnection, this is the**basic operation**, nothing to say, it will still be after automatic reconnection Automatically re-subscribe topics to ensure that topics are not lost, so it is very stable in testing.
 
-- **无缝衔接mbedtls加密传输**，让网络传输更加安全，而且接口层完全不需要用户理会，无论是否加密，mqttclient对用户提供的API接口是**没有变化**的，这就很好的兼容了一套代应用层的码可以加密传输也可以不加密传输。
+- **Lightweight**: The entire code project is extremely simple. It uses very few resources without using mbedtls. The author used the esp8266 module to communicate with the cloud. The entire project code consumes less than 15k of RAM (including system overhead). , The data processing overhead, and this time is still not optimized, the stability of the disconnection and reconnection is still perfectly preserved, but the messages corresponding to the quality of service of qos1 and qos2 have not been tested because the STM32F103C8T6 chip resources are really It is too little to toss).
 
-- **拥有极简的API接口**，总的来说，mqttclient的配置都有默认值，基本无需配置都能使用的，也可以随意配置，对配置都有健壮性检测，这样子设计的API接口也是非常简单。
+- **Seamless connection with mbedtls encrypted transmission**, making network transmission more secure, and the interface layer does not need the user to care at all. Regardless of whether it is encrypted or not, the API interface provided by mqttclient is**there is no change**, which is very Good compatible with a set of codes of the generation application layer can be transmitted encrypted or not encrypted.
 
-- **有非常好的代码风格与思想**：整个代码采用分层式设计，代码实现采用异步处理的思想，降低耦合，提高性能，具体体现在什么地方呢？很简单，目前市面上很多MQTT客户端发布主题都是要阻塞等待ack，这是非常暴力的行为，阻塞当前线程等待服务器的应答，那如果我想要发送数据怎么办，或者我要重复检测数据怎么办，你可能会说，指定阻塞时间等待，那如果网络延迟，ack迟迟不来，我就白等了吗，对于qos1、qos2的服务质量怎么办，所以说这种还是要异步处理的思想，我发布主题，那我发布出去就好了，不需要等待，对于qos1、qos2服务质量的MQTT报文，如果服务器没收到，那我重发就可以，这种重发也是异步的处理，完全不会阻塞当前线程。
+- **With minimal API interface**, in general, mqttclient's configuration has default values, which can be used basically without configuration, and can be configured at will, and has robustness detection for configuration. The API interface is also very simple.
 
-- **MQTT协议支持主题通配符`“#”、“+”`。**
+- **Has very good code style and ideas**: The entire code adopts a layered design, and the code implementation adopts the idea of ​​asynchronous processing to reduce coupling and improve performance. Where is it reflected? It's very simple. Currently, many MQTT clients in the market publish topics to block and wait for acks. This is a very violent behavior, blocking the current thread waiting for a response from the server. What if I want to send data or I need to repeatedly check the data? What to do, you might say, specify the blocking time to wait, then if the network is delayed and ack is not late, will I wait in vain, what about the service quality of qos1, qos2, so this kind of processing is still asynchronous Thought, I publish the topic, then I just publish it, there is no need to wait, for the MQTT messages of qos1, qos2 quality of service, if the server does not receive, then I can resend, this resend is also asynchronous processing, Does not block the current thread at all.
 
-- **订阅的主题与消息处理完全分离**，让编程逻辑更加简单易用，用户无需理会错综复杂的逻辑关系。
+- **MQTT protocol supports subject wildcards " # "," + " .**
 
-- **mqttclient内部已实现保活处理机制**，无需用户过多关心理会，用户只需专心处理应用功能即可。
+- **Subscribed topics are completely separated from message processing**, making programming logic easier to use, users don't need to worry about complicated logical relationships.
 
-- **无缝衔接salof**：它是一个同步异步日志输出框架，在空闲时候输出对应的日志信息，也可以将信息写入flash中保存，方便调试。
+- **The keepalive processing mechanism has been implemented inside mqttclient**, so users don't need to care too much about it. Users only need to concentrate on processing application functions.
 
-- **不对外产生依赖。**
+- **Seamless salof**: It is a synchronous and asynchronous log output framework, which outputs the corresponding log information during idle time. It can also write the information to flash and save it for debugging.
 
-## 整体框架
+- **No external dependence.**
 
-拥有非常明确的分层框架。
+- **Use paho mqtt library**
 
-![整体框架](png/mqttclient.png)
+## Overall framework
 
-**目前已实现了Linux、TencentOS tiny、FreeRTOS、RT-Thread平台（已做成软件包，名字为`kawaii-mqtt`），除此之外TencentOS tiny的AT框架亦可以使用（RAM消耗不足15K），并且稳定性极好！**
+Has a very clear layered framework.
+
+![Overall Frame](png/mqttclient.png)
+
+**Linux, TencentOS tiny, FreeRTOS, and RT-Thread platforms have been implemented (packages have been made and named `kawaii-mqtt` ). In addition, TencentOS tiny's AT framework can also be used (RAM consumption is less than 15K). And the stability is excellent!**
 
 
-| 平台           | 代码位置 |
-| -------------- | -------- |
+| Platform       | Code Location |
+| -------------- | ------------- |
 | Linux          | [https://github.com/jiejieTop/mqttclient](https://github.com/jiejieTop/mqttclient) |
 | TencentOS tiny | [https://github.com/Tencent/TencentOS-tiny/tree/master/board/Fire_STM32F429](https://github.com/Tencent/TencentOS-tiny/tree/master/board/Fire_STM32F429) |
-| TencentOS tiny AT 框架 | [https://github.com/jiejieTop/gokit3-board-mqttclient](https://github.com/jiejieTop/gokit3-board-mqttclient) |
+| TencentOS tiny AT framework | [https://github.com/jiejieTop/gokit3-board-mqttclient](https://github.com/jiejieTop/gokit3-board-mqttclient) |
 | RT-Thread      | [https://github.com/jiejieTop/kawaii-mqtt](https://github.com/jiejieTop/kawaii-mqtt) |
 | FreeRTOS       | [https://github.com/jiejieTop/freertos-mqttclient](https://github.com/jiejieTop/freertos-mqttclient) |
 
+## Version
 
-## 版本
-
-| 发布版本 | 描述 | 
+Release version | Description |
 | --- | --- |
-| [v1.0.0] | 初次发布，完成基本框架及其稳定性验证 |
-| [v1.0.1] | 修复主动与服务器断开连接时的逻辑处理 |
-| [v1.0.2] | 添加新特性——拦截器，修复一些小bug |
-| [v1.0.3] | 避免造成全局污染修改了log、list相关函数的命名 |
+| [v1.0.0] | Initial release, verification of basic concepts and stability |
+| [v1.0.1] | Fix logic when actively disconnecting from the server |
+| [v1.0.2] | Add a new feature-interceptor, fix some minor bugs |
+| [v1.0.3] | To avoid global pollution, modify the naming of log and list related functions |
 
-## 问题
+## Question
 
-欢迎以 [GitHub Issues](https://github.com/jiejieTop/mqttclient/issues) 的形式提交问题和bug报告
+Welcome to submit issues and bug reports in the form of [GitHub Issues](https://github.com/jiejieTop/mqttclient/issues)
 
-## 版权和许可
+## Copyright and license
 
-mqttclient 遵循 [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 开源协议。鼓励代码共享和尊重原作者的著作权，可以自由的使用、修改源代码，也可以将修改后的代码作为开源或闭源软件发布，**但必须保留原作者版权声明**。
+mqttclient is provided by [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE).
 
-## linux平台下测试使用
-### 安装cmake：
+Briefly describe the description of the open source protocol. [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) Encourage code sharing and respect the copyright of the original author, which can be used freely. Modify the source code, and you can also distribute the modified code as open source or proprietary software (as open source or closed source commercial software),**but the source code must retain the author's copyright statement**.
+
+## Test and use under linux platform
+### Install cmake:
 ```bash
 sudo apt-get install cmake
 ```
 
-### 配置
-在`mqttclient/test/test.c`文件中修改以下内容：
+### Configuration
+Modify the following in the`mqttclient/test/test.c` file:
 ```c
-    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();    /* CA证书 */
-    init_params.connect_params.network_params.addr = "xxxxxxx";                             /* 服务器域名 */
-    init_params.connect_params.network_params.port = "8883";                                /* 服务器端口号 */
-    init_params.connect_params.user_name = "xxxxxxx";                                       /* 用户名 */
-    init_params.connect_params.password = "xxxxxxx";                                        /* 密码 */
-    init_params.connect_params.client_id = "xxxxxxx";                                       /* 客户端id */
+    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get (); /*CA certificate*/
+    init_params.connect_params.network_params.addr = "xxxxxxx"; /*server domain name*/
+    init_params.connect_params.network_params.port = "8883"; /*server port number*/
+    init_params.connect_params.user_name = "xxxxxxx"; /*username*/
+    init_params.connect_params.password = "xxxxxxx"; /*password*/
+    init_params.connect_params.client_id = "xxxxxxx"; /*client id*/
 ```
 
 ### mbedtls
 
-默认打开mbedtls。
+Mbedtls is turned on by default.
 
-[salof](https://github.com/jiejieTop/salof) 全称是：`Synchronous Asynchronous Log Output Framework`（同步异步日志输出框架），它是一个同步异步日志输出框架，在空闲时候输出对应的日志信息，并且该库与mqttclient无缝衔接。
+[salof](https://github.com/jiejieTop/salof) The full name is:`Synchronous Asynchronous Log Output Framework` (Synchronous Asynchronous Log Output Framework), which is a synchronous asynchronous log output framework, which outputs the corresponding log when idle Information, and the library seamlessly interfaces with mqttclient.
 
-**配置对应的日志输出级别：**
-
-```c
-#define BASE_LEVEL      (0)
-#define ASSERT_LEVEL    (BASE_LEVEL + 1)            /* 日志输出级别：断言级别（非常高优先级） */
-#define ERR_LEVEL       (ASSERT_LEVEL + 1)          /* 日志输出级别：错误级别（高优先级） */
-#define WARN_LEVEL      (ERR_LEVEL + 1)             /* 日志输出级别：警告级别（中优先级） */
-#define INFO_LEVEL      (WARN_LEVEL + 1)            /* 日志输出级别：信息级别（低优先级） */
-#define DEBUG_LEVEL     (INFO_LEVEL + 1)            /* 日志输出级别：调试级别（更低优先级） */
-
-#define         LOG_LEVEL                   WARN_LEVEL      /* 日志输出级别 */
-```
-
-**日志其他选项：**
-
-- 终端带颜色
-- 时间戳
-- 标签
-
-### mqttclient的配置
-
-配置mqtt等待应答列表的最大值，对于qos1 qos2服务质量有要求的可以将其设置大一点，当然也必须资源跟得上，它主要是保证qos1 qos2的mqtt报文能准确到达服务器。
+**Configure the corresponding log output level:**
 
 ```c
-#define     MQTT_ACK_HANDLER_NUM_MAX            64
+#define BASE_LEVEL (0)
+#define ASSERT_LEVEL (BASE_LEVEL + 1) /*Log output level: assertion level (very high priority)*/
+#define ERR_LEVEL (ASSERT_LEVEL + 1) /*Log output level: error level (high priority)*/
+#define WARN_LEVEL (ERR_LEVEL + 1) /*Log output level: warning level (medium priority)*/
+#define INFO_LEVEL (WARN_LEVEL + 1) /*Log output level: Information level (low priority)*/
+#define DEBUG_LEVEL (INFO_LEVEL + 1) /*Log output level: debug level (lower priority)*/
+
+#define LOG_LEVEL WARN_LEVEL /*Log output level*/
 ```
 
-选择MQTT协议的版本，默认为4，表示使用MQTT 3.1.1版本，而3则表示为MQTT 3.1版本。
+**Other log options:**
+
+-Terminal with color
+-Timestamp
+-Tags
+
+### Configuration of mqttclient
+
+Configure the maximum value of the mqtt waiting list. You can set a larger value for qos1 and qos2 service quality. Of course, you must keep up with the resources. It is mainly to ensure that the mqtt packets of qos1 and qos2 can reach the server accurately.
 
 ```c
-#define     MQTT_VERSION                        4           // 4 is mqtt 3.1.1
+#define MQTT_ACK_HANDLER_NUM_MAX 64
 ```
 
-设置默认的保活时间，它主要是保证MQTT客户端与服务器的保持活性连接，单位为 秒 ，比如MQTT客户端与服务器100S没有发送数据了，有没有接收到数据，此时MQTT客户端会发送一个ping包，确认一下这个会话是否存在，如果收到服务器的应答，那么说明这个会话还是存在的，可以随时收发数据，而如果不存在了，就清除会话。
+Select the version of the MQTT protocol. The default value is 4, which means that MQTT 3.1.1 is used, and 3 means MQTT 3.1.
 
 ```c
-#define     MQTT_KEEP_ALIVE_INTERVAL            100         // unit: second
+#define MQTT_VERSION 4 // 4 is mqtt 3.1.1
 ```
 
-默认的命令超时，它主要是用于socket读写超时，在MQTT初始化时可以指定:
-
-```
-#define     MQTT_DEFAULT_CMD_TIMEOUT            4000
-```
-
-默认主题的长度，主题是支持通配符的，如果主题太长则会被截断：
+Set the default keep-alive time, which is mainly to ensure that the MQTT client and the server maintain an active connection, in seconds. For example, the MQTT client and the server 100S have not sent data and have not received data. At this time, the MQTT client will send A ping packet confirms whether the session exists. If a response from the server is received, it indicates that the session still exists and data can be sent and received at any time. If it does not exist, the session is cleared.
 
 ```c
-#define     MQTT_TOPIC_LEN_MAX                  64
+#define MQTT_KEEP_ALIVE_INTERVAL 100 // unit: second
 ```
 
-默认的算法数据缓冲区的大小，如果要发送大量数据则修改大一些，在MQTT初始化时可以指定：
+The default command timeout, which is mainly used for socket read and write timeouts, can be specified during MQTT initialization:
+
+```
+#define MQTT_DEFAULT_CMD_TIMEOUT 4000
+```
+
+The length of the default topic. The topic supports wildcard characters. If the topic is too long, it will be truncated:
 
 ```c
-#define     MQTT_DEFAULT_BUF_SIZE               1024
+#define MQTT_TOPIC_LEN_MAX 64
 ```
 
-线程相关的配置，如线程栈，线程优先级，线程时间片等：
-在linux环境下可以是不需要理会这些参数的，而在RTOS平台则需要配置，如果不使用mbedtls，线程栈2048字节已足够，而使用mbedtls加密后，需要配置4096字节以上。
+The size of the default algorithm data buffer. If you want to send a large amount of data, modify it. You can specify it during MQTT initialization:
+
 ```c
-#define     MQTT_THREAD_STACK_SIZE              2048    // 线程栈
-#define     MQTT_THREAD_PRIO                    5       // 线程优先级
-#define     MQTT_THREAD_TICK                    50      // 线程时间片
+#define MQTT_DEFAULT_BUF_SIZE 1024
 ```
 
-默认的重连时间间隔，当发生掉线时，会以这个时间间隔尝试重连：
+Thread-related configuration, such as thread stack, thread priority, thread time slice, etc .:
+In the Linux environment, you don't need to worry about these parameters, but in the RTOS platform, you need to configure. If you do not use mbedtls, the 2048 bytes of the thread stack is sufficient. After using mbedtls encryption, you need to configure more than 4096 bytes.
 ```c
-#define     MQTT_RECONNECT_DEFAULT_DURATION     1000
+#define MQTT_THREAD_STACK_SIZE 2048 // Thread stack
+#define MQTT_THREAD_PRIO 5 // Thread priority
+#define MQTT_THREAD_TICK 50 // Thread time slice
 ```
 
-其他不需要怎么配置的东西：
+The default reconnection interval. When a disconnection occurs, reconnection will be attempted at this interval:
 ```c
-#define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)    // mqtt报文id
-#define     MQTT_MAX_CMD_TIMEOUT                20000           //最大的命令超时参数
-#define     MQTT_MIN_CMD_TIMEOUT                1000            //最小的命令超时参数
+#define MQTT_RECONNECT_DEFAULT_DURATION 1000
 ```
 
-> ps：以上参数基本不需要怎么配置的，直接用即可~
+Other things that don't need to be configured:
+```c
+#define MQTT_MAX_PACKET_ID (0xFFFF-1) // mqtt message id
+#define MQTT_MAX_CMD_TIMEOUT 20000 // Maximum command timeout parameter
+#define MQTT_MIN_CMD_TIMEOUT 1000 // Minimum command timeout parameter
+```
 
-### 编译 & 运行
+> ps: The above parameters basically do not need to be configured, just use it ~
 
+### Compile & Run
 ```bash
 ./build.sh
 ```
+After running the`build.sh` script, the executable file` mqtt-client` will be generated in the`./Build/bin/` directory, and you can run it directly.
 
-运行`build.sh`脚本后会在 `./build/bin/`目录下生成可执行文件`mqtt-client`，直接运行即可。
+### Compile into a dynamic library libmqttclient.so
 
-### 编译成动态库libmqttclient.so
-
-```bash
+`` `bash
 ./make-libmqttclient.sh
-```
+`` `
 
-运行`make-libmqttclient.sh`脚本后会在 `./libmqttclient/lib`目录下生成一个动态库文件`libmqttclient.so`，并安装到系统的`/usr/lib `目录下，相关头文件已经拷贝到`./libmqttclient/include`目录下，编译应用程序的时候只需要链接动态库即可`-lmqttclient`，动态库的配置文件根据`./test/mqtt_config.h`配置的。
+After running the `make-libmqttclient.sh` script, a dynamic library file` libmqttclient.so` will be generated in the `. / Libmqttclient / lib` directory and installed into the system ’s` / usr / lib` directory, the relevant header files have Copy to the `. / Libmqttclient / include` directory, when compiling the application, you only need to link the dynamic library` -lmqttclient`, the configuration file of the dynamic library is configured according to `. / Test / mqtt_config.h`
 
-## 设计思想
-- 整体采用分层式设计，代码实现采用异步设计方式，降低耦合。
-- 消息的处理使用回调的方式处理：用户指定`[订阅的主题]`与指定`[消息的处理函数]`
-- 不对外产生依赖
+
+## Design thinking
+-The overall design is layered, and the code is implemented asynchronously to reduce coupling.
+-Message processing is handled by callback: user specifies`[subscribed topic]` and specified`[message processing function]`
+-No external dependence
 
 ## API
-`mqttclient`拥有非常简洁的`api`接口
+`mqttclient` has a very simple` api` interface
 ```c
 int mqtt_keep_alive(mqtt_client_t* c);
 int mqtt_init(mqtt_client_t* c, client_init_params_t* init);
@@ -205,8 +208,10 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
 int mqtt_list_subscribe_topic(mqtt_client_t* c);
 int mqtt_set_interceptor_handler(mqtt_client_t* c, interceptor_handler_t handler);
 ```
-## 核心
-**mqtt_client_t 结构**
+
+## Core
+
+**mqtt_client_t structure**
 
 ```c
 typedef struct mqtt_client {
@@ -236,200 +241,200 @@ typedef struct mqtt_client {
 } mqtt_client_t;
 ```
 
-该结构主要维护以下内容：
-1. 读写数据缓冲区`read_buf、write_buf`
-2. 命令超时时间`cmd_timeout`（主要是读写阻塞时间、等待响应的时间、重连等待时间）
-3. 维护`ack`链表`ack_handler_list`，这是异步实现的核心，所有等待响应的报文都会被挂载到这个链表上
-4. 维护消息处理列表`msg_handler_list`，这是`mqtt`协议必须实现的内容，所有来自服务器的`publish`报文都会被处理（前提是订阅了对应的消息）
-5. 维护一个网卡接口`network`
-6. 维护一个内部线程`thread`，所有来自服务器的mqtt包都会在这里被处理！
-7. 两个定时器，分别是掉线重连定时器与保活定时器`reconnect_timer、last_sent、last_received`
-8. 一些连接的参数`connect_params`
+This structure mainly maintains the following:
+1. Read and write data buffers`read_buf, write_buf`
+2. Command timeout`cmd_timeout` (mainly read and write blocking time, waiting time for response, reconnection waiting time)
+3. Maintain the`ack` linked list` ack_handler_list`, which is the core of asynchronous implementation, and all the messages waiting for response will be mounted on this linked list
+4. Maintain the message processing list`msg_handler_list`, which is the content that the` mqtt` protocol must implement. All`publish` messages from the server will be processed (provided that the corresponding messages are subscribed)
+5. Maintain a network card interface`network`
+6. Maintain an internal thread`thread`, all mqtt packages from the server will be processed here!
+7. Two timers, namely the reconnect timer and keep-alive timer`reconnect_timer, last_sent, last_received`
+8. Some connection parameters`connect_params`
 
 
-## mqttclient实现
+## mqttclient implementation
 
-以下是整个框架的实现方式，方便大家更容易理解mqttclient的代码与设计思想，让大家能够修改源码与使用，还可以提交pr或者issues，开源的世界期待各位大神的参与，感谢！
+The following is the implementation of the entire framework, so that everyone can more easily understand the mqttclient code and design ideas, so that everyone can modify the source code and use, you can also submit pr or issues, the open source world looks forward to your participation, thank you!
 
-除此之外以下代码的`记录机制`与其`超时处理机制`是非常好的编程思想，大家有兴趣一定要看源代码！
+In addition, the`recording mechanism` of the following code and its` timeout processing mechanism` are very good programming ideas. If you are interested, you must look at the source code!
 
-### 初始化
+### Initialization
 
 ```c
-int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
+int mqtt_init (mqtt_client_t*c, client_init_params_t*init)
 ```
 
-主要是配置`mqtt_client_t`结构的相关信息，如果没有指定初始化参数，则系统会提供默认的参数。
-但连接部分的参数则必须指定：
+It mainly configures the relevant information of the`mqtt_client_t` structure. If no initialization parameters are specified, the system will provide default parameters.
+But the parameters of the connection part must be specified:
 
 ```c
-    init_params.connect_params.network_params.addr = "[你的mqtt服务器IP地址或者是域名]";
-    init_params.connect_params.network_params.port = 1883;	//端口号
+    init_params.connect_params.network_params.addr = "[your mqtt server IP address or domain name]";
+    init_params.connect_params.network_params.port = 1883; // Port number
     init_params.connect_params.user_name = "jiejietop";
     init_params.connect_params.password = "123456";
     init_params.connect_params.client_id = "clientid";
 
-    mqtt_init(&client, &init_params);
+    mqtt_init (& client, & init_params);
 ```
 
-### 连接服务器
+### connect to the server
 
 ```c
-int mqtt_connect(mqtt_client_t* c);
+int mqtt_connect (mqtt_client_t*c);
 ```
 
-参数只有 `mqtt_client_t` 类型的指针，字符串类型的`主题`（支持通配符"#" "+"），主题的`服务质量`，以及收到报文的`处理函数`，如不指定则有默认处理函数。连接服务器则是使用非异步的方式设计，因为必须等待连接上服务器才能进行下一步操作。
+The parameters are only pointers of type`mqtt_client_t`,` topic` of string type (support wildcard "#" "+"),`quality of service` of topic, and` handling function` of received message, if not specified, there is The default processing function. The connection to the server is designed in a non-asynchronous manner, because you must wait for the connection to the server before proceeding.
 
-过程如下：
-1. 调用底层的连接函数连接上服务器：
+The process is as follows:
+1. Call the underlying connection function to connect to the server:
 
 ```c
-c->network->connect(c->network);
+c-> network-> connect (c-> network);
 ```
 
-2. 序列化`mqtt`的`CONNECT`报文并且发送
+2. Serialize the`CONNECT` message of` mqtt` and send
 
 ```c
-MQTTSerialize_connect(c->write_buf, c->write_buf_size, &connect_data)
-mqtt_send_packet(c, len, &connect_timer)
+MQTTSerialize_connect (c-> write_buf, c-> write_buf_size, & connect_data)
+mqtt_send_packet (c, len, & connect_timer)
 ```
 
-3. 等待来自服务器的`CONNACK`报文
+3. Wait for the`CONNACK` message from the server
 
 ```c
-mqtt_wait_packet(c, CONNACK, &connect_timer)
+mqtt_wait_packet (c, CONNACK, & connect_timer)
 ```
 
-4. 连接成功后创建一个内部线程`mqtt_yield_thread`，并在合适的时候启动它：
+4. After successful connection, create an internal thread`mqtt_yield_thread` and start it at the appropriate time:
 
 ```c
-platform_thread_init("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK)
+platform_thread_init ("mqtt_yield_thread", mqtt_yield_thread, c, MQTT_THREAD_STACK_SIZE, MQTT_THREAD_PRIO, MQTT_THREAD_TICK)
 
-if (NULL != c->thread) {
-    mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
-    platform_thread_startup(c->thread);
-    platform_thread_start(c->thread);       /* start run mqtt thread */
+if (NULL! = c-> thread) {
+    mqtt_set_client_state (c, CLIENT_STATE_CONNECTED);
+    platform_thread_startup (c-> thread);
+    platform_thread_start (c-> thread); /*start run mqtt thread*/
 }
 ```
 
-5. 而对于重连来说则不会重新创建线程，直接改变客户端状态为连接状态即可:
+5. For reconnection, it will not re-create the thread, just change the client state to the connection state:
 
 ```c
-mqtt_set_client_state(c, CLIENT_STATE_CONNECTED);
+mqtt_set_client_state (c, CLIENT_STATE_CONNECTED);
 ```
 
-### 订阅报文
+### Subscribe to messages
 
 ```c
-int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler)
+int mqtt_subscribe (mqtt_client_t*c, const char*topic_filter, mqtt_qos_t qos, message_handler_t handler)
 ```
 
-订阅报文使用异步设计来实现的：
-过程如下：
-1. 序列化订阅报文并且发送给服务器
+The subscription message is implemented using an asynchronous design:
+The process is as follows:
+1. Serialize the subscription message and send it to the server
 
 ```c
-MQTTSerialize_subscribe(c->write_buf, c->write_buf_size, 0, mqtt_get_next_packet_id(c), 1, &topic, (int*)&qos)
-mqtt_send_packet(c, len, &timer)
+MQTTSerialize_subscribe (c-> write_buf, c-> write_buf_size, 0, mqtt_get_next_packet_id (c), 1, & topic, (int*) & qos)
+mqtt_send_packet (c, len, & timer)
 ```
 
-2. 创建对应的消息处理节点，这个消息节点在收到服务器的`SUBACK`订阅应答报文后会挂载到消息处理列表`msg_handler_list`上
+2. Create a corresponding message processing node. This message node will be mounted on the message processing list`msg_handler_list` after receiving the server's` SUBACK` subscription response message.
 
 ```c
-mqtt_msg_handler_create(topic_filter, qos, handler)
+mqtt_msg_handler_create (topic_filter, qos, handler)
 ```
 
-3. 在发送了报文给服务器那就要等待服务器的响应了，先记录这个等待`SUBACK`
+3. After sending a message to the server, you have to wait for the response from the server, first record this wait for`SUBACK`
 
 ```c
-mqtt_ack_list_record(c, SUBACK, mqtt_get_next_packet_id(c), len, msg_handler)
+mqtt_ack_list_record (c, SUBACK, mqtt_get_next_packet_id (c), len, msg_handler)
 ```
 
-### 取消订阅
-与订阅报文的逻辑基本差不多的~
+### unsubscribe
+It is basically similar to the logic of subscribing to the message ~
 
-1. 序列化订阅报文并且发送给服务器
+1. Serialize the subscription message and send it to the server
 
 ```c
-MQTTSerialize_unsubscribe(c->write_buf, c->write_buf_size, 0, packet_id, 1, &topic)
-mqtt_send_packet(c, len, &timer)
+MQTTSerialize_unsubscribe (c-> write_buf, c-> write_buf_size, 0, packet_id, 1, & topic)
+mqtt_send_packet (c, len, & timer)
 ```
 
-2. 创建对应的消息处理节点，这个消息节点在收到服务器的`UNSUBACK`取消订阅应答报文后将消息处理列表`msg_handler_list`上的已经订阅的主题消息节点销毁
+2. Create a corresponding message processing node. This message node destroys the subscribed topic message nodes on the message processing list`msg_handler_list` after receiving the server's` UNSUBACK` unsubscribe response message.
 
 ```c
-mqtt_msg_handler_create((const char*)topic_filter, QOS0, NULL)
+mqtt_msg_handler_create ((const char*) topic_filter, QOS0, NULL)
 ```
 
-3. 在发送了报文给服务器那就要等待服务器的响应了，先记录这个等待`UNSUBACK`
+3. After sending a message to the server, you have to wait for the response from the server, first record this wait for`UNSUBACK`
 
 ```c
-mqtt_ack_list_record(c, UNSUBACK, packet_id, len, msg_handler)
+mqtt_ack_list_record (c, UNSUBACK, packet_id, len, msg_handler)
 ```
 
-### 发布报文
+### Post message
 
 ```c
-int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg)
+int mqtt_publish (mqtt_client_t*c, const char*topic_filter, mqtt_message_t*msg)
 ```
 
-参数只有 `mqtt_client_t` 类型的指针，字符串类型的`主题`（支持通配符），要发布的消息（包括`服务质量`、`消息主体`）。
+The parameters are only pointers of type`mqtt_client_t`,` topics` of string type (supporting wildcards), and messages to be published (including`quality of service`,` message body`).
 
 ```c
     mqtt_message_t msg;
     
     msg.qos = 2;
-    msg.payload = (void *) buf;
+    msg.payload = (void*) buf;
     
-	mqtt_publish(&client, "testtopic1", &msg);
+mqtt_publish (& client, "testtopic1", & msg);
 ```
 
-核心思想都差不多，过程如下：
-1. 先序列化发布报文，然后发送到服务器
+The core ideas are similar, and the process is as follows:
+1. Serialize the release message first, and then send it to the server
 
 ```c
-MQTTSerialize_publish(c->write_buf, c->write_buf_size, 0, msg->qos, msg->retained, msg->id,
-              topic, (unsigned char*)msg->payload, msg->payloadlen);
-mqtt_send_packet(c, len, &timer)
+MQTTSerialize_publish (c-> write_buf, c-> write_buf_size, 0, msg-> qos, msg-> retained, msg-> id,
+              topic, (unsigned char*) msg-> payload, msg-> payloadlen);
+mqtt_send_packet (c, len, & timer)
 ```
 
-2. 对于QOS0的逻辑，不做任何处理，对于QOS1和QOS2的报文则需要记录下来，在没收到服务器应答的时候进行重发
+2. For QOS0 logic, do nothing, and for QOS1 and QOS2 messages need to be recorded and retransmitted when no response from the server is received.
 
 ```c
-    if (QOS1 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBACK, mqtt_get_next_packet_id(c), len, NULL);
-    } else if (QOS2 == msg->qos) {
-        rc = mqtt_ack_list_record(c, PUBREC, mqtt_get_next_packet_id(c), len, NULL);
+    if (QOS1 == msg-> qos) {
+        rc = mqtt_ack_list_record (c, PUBACK, mqtt_get_next_packet_id (c), len, NULL);
+    } else if (QOS2 == msg-> qos) {
+        rc = mqtt_ack_list_record (c, PUBREC, mqtt_get_next_packet_id (c), len, NULL);
     }
 ```
 
-3. 还有非常重要的一点，重发报文的MQTT报文头部需要设置DUP标志位，这是MQTT协议的标准，因此，在重发的时候作者直接操作了报文的DUP标志位，因为修改DUP标志位的函数我没有从MQTT库中找到，所以我封装了一个函数，这与LwIP中的交叉存取思想是一个道理，它假设我知道MQTT报文的所有操作，所以我可以操作它，这样子可以提高很多效率：
+3. There is also a very important point. The DUP flag bit needs to be set in the MQTT message header of the retransmission message. This is the standard of the MQTT protocol. Therefore, the author directly manipulated the DUP flag bit of the message during retransmission. Because the function to modify the DUP flag is not found in the MQTT library, I have encapsulated a function. This is the same as the idea of ​​cross access in LwIP. It assumes that I know all the operations of the MQTT message, so I can operate It, this way can improve a lot of efficiency:
 
 ```c
-mqtt_set_publish_dup(c,1);  /* may resend this data, set the udp flag in advance */
+mqtt_set_publish_dup (c, 1); /*may resend this data, set the udp flag in advance*/
 ```
 
-### 内部线程
+### Internal threads
 
 ```c
-static void mqtt_yield_thread(void *arg)
+static void mqtt_yield_thread (void*arg)
 ```
 
-主要是对`mqtt_yield`函数的返回值做处理，比如在`disconnect`的时候销毁这个线程。
+It mainly deals with the return value of the`mqtt_yield` function, such as destroying this thread when` disconnect`.
 
-### 核心的处理函数
+### Core processing functions
 
-1. 数据包的处理`mqtt_packet_handle`
+1. Packet processing`mqtt_packet_handle`
 
 ```c
-static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
+static int mqtt_packet_handle (mqtt_client_t*c, platform_timer_t*timer)
 ```
 
-对不同的包使用不一样的处理：
+Use different processing for different packages:
 
 ```c
     switch (packet_type) {
-        case 0: /* timed out reading packet */
+        case 0: /*timed out reading packet*/
             break;
 
         case CONNACK:
@@ -437,28 +442,28 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
 
         case PUBACK:
         case PUBCOMP:
-            rc = mqtt_puback_and_pubcomp_packet_handle(c, timer);
+            rc = mqtt_puback_and_pubcomp_packet_handle (c, timer);
             break;
 
         case SUBACK:
-            rc = mqtt_suback_packet_handle(c, timer);
+            rc = mqtt_suback_packet_handle (c, timer);
             break;
             
         case UNSUBACK:
-            rc = mqtt_unsuback_packet_handle(c, timer);
+            rc = mqtt_unsuback_packet_handle (c, timer);
             break;
 
         case PUBLISH:
-            rc = mqtt_publish_packet_handle(c, timer);
+            rc = mqtt_publish_packet_handle (c, timer);
             break;
 
         case PUBREC:
         case PUBREL:
-            rc = mqtt_pubrec_and_pubrel_packet_handle(c, timer);
+            rc = mqtt_pubrec_and_pubrel_packet_handle (c, timer);
             break;
 
         case PINGRESP:
-            c->ping_outstanding = 0;
+            c-> ping_outstanding = 0;
             break;
 
         default:
@@ -466,183 +471,183 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
     }
 ```
 
-并且做保活的处理：
+And do keepalive processing:
 
 ```c
-mqtt_keep_alive(c)
+mqtt_keep_alive (c)
 ```
 
-当发生超时后
+When a timeout occurs
 
 ```c
-if (platform_timer_is_expired(&c->last_sent) || platform_timer_is_expired(&c->last_received)) 
+if (platform_timer_is_expired (& c-> last_sent) || platform_timer_is_expired (& c-> last_received))
 ```
 
-序列号一个心跳包并且发送给服务器
+Sequence number a heartbeat packet and send it to the server
 
 ```c
-MQTTSerialize_pingreq(c->write_buf, c->write_buf_size);
-mqtt_send_packet(c, len, &timer);
+MQTTSerialize_pingreq (c-> write_buf, c-> write_buf_size);
+mqtt_send_packet (c, len, & timer);
 ```
 
-当再次发生超时后，表示与服务器的连接已断开，需要重连的操作，设置客户端状态为断开连接
+When the timeout occurs again, it indicates that the connection to the server has been disconnected and a reconnection operation is required. Set the client status to disconnected.
 
 ```c
-mqtt_set_client_state(c, CLIENT_STATE_DISCONNECTED);
+mqtt_set_client_state (c, CLIENT_STATE_DISCONNECTED);
 ```
 
-2. `ack`链表的扫描，当收到服务器的报文时，对ack列表进行扫描操作
+2. Scan the ack list. When receiving a message from the server, scan the ack list.
 
 ```c
-mqtt_ack_list_scan(c);
+mqtt_ack_list_scan (c);
 ```
 
-当超时后就销毁ack链表节点：
+When the timeout expires, destroy the ack list node:
 
 ```c
-mqtt_ack_handler_destroy(ack_handler);
+mqtt_ack_handler_destroy (ack_handler);
 ```
 
-当然下面这几种报文则需要重发操作：（`PUBACK 、PUBREC、 PUBREL 、PUBCOMP`，保证QOS1 QOS2的服务质量）
+Of course, the following types of packets need to be retransmitted: (`PUBACK, PUBREC, PUBREL, PUBCOMP` to ensure the quality of service of QOS1 and QOS2)
 
 ```c
-if ((ack_handler->type ==  PUBACK) || (ack_handler->type ==  PUBREC) || (ack_handler->type ==  PUBREL) || (ack_handler->type ==  PUBCOMP))
-	mqtt_ack_handler_resend(c, ack_handler);
+if ((ack_handler-> type == PUBACK) || (ack_handler-> type == PUBREC) || (ack_handler-> type == PUBREL) || (ack_handler-> type == PUBCOMP))
+mqtt_ack_handler_resend (c, ack_handler);
 ```
 
-3. 保持活性的时间过去了，可能掉线了，需要重连操作
+3. The time to keep active has passed, it may be offline, and you need to reconnect.
 
 ```c
-mqtt_try_reconnect(c);
+mqtt_try_reconnect (c);
 ```
 
-重连成功后尝试重新订阅报文，保证恢复原始状态~
+After reconnecting successfully, try to resubscribe the message to ensure the original state is restored ~
 
 ```c
-mqtt_try_resubscribe(c)
+mqtt_try_resubscribe (c)
 ```
 
-### 发布应答与发布完成报文的处理
+### Processing of release response and release completion messages
 
 ```c
-static int mqtt_puback_and_pubcomp_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
+static int mqtt_puback_and_pubcomp_packet_handle (mqtt_client_t*c, platform_timer_t*timer)
 ```
 
-1. 反序列化报文
+Deserialized message
 
 ```c
-MQTTDeserialize_ack(&packet_type, &dup, &packet_id, c->read_buf, c->read_buf_size)
+MQTTDeserialize_ack (& ​​packet_type, & dup, & packet_id, c-> read_buf, c-> read_buf_size)
 ```
 
-2. 取消对应的ack记录
+2. Cancel the corresponding ack record
 
 ```c
-mqtt_ack_list_unrecord(c, packet_type, packet_id, NULL);
+mqtt_ack_list_unrecord (c, packet_type, packet_id, NULL);
 ```
 
-### 订阅应答报文的处理
+### Processing of subscription response messages
 
 ```c
-static int mqtt_suback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
+static int mqtt_suback_packet_handle (mqtt_client_t*c, platform_timer_t*timer)
 ```
 
-1. 反序列化报文
+Deserialized message
 
 ```c
-MQTTDeserialize_suback(&packet_id, 1, &count, (int*)&granted_qos, c->read_buf, c->read_buf_size)
+MQTTDeserialize_suback (& ​​packet_id, 1, & count, (int*) & granted_qos, c-> read_buf, c-> read_buf_size)
 ```
 
-2. 取消对应的ack记录
+2. Cancel the corresponding ack record
 
 ```c
-mqtt_ack_list_unrecord(c, packet_type, packet_id, NULL);
+mqtt_ack_list_unrecord (c, packet_type, packet_id, NULL);
 ```
 
-3. 安装对应的订阅消息处理函数，如果是已存在的则不会安装
+3. Install the corresponding subscription message processing function, if it already exists, it will not be installed
 
 ```c
-mqtt_msg_handlers_install(c, msg_handler);
+mqtt_msg_handlers_install (c, msg_handler);
 ```
 
-### 取消订阅应答报文的处理
+### Processing of unsubscribe response message
 
 ```c
-static int mqtt_unsuback_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
+static int mqtt_unsuback_packet_handle (mqtt_client_t*c, platform_timer_t*timer)
 ```
 
-1. 反序列化报文
+Deserialized message
 
 ```c
-MQTTDeserialize_unsuback(&packet_id, c->read_buf, c->read_buf_size)
+MQTTDeserialize_unsuback (& ​​packet_id, c-> read_buf, c-> read_buf_size)
 ```
 
-2. 取消对应的ack记录，并且获取到已经订阅的消息处理节点
+2. Cancel the corresponding ack record and obtain the message processing node that has been subscribed
 
 ```c
-mqtt_ack_list_unrecord(c, UNSUBACK, packet_id, &msg_handler)
+mqtt_ack_list_unrecord (c, UNSUBACK, packet_id, & msg_handler)
 ```
 
-3. 销毁对应的订阅消息处理函数
+3. Destroy the corresponding subscription message processing function
 
 ```c
-mqtt_msg_handler_destory(msg_handler);
+mqtt_msg_handler_destory (msg_handler);
 ```
 
-### 来自服务器的发布报文的处理
+### Processing of published messages from the server
 
 ```c
-static int mqtt_publish_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
+static int mqtt_publish_packet_handle (mqtt_client_t*c, platform_timer_t*timer)
 ```
 
-1. 反序列化报文
+Deserialized message
 
 ```c
-MQTTDeserialize_publish(&msg.dup, &qos, &msg.retained, &msg.id, &topic_name,
-        (unsigned char**)&msg.payload, (int*)&msg.payloadlen, c->read_buf, c->read_buf_size)
+MQTTDeserialize_publish (& msg.dup, & qos, & msg.retained, & msg.id, & topic_name,
+        (unsigned char**) & msg.payload, (int*) & msg.payloadlen, c-> read_buf, c-> read_buf_size)
 ```
 
-2. 对于QOS0、QOS1的报文，直接去处理消息
+2. For QOS0 and QOS1 packets, directly process the messages
 
 ```c
-mqtt_deliver_message(c, &topic_name, &msg);
+mqtt_deliver_message (c, & topic_name, & msg);
 ```
 
-3. 对于QOS1的报文，还需要发送一个`PUBACK`应答报文给服务器
+3. For QOS1 messages, you also need to send a`PUBACK` response message to the server
 
 ```c
-MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBACK, 0, msg.id);
+MQTTSerialize_ack (c-> write_buf, c-> write_buf_size, PUBACK, 0, msg.id);
 ```
 
-4. 而对于QOS2的报文则需要发送`PUBREC`报文给服务器，除此之外还需要记录`PUBREL`到ack链表上，等待服务器的发布释放报文，最后再去处理这个消息
+4. For QOS2 messages, you need to send a`PUBREC` message to the server. In addition, you need to record` PUBREL` to the ack list, wait for the server to release the release message, and finally process the message.
 
 ```c
-MQTTSerialize_ack(c->write_buf, c->write_buf_size, PUBREC, 0, msg.id);
-mqtt_ack_list_record(c, PUBREL, msg.id + 1, len, NULL)
-mqtt_deliver_message(c, &topic_name, &msg);
+MQTTSerialize_ack (c-> write_buf, c-> write_buf_size, PUBREC, 0, msg.id);
+mqtt_ack_list_record (c, PUBREL, msg.id + 1, len, NULL)
+mqtt_deliver_message (c, & topic_name, & msg);
 ```
 
-> 说明：一旦注册到ack列表上的报文，当具有重复的报文是不会重新被注册的，它会通过`mqtt_ack_list_node_is_exist`函数判断这个节点是否存在，主要是依赖等待响应的消息类型与msgid。
+> Note: Once a message is registered on the ack list, it will not be re-registered when there is a duplicate message. It will use the`mqtt_ack_list_node_is_exist` function to determine whether this node exists. It mainly depends on the message type and msgid waiting for a response .
 
-### 发布收到与发布释放报文的处理
+### Processing of Release Receive and Release Release Messages
 
 ```c
-static int mqtt_pubrec_and_pubrel_packet_handle(mqtt_client_t *c, platform_timer_t *timer)
+static int mqtt_pubrec_and_pubrel_packet_handle (mqtt_client_t*c, platform_timer_t*timer)
 ```
 
-1. 反序列化报文
+Deserialized message
 
 ```c
-MQTTDeserialize_ack(&packet_type, &dup, &packet_id, c->read_buf, c->read_buf_size)
+MQTTDeserialize_ack (& ​​packet_type, & dup, & packet_id, c-> read_buf, c-> read_buf_size)
 ```
 
-2. 产生一个对应的应答报文
+2. Generate a corresponding response message
 
 ```c
-mqtt_publish_ack_packet(c, packet_id, packet_type);
+mqtt_publish_ack_packet (c, packet_id, packet_type);
 ```
 
-3. 取消对应的ack记录
+3. Cancel the corresponding ack record
 
 ```c
-mqtt_ack_list_unrecord(c, UNSUBACK, packet_id, &msg_handler)
+mqtt_ack_list_unrecord (c, UNSUBACK, packet_id, & msg_handler)
 ```
