@@ -936,8 +936,10 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
         RETURN_ERROR(MQTT_SUCCESS_ERROR);
 
     rc = c->network->connect(c->network);
-    if (MQTT_SUCCESS_ERROR != rc)
+    if (MQTT_SUCCESS_ERROR != rc){
+        c->network->disconnect(c->network);
         RETURN_ERROR(rc);
+    }  
     
     MQTT_LOG_I("%s:%d %s()... mqtt connect success...", __FILE__, __LINE__, __FUNCTION__);
 
