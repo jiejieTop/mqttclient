@@ -42,6 +42,22 @@ Has a very clear layered framework.
 
 ![Overall Frame](png/mqttclient.png)
 
+-At the top of the framework is the API function interface, which implements the client's initialization, release, connect to the server, disconnect, subscribe topic, unsubscribe topic, publish messages and other functional interfaces.
+
+-mqtt client uses the famous paho mqtt library.
+
+-Asynchronous processing mechanism is used to manage all acks. It does not need to wait for the server's response when sending the message, but only records it. After receiving the server's ack, canceling this record is extremely efficient; while sending the mqtt report When the message (QoS1 / QoS2) is not received from the server, the message will be resent.
+
+-An mqtt yield thread is implemented internally to handle all content uniformly, such as timeout processing, ack message processing, and publish message received from the server. At this time, a callback function will be called to notify the user of the data received and published. Release, release completion message processing, heartbeat message (keep alive), when disconnected from the server, you need to try to reconnect, resubscribe to the topic, resend the message or reply, etc.
+
+-Message processing, read and write messages, decode mqtt messages, set messages (dup), destroy messages, etc.
+
+-network is a network component, it can automatically select a data channel, if it is an encryption method, data transmission is carried out through tls, and tls can choose mbedtls as the encryption backend or openssl as the encryption backend; it can also be the tcp direct connection method, In the end they are all transmitted via tcp.
+
+-platform is a platform abstraction layer that encapsulates things from different systems, such as sockets or ATs, threads, time, mutexes, and memory management. These are dealing with the system and are also necessary for cross-platform encapsulation.
+
+-On the far right is the general content, list processing, log library, error handling, software random number generator, etc.
+
 **Linux, TencentOS tiny, FreeRTOS, and RT-Thread platforms have been implemented (packages have been made and named `kawaii-mqtt` ). In addition, TencentOS tiny's AT framework can also be used (RAM consumption is less than 15K). And the stability is excellent!**
 
 
@@ -61,6 +77,7 @@ Release version | Description |
 | [v1.0.1] | Fix logic when actively disconnecting from the server |
 | [v1.0.2] | Add a new feature-interceptor, fix some minor bugs |
 | [v1.0.3] | To avoid global pollution, modify the naming of log and list related functions |
+| [v1.0.4] | Network structure and mbedtls data channel readjusted |
 
 ## Question
 
