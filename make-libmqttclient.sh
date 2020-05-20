@@ -35,16 +35,16 @@ INC =   -lpthread \\
 
 OBJS = \$(patsubst %.c, %.o, \$(SRC))
 
-FLAG = -g -fPIC -I. -Iinclude \$(INC) 
+FLAG = -g -fpic -I. -Iinclude \$(INC) 
 TARGET = libmqttclient.so
 
 EOF
 
 echo -e "\n\$(TARGET):\$(OBJS)" >> Makefile
-echo -e "\t\$(CC) -shared -o \$@ \$^ \$(FLAG)" >> Makefile
+echo -e "\t\$(CC) -shared \$^ -o \$@" >> Makefile
 
 echo -e "\n%.o:%.c" >> Makefile
-echo -e "\t\$(CC) -shared -o \$@ \$^ \$(FLAG)" >> Makefile
+echo -e "\t\$(CC) -c \$(FLAG) \$^ -o \$@" >> Makefile
 
 echo -e "\nclean:" >> Makefile
 echo -e "\trm -rf \$(TARGET) \$(OBJS)" >> Makefile
@@ -59,13 +59,14 @@ echo -e "\n.PHONY:clean" >> Makefile
 
 fi
 
+cp -r ../test/*.h include/.
 cp -r ../mqtt/*.h include/.
 cp -r ../common/*.h include/.
 cp -r ../network/*.h include/.
 cp -r ../mqttclient/*.h include/.
 cp -r ../common/log/*.h include/.
 cp -r ../platform/linux/*.h include/.
-cp -r ../common/mbedtls/include include/.
+cp -r ../common/mbedtls/include/mbedtls include/.
 cp -r ../common/mbedtls/wrapper/*.h include/.
 
 if [ " $1" == " " ]; then
