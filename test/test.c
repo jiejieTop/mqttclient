@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-04-23 15:03:32
+ * @LastEditTime: 2020-05-20 18:27:07
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -11,7 +11,9 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "mqttclient.h"
-#include "config_info.h"
+
+// #define TEST_USEING_TLS  
+
 extern const char *test_ca_get();
 
 mqtt_client_t client;
@@ -67,13 +69,13 @@ int main(void)
     init_params.read_buf_size = 1024;
     init_params.write_buf_size = 1024;
 
-#ifdef MQTT_NETWORK_TYPE_TLS
-    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();
-    init_params.connect_params.network_params.port = "8883";
+#ifdef TEST_USEING_TLS
+    init_params.network.ca_crt = test_ca_get();
+    init_params.network.port = "8883";
 #else
-    init_params.connect_params.network_params.port = "1883";
+    init_params.network.port = "1883";
 #endif
-    init_params.connect_params.network_params.addr = "www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
+    init_params.network.addr = "www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
 
     init_params.connect_params.user_name = random_string(10); // random_string(10); //"jiejietop-acer1";
     init_params.connect_params.password = random_string(10); //random_string(10); // "123456";

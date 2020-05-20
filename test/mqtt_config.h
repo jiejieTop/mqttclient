@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 00:42:16
- * @LastEditTime: 2020-02-25 09:25:35
+ * @LastEditTime: 2020-05-20 16:13:10
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTT_CONFIG_H_
@@ -42,6 +42,6 @@
 #define     MQTT_THREAD_TICK                    50
 
 
-#define     MQTT_NETWORK_TYPE_TLS
+// #define     MQTT_NETWORK_TYPE_NO_TLS
 
 #endif /* _MQTT_CONFIG_H_ */
