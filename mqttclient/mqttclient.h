@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-27 23:31:09
+ * @LastEditTime: 2020-05-20 15:53:04
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -90,7 +90,6 @@ typedef struct connect_params {
     unsigned short      keep_alive_interval;
     unsigned char       clean_session;
     unsigned char       mqtt_version;
-    network_params_t    network_params;
 } connect_params_t;
 
 typedef struct mqtt_client {
@@ -111,11 +110,11 @@ typedef struct mqtt_client {
     mqtt_list_t                 msg_handler_list;
     mqtt_list_t                 ack_handler_list;
     network_t                   *network;
+   connect_params_t             *connect_params;
     platform_thread_t           *thread;
     platform_timer_t            reconnect_timer;
     platform_timer_t            last_sent;
     platform_timer_t            last_received;
-    connect_params_t            *connect_params;
     interceptor_handler_t       interceptor_handler;
 } mqtt_client_t;
 
@@ -127,6 +126,7 @@ typedef struct client_init_params{
     void                        *reconnect_date;
     reconnect_handler_t         reconnect_handler;
     connect_params_t            connect_params;
+    network_t                   network;
 } client_init_params_t;
 
 int mqtt_keep_alive(mqtt_client_t* c);

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-02-25 03:36:09
- * @LastEditTime: 2020-02-25 07:16:43
+ * @LastEditTime: 2020-05-20 16:24:20
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -64,7 +64,7 @@
 #endif // !MQTT_THREAD_TICK
 
 
-#ifdef MQTT_NETWORK_TYPE_TLS
+#ifndef MQTT_NETWORK_TYPE_NO_TLS
 
 #ifndef MQTT_TLS_HANDSHAKE_TIMEOUT
     #define MQTT_TLS_HANDSHAKE_TIMEOUT  (5 * 1000)
@@ -77,6 +77,6 @@
     #include "mbedtls/ctr_drbg.h"
     #include "mbedtls/error.h"
     #include "mbedtls/debug.h"
-#endif /* MQTT_NETWORK_TYPE_TLS */
+#endif /* MQTT_NETWORK_TYPE_NO_TLS */
 
 #endif /* _DEFCONFIG_H_ */

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-04-27 23:55:53
+ * @LastEditTime: 2020-05-20 17:53:06
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -111,7 +111,7 @@ static int mqtt_decode_packet(mqtt_client_t* c, int* value, int timeout)
             rc = MQTTPACKET_READ_ERROR; /* bad data */
             goto exit;
         }
-        rc = c->network->read(c->network, &i, 1, timeout);  /* read network data */
+        rc = network_read(c->network, &i, 1, timeout);  /* read network data */
         if (rc != 1)
             goto exit;
         *value += (i & 127) * multiplier;   /* decode data length according to mqtt protocol */
@@ -132,7 +132,7 @@ static void mqtt_packet_drain(mqtt_client_t* c, platform_timer_t *timer, int pac
     }
 
     do {
-        read_len = c->network->read(c->network, c->read_buf, bytes2read, platform_timer_remain(timer));
+        read_len = network_read(c->network, c->read_buf, bytes2read, platform_timer_remain(timer));
         if (0 != read_len) {
             total_bytes_read += read_len;
             if ((packet_len - total_bytes_read) >= c->read_buf_size) {
@@ -158,7 +158,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
     platform_timer_cutdown(timer, c->cmd_timeout);
 
     /* 1. read the header byte.  This has the packet type in it */
-    rc = c->network->read(c->network, c->read_buf, len, platform_timer_remain(timer));
+    rc = network_read(c->network, c->read_buf, len, platform_timer_remain(timer));
     if (rc != len)
         RETURN_ERROR(MQTT_NOTHING_TO_READ_ERROR);
 
@@ -177,7 +177,7 @@ static int mqtt_read_packet(mqtt_client_t* c, int* packet_type, platform_timer_t
     }
 
     /* 3. read the rest of the buffer using a callback to supply the rest of the data */
-    if ((remain_len > 0) && ((rc = c->network->read(c->network, c->read_buf + len, remain_len, platform_timer_remain(timer))) != remain_len))
+    if ((remain_len > 0) && ((rc = network_read(c->network, c->read_buf + len, remain_len, platform_timer_remain(timer))) != remain_len))
         RETURN_ERROR(MQTT_NOTHING_TO_READ_ERROR);
 
     header.byte = c->read_buf[0];
@@ -198,7 +198,7 @@ static int mqtt_send_packet(mqtt_client_t* c, int length, platform_timer_t* time
 
     /* send mqtt packet in a blocking manner or exit when it timer is expired */
     while ((sent < length) && (!platform_timer_is_expired(timer))) {
-        len = c->network->write(c->network, &c->write_buf[sent], length, platform_timer_remain(timer));
+        len = network_write(c->network, &c->write_buf[sent], length, platform_timer_remain(timer));
         if (len <= 0)  // there was an error writing the data
             break;
         sent += len;
@@ -909,7 +909,7 @@ static void mqtt_yield_thread(void *arg)
         rc = mqtt_yield(c, c->cmd_timeout);
         if (MQTT_CLEAN_SESSION_ERROR == rc) {
             MQTT_LOG_E("%s:%d %s()..., mqtt clean session....", __FILE__, __LINE__, __FUNCTION__);
-            c->network->disconnect(c->network);
+            network_disconnect(c->network);
             mqtt_clean_session(c);
             goto exit;
         } else if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
@@ -935,11 +935,15 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if (CLIENT_STATE_CONNECTED == mqtt_get_client_state(c))
         RETURN_ERROR(MQTT_SUCCESS_ERROR);
 
-    rc = c->network->connect(c->network);
+    rc = network_connect(c->network);
     if (MQTT_SUCCESS_ERROR != rc) {
-        c->network->disconnect(c->network);
-        RETURN_ERROR(rc);
-    }  
+        if (NULL != c->network) {
+            network_release(c->network);
+            platform_memory_free(c->network);
+            c->network = NULL;
+            RETURN_ERROR(rc);
+        }  
+    }
     
     MQTT_LOG_I("%s:%d %s()... mqtt connect success...", __FILE__, __LINE__, __FUNCTION__);
 
@@ -1089,8 +1093,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     c->reconnect_handler = init->reconnect_handler;
     c->interceptor_handler = NULL;
 
-    // c->network->network_params = &init->connect_params.network_params;
-    if ((rc = network_init(c->network, &init->connect_params.network_params)) < 0)
+    if ((rc = network_init(c->network, init->network.addr, init->network.port, init->network.ca_crt)) < 0)
         RETURN_ERROR(rc);
 
     mqtt_list_init(&c->msg_handler_list);
