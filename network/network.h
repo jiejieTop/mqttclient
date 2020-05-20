@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:02
- * @LastEditTime: 2020-05-20 17:51:40
+ * @LastEditTime: 2020-05-20 23:16:11
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _NETWORK_H_
@@ -32,6 +32,6 @@ int network_connect(network_t* n);
 void network_disconnect(network_t *n);
 void network_release(network_t* n);
 int network_set_ca(network_t *n, const char *ca);
-int network_set_channel(network_t *n, int channel);
+void network_set_channel(network_t *n, int channel);
 
 #endif
