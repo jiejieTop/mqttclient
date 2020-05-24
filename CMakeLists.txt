@@ -4,7 +4,7 @@ project(mqtt-client)
 
 set(TARGETS "mqtt-client")
 set(SUBDIRS "mqtt" "test" "platform" "network" "common" "mqttclient")
-set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "common/mbedtls/include" "network" "mqttclient" "test")
+set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "network" "network/mbedtls/include" "mqttclient" "test")
 set(OUTDIRS "build")
 set(LIBNAMES "mqtt" "platform" "network" "common" "salof" "mbedtls" "mqttclient")
 set(PROJECT_ROOT_PATH "${PROJECT_SOURCE_DIR}")
@@ -12,6 +12,7 @@ set(LIBRARY_OUTPUT_PATH "${PROJECT_ROOT_PATH}/${OUTDIRS}/lib/")
 set(EXECUTABLE_OUTPUT_PATH "${PROJECT_ROOT_PATH}/${OUTDIRS}/bin/")
 
 SET(CMAKE_BUILD_TYPE "Release")   # Debug Release
+SET(CMAKE_LIB_TYPE "STATIC")   # SHARED STATIC
 
 set(CMAKE_C_COMPILER "gcc")
 set(CMAKE_CXX_COMPILER "g++" )
