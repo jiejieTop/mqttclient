@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-05-24 14:21:54
+ * @LastEditTime: 2020-05-24 17:12:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -87,7 +87,7 @@ int main(void)
 #else
     init_params.network.port = "1883";
 #endif
-    init_params.network.addr = "j6npr4w.mqtt.iot.gz.baidubce.com";
+    init_params.network.host = "j6npr4w.mqtt.iot.gz.baidubce.com";
 
     init_params.connect_params.user_name = "j6npr4w/mqtt-client-dev";
     init_params.connect_params.password = "lcUhUs5VYLMSbrnB"; 
