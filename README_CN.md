@@ -13,7 +13,7 @@
 ## 优势：
 - **基于标准BSD socket之上开发**，只要是兼容BSD socket的系统均可使用。
 
-- **稳定**：无论是`掉线重连`，`丢包重发`，都是严格`遵循MQTT协议标准`执行，除此之外对**大数据量**的测试无论是收是发，都是非常稳定（一次发送`135K`数据，3秒一次），高频测试也是非常稳定（7个主题同时收发，每秒一次，也就是1秒14个mqtt报文，服务质量QoS0、QoS1、QoS2都有）。因为作者以极少的资源设计了`记录机制`，对采用QoS1服务质量的报文必须保证到达一次，当发布的主题（qos1、qos2都适用）没有被服务器收到时会自动重发，而对QoS2服务质量的报文保证有且只有处理一次（如果不相信它稳定性的同学可以自己去修改源码，专门为QoS2服务质量去做测试，故意不回复`PUBREC`包，让服务器重发QoS2报文，且看看客户端是否有且只有处理一次），而对于掉线重连的稳定性，这种则是**基本操作**了，没啥好说的，在自动重连后还会自动重新订阅主题，保证主题不会丢失，因此在测试中稳定性极好。
+- **稳定**：无论是**掉线重连**，**丢包重发**，都是**严格遵循MQTT协议标准**执行，除此之外对**大数据量**的测试无论是收是发，都是非常稳定，高频测试也是非常稳定。因为作者以极少的资源设计了`记录机制`，对采用QoS1服务质量的报文必须保证到达一次，当发布的主题（qos1、qos2都适用）没有被服务器收到时会自动重发，而对QoS2服务质量的报文保证有且只有处理一次（如果不相信它稳定性的同学可以自己去修改源码，专门为QoS2服务质量去做测试，故意不回复`PUBREC`包，让服务器重发QoS2报文，且看看客户端是否有且只有处理一次），而对于掉线重连的稳定性，这种则是**最最最基本操作**了，没啥好说的，在自动重连后还会**自动重新订阅主题**，保证主题不会丢失，因此在测试中**稳定性极好**。
 
 - **轻量级**：整个代码工程极其简单，不使用mbedtls情况下，占用资源极少，作者曾使用esp8266模组与云端通信，整个工程代码消耗的RAM不足15k（包括系统占用的开销，对数据的处理开销，而此次还是未优化的情况下，还依旧完美保留了掉线重连的稳定性，但是对应qos1、qos2服务质量的报文则未做测试，因为STM32F103C8T6芯片资源实在是太少了，折腾不起）。
 
@@ -89,17 +89,44 @@
 mqttclient 遵循 [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 开源协议。鼓励代码共享和尊重原作者的著作权，可以自由的使用、修改源代码，也可以将修改后的代码作为开源或闭源软件发布，**但必须保留原作者版权声明**。
 
 ## linux平台下测试使用
+
 ### 安装cmake：
 ```bash
-sudo apt-get install cmake
+sudo apt-get install cmake g++
 ```
 
-### 配置
+### 测试程序
+
+| 测试平台 | 位置 |
+| -- | -- |
+| emqx（我私人部署的服务器） | [./test/emqx/test.c](./test/emqx/test.c) |
+| 百度天工 | [./test/baidu/test.c](./test/baidu/test.c) |
+| onenet | [./test/onenet/test.c](./test/onenet/test.c) |
+
+### 编译 & 运行
+
+```bash
+./build.sh
+```
+
+运行**build.sh**脚本后会在 **./build/bin/**目录下生成可执行文件**emqx**、**baidu**、**onenet**等多个平台的可执行程序，直接运行即可。
+
+### 编译成动态库libmqttclient.so
+
+```bash
+./make-libmqttclient.sh
+```
+
+运行`make-libmqttclient.sh`脚本后会在 `./libmqttclient/lib`目录下生成一个动态库文件`libmqttclient.so`，并安装到系统的`/usr/lib `目录下，相关头文件已经拷贝到`./libmqttclient/include`目录下，编译应用程序的时候只需要链接动态库即可`-lmqttclient`，动态库的配置文件根据`./test/mqtt_config.h`配置的。
+
+
+## 配置
+
 在`mqttclient/test/test.c`文件中修改以下内容：
 ```c
-    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get();    /* CA证书 */
-    init_params.connect_params.network_params.addr = "xxxxxxx";                             /* 服务器域名 */
-    init_params.connect_params.network_params.port = "8883";                                /* 服务器端口号 */
+    init_params.network.ca_crt = test_ca_get();                                             /* CA证书 */
+    init_params.network.addr = "xxxxxxx";                                                   /* 服务器域名 */
+    init_params.network.port = "8883";                                                      /* 服务器端口号 */
     init_params.connect_params.user_name = "xxxxxxx";                                       /* 用户名 */
     init_params.connect_params.password = "xxxxxxx";                                        /* 密码 */
     init_params.connect_params.client_id = "xxxxxxx";                                       /* 客户端id */
@@ -152,7 +179,7 @@ sudo apt-get install cmake
 
 默认的命令超时，它主要是用于socket读写超时，在MQTT初始化时可以指定:
 
-```
+```c
 #define     MQTT_DEFAULT_CMD_TIMEOUT            4000
 ```
 
@@ -189,22 +216,6 @@ sudo apt-get install cmake
 ```
 
 > ps：以上参数基本不需要怎么配置的，直接用即可~
-
-### 编译 & 运行
-
-```bash
-./build.sh
-```
-
-运行`build.sh`脚本后会在 `./build/bin/`目录下生成可执行文件`mqtt-client`，直接运行即可。
-
-### 编译成动态库libmqttclient.so
-
-```bash
-./make-libmqttclient.sh
-```
-
-运行`make-libmqttclient.sh`脚本后会在 `./libmqttclient/lib`目录下生成一个动态库文件`libmqttclient.so`，并安装到系统的`/usr/lib `目录下，相关头文件已经拷贝到`./libmqttclient/include`目录下，编译应用程序的时候只需要链接动态库即可`-lmqttclient`，动态库的配置文件根据`./test/mqtt_config.h`配置的。
 
 ## 设计思想
 - 整体采用分层式设计，代码实现采用异步设计方式，降低耦合。

@@ -92,20 +92,43 @@ Briefly describe the description of the open source protocol. [Apache License v2
 ## Test and use under linux platform
 ### Install cmake:
 ```bash
-sudo apt-get install cmake
+sudo apt-get install cmake g++
 ```
 
-### Configuration
+### test program
+
+| Test Platform | Location |
+|-|-|
+| emqx (my privately deployed server) | [./test/emqx/test.c](./test/emqx/test.c) |
+| Baidu Tiangong | [./test/baidu/test.c](./test/baidu/test.c) |
+| onenet | [./test/onenet/test.c](./test/onenet/test.c) |
+
+### Compile & Run
+
+```bash
+./build.sh
+```
+
+After running the **build.sh** script, the executable files **emqx**, **baidu**, **onenet** and other platforms will be generated under the **./Build/bin/** directory Executable programs can be run directly.
+
+### Compile into a dynamic library libmqttclient.so
+
+```bash
+./make-libmqttclient.sh
+```
+
+After running the `make-libmqttclient.sh` script, a dynamic library file` libmqttclient.so` will be generated in the `. / Libmqttclient / lib` directory, and installed into the system ’s` / usr / lib` directory, the relevant header files have been Copy to the `. / Libmqttclient / include` directory, when compiling the application, you only need to link the dynamic library` -lmqttclient`, the configuration file of the dynamic library is configured according to `. / Test / mqtt_config.h`
+
+## Configuration
 Modify the following in the`mqttclient/test/test.c` file:
 ```c
-    init_params.connect_params.network_params.network_ssl_params.ca_crt = test_ca_get (); /*CA certificate*/
-    init_params.connect_params.network_params.addr = "xxxxxxx"; /*server domain name*/
-    init_params.connect_params.network_params.port = "8883"; /*server port number*/
-    init_params.connect_params.user_name = "xxxxxxx"; /*username*/
-    init_params.connect_params.password = "xxxxxxx"; /*password*/
-    init_params.connect_params.client_id = "xxxxxxx"; /*client id*/
+    init_params.network.ca_crt = test_ca_get();                         /*CA certificate*/
+    init_params.network.addr = "xxxxxxx";                               /*server domain name*/
+    init_params.connect_params.network_params.port = "8883";            /*server port number*/
+    init_params.connect_params.user_name = "xxxxxxx";                   /*username*/
+    init_params.connect_params.password = "xxxxxxx";                    /*password*/
+    init_params.connect_params.client_id = "xxxxxxx";                   /*client id*/
 ```
-
 ### mbedtls
 
 Mbedtls is turned on by default.
@@ -190,20 +213,6 @@ Other things that don't need to be configured:
 ```
 
 > ps: The above parameters basically do not need to be configured, just use it ~
-
-### Compile & Run
-```bash
-./build.sh
-```
-After running the`build.sh` script, the executable file` mqtt-client` will be generated in the`./Build/bin/` directory, and you can run it directly.
-
-### Compile into a dynamic library libmqttclient.so
-
-```bash
-./make-libmqttclient.sh
-```
-
-After running the `make-libmqttclient.sh` script, a dynamic library file` libmqttclient.so` will be generated in the `. / Libmqttclient / lib` directory and installed into the system ’s` / usr / lib` directory, the relevant header files have Copy to the `. / Libmqttclient / include` directory, when compiling the application, you only need to link the dynamic library` -lmqttclient`, the configuration file of the dynamic library is configured according to `. / Test / mqtt_config.h`
 
 
 ## Design thinking
