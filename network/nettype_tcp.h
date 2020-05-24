@@ -12,9 +12,9 @@
 #include "network.h"
 #include "mqtt_error.h"
 
-int platform_nettype_tcp_read(network_t *n, unsigned char *buf, int len, int timeout);
-int platform_nettype_tcp_write(network_t *n, unsigned char *buf, int len, int timeout);
-int platform_nettype_tcp_connect(network_t* n);
-void platform_nettype_tcp_disconnect(network_t* n);
+int nettype_tcp_read(network_t *n, unsigned char *buf, int len, int timeout);
+int nettype_tcp_write(network_t *n, unsigned char *buf, int len, int timeout);
+int nettype_tcp_connect(network_t* n);
+void nettype_tcp_disconnect(network_t* n);
 
 #endif

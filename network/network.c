@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:30:54
- * @LastEditTime: 2020-05-24 15:50:12
+ * @LastEditTime: 2020-05-24 17:11:35
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_timer.h"
@@ -13,44 +13,44 @@
 int network_read(network_t *n, unsigned char *buf, int len, int timeout)
 {
     if (n->channel)
-        return platform_nettype_tls_read(n, buf, len, timeout);
+        return nettype_tls_read(n, buf, len, timeout);
     
-    return platform_nettype_tcp_read(n, buf, len, timeout);
+    return nettype_tcp_read(n, buf, len, timeout);
 }
 
 int network_write(network_t *n, unsigned char *buf, int len, int timeout)
 {
     if (n->channel)
-        return platform_nettype_tls_write(n, buf, len, timeout);
+        return nettype_tls_write(n, buf, len, timeout);
 
-    return platform_nettype_tcp_write(n, buf, len, timeout);
+    return nettype_tcp_write(n, buf, len, timeout);
 }
 
 int network_connect(network_t *n)
 {
     if (n->channel)
-        return platform_nettype_tls_connect(n);
+        return nettype_tls_connect(n);
     
-    return platform_nettype_tcp_connect(n);
+    return nettype_tcp_connect(n);
 
 }
 
 void network_disconnect(network_t *n)
 {
     if (n->channel)
-        platform_nettype_tls_disconnect(n);
+        nettype_tls_disconnect(n);
     else
-        platform_nettype_tcp_disconnect(n);
+        nettype_tcp_disconnect(n);
 
 }
 
-int network_init(network_t *n, const char *addr, const char *port, const char *ca)
+int network_init(network_t *n, const char *host, const char *port, const char *ca)
 {
     if (NULL == n)
         RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
 
     n->socket = -1;
-    n->addr = addr;
+    n->host = host;
     n->port = port;
     n->channel = 0;
 
@@ -88,12 +88,12 @@ int network_set_ca(network_t *n, const char *ca)
 }
 
 
-int network_set_addr_port(network_t* n, char *addr, char *port)
+int network_set_host_port(network_t* n, char *host, char *port)
 {
-    if (!(n && addr && port))
+    if (!(n && host && port))
         RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
 
-    n->addr = addr;
+    n->host = host;
     n->port = port;
     RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }

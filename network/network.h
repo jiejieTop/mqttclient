@@ -16,7 +16,7 @@
 typedef struct network {
     int                         socket;
     int                         channel;        /* tcp or tls */
-    const char                  *addr;
+    const char                  *host;
     const char                  *port;
     const char		            *ca_crt;
     size_t 		                ca_crt_len;
@@ -24,8 +24,8 @@ typedef struct network {
     void                        *nettype_tls_params;
 } network_t;
 
-int network_init(network_t *n, const char *addr, const char *port, const char *ca);
-int network_set_addr_port(network_t* n, char *addr, char *port);
+int network_init(network_t *n, const char *host, const char *port, const char *ca);
+int network_set_host_port(network_t* n, char *host, char *port);
 int network_read(network_t* n, unsigned char* buf, int len, int timeout);
 int network_write(network_t* n, unsigned char* buf, int len, int timeout);
 int network_connect(network_t* n);

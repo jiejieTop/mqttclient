@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-05-20 17:53:06
+ * @LastEditTime: 2020-05-24 17:12:01
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1093,7 +1093,7 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     c->reconnect_handler = init->reconnect_handler;
     c->interceptor_handler = NULL;
 
-    if ((rc = network_init(c->network, init->network.addr, init->network.port, init->network.ca_crt)) < 0)
+    if ((rc = network_init(c->network, init->network.host, init->network.port, init->network.ca_crt)) < 0)
         RETURN_ERROR(rc);
 
     mqtt_list_init(&c->msg_handler_list);

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:35
- * @LastEditTime: 2020-05-24 15:50:00
+ * @LastEditTime: 2020-05-24 17:05:11
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "nettype_tls.h"
@@ -32,7 +32,7 @@ static int server_certificate_verify(void *hostname, mbedtls_x509_crt *crt, int 
 }
 #endif
 
-static int platform_nettype_tls_entropy_source(void *data, uint8_t *output, size_t len, size_t *out_len)
+static int nettype_tls_entropy_source(void *data, uint8_t *output, size_t len, size_t *out_len)
 {
     uint32_t seed;
     (void) data;
@@ -48,7 +48,7 @@ static int platform_nettype_tls_entropy_source(void *data, uint8_t *output, size
     return 0;
 }
 
-static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype_tls_params)
+static int nettype_tls_init(network_t* n, nettype_tls_params_t* nettype_tls_params)
 {
     int rc = MQTT_SUCCESS_ERROR;
     
@@ -65,7 +65,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
 #endif
 
     mbedtls_entropy_init(&(nettype_tls_params->entropy));
-    mbedtls_entropy_add_source(&(nettype_tls_params->entropy), platform_nettype_tls_entropy_source, NULL, MBEDTLS_ENTROPY_MAX_GATHER, MBEDTLS_ENTROPY_SOURCE_STRONG);
+    mbedtls_entropy_add_source(&(nettype_tls_params->entropy), nettype_tls_entropy_source, NULL, MBEDTLS_ENTROPY_MAX_GATHER, MBEDTLS_ENTROPY_SOURCE_STRONG);
 
     if ((rc = mbedtls_ctr_drbg_seed(&(nettype_tls_params->ctr_drbg), mbedtls_entropy_func,
                                     &(nettype_tls_params->entropy), NULL, 0)) != 0) {
@@ -100,7 +100,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
         RETURN_ERROR(rc);
     }
     
-    mbedtls_ssl_conf_verify(&(nettype_tls_params->ssl_conf), server_certificate_verify, (void *)n->addr);
+    mbedtls_ssl_conf_verify(&(nettype_tls_params->ssl_conf), server_certificate_verify, (void *)n->host);
 
     mbedtls_ssl_conf_authmode(&(nettype_tls_params->ssl_conf), MBEDTLS_SSL_VERIFY_REQUIRED);
 #endif
@@ -113,7 +113,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
     }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-    if ((rc = mbedtls_ssl_set_hostname(&(nettype_tls_params->ssl), n->addr)) != 0) {
+    if ((rc = mbedtls_ssl_set_hostname(&(nettype_tls_params->ssl), n->host)) != 0) {
         MQTT_LOG_E("%s:%d %s()... mbedtls_ssl_set_hostname failed returned 0x%04x", __FILE__, __LINE__, __FUNCTION__, (rc < 0 )? -rc : rc);
         RETURN_ERROR(rc);
     }
@@ -125,7 +125,7 @@ static int platform_nettype_tls_init(network_t* n, nettype_tls_params_t* nettype
 }
 
 
-int platform_nettype_tls_connect(network_t* n)
+int nettype_tls_connect(network_t* n)
 {
     int rc;
     if (NULL == n)
@@ -137,11 +137,11 @@ int platform_nettype_tls_connect(network_t* n)
         RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
 
 
-    rc = platform_nettype_tls_init(n, nettype_tls_params);
+    rc = nettype_tls_init(n, nettype_tls_params);
     if (MQTT_SUCCESS_ERROR != rc)
         goto exit;
 
-    if (0 != (rc = mbedtls_net_connect(&(nettype_tls_params->socket_fd), n->addr, n->port, MBEDTLS_NET_PROTO_TCP)))
+    if (0 != (rc = mbedtls_net_connect(&(nettype_tls_params->socket_fd), n->host, n->port, MBEDTLS_NET_PROTO_TCP)))
         goto exit;
 
     while ((rc = mbedtls_ssl_handshake(&(nettype_tls_params->ssl))) != 0) {
@@ -170,7 +170,7 @@ exit:
 }
 
 
-void platform_nettype_tls_disconnect(network_t* n) 
+void nettype_tls_disconnect(network_t* n) 
 {
     int rc = 0;
     if (NULL == n)
@@ -196,7 +196,7 @@ void platform_nettype_tls_disconnect(network_t* n)
     platform_memory_free(nettype_tls_params);
 }
 
-int platform_nettype_tls_write(network_t *n, unsigned char *buf, int len, int timeout)
+int nettype_tls_write(network_t *n, unsigned char *buf, int len, int timeout)
 {
     int rc = 0;
     int write_len = 0;
@@ -224,7 +224,7 @@ int platform_nettype_tls_write(network_t *n, unsigned char *buf, int len, int ti
     return write_len;
 }
 
-int platform_nettype_tls_read(network_t *n, unsigned char *buf, int len, int timeout)
+int nettype_tls_read(network_t *n, unsigned char *buf, int len, int timeout)
 {
     int rc = 0;
     int read_len = 0;
