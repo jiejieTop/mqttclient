@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-04-18 12:37:34
- * @LastEditTime: 2020-05-20 18:27:48
+ * @LastEditTime: 2020-05-24 15:05:06
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -54,8 +54,8 @@ int main(void)
     init_params.read_buf_size = 1024;
     init_params.write_buf_size = 1024;
 
-    init_params.connect_params.network_params.port = "6002";    // onenet platform
-    init_params.connect_params.network_params.addr = "183.230.40.39"; //"www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
+    init_params.network.port = "6002";    // onenet platform
+    init_params.network.addr = "183.230.40.39"; //"www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
 
     init_params.connect_params.user_name = "217537"; // random_string(10); //"jiejietop-acer1";
     init_params.connect_params.password = "mqtt"; //random_string(10); // "123456";

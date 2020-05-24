@@ -1,10 +1,5 @@
-aux_source_directory(. DIR_SRCS)
+set(SUBDIRS "emqx" "onenet" "baidu")
 
-add_executable(${TARGETS} ${DIR_SRCS})
-
-foreach(findlib ${LIBNAMES})
-    target_link_libraries(${TARGETS} ${findlib})
+foreach(subdir ${SUBDIRS})
+    add_subdirectory(${subdir})
 endforeach()
-
-find_package("Threads")
-target_link_libraries(${TARGETS} ${CMAKE_THREAD_LIBS_INIT})

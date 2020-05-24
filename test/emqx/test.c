@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-05-20 18:27:07
+ * @LastEditTime: 2020-05-24 15:27:52
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -10,6 +10,9 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <pthread.h>
+
+#include "mqtt_config.h"
+#include "mqtt_log.h"
 #include "mqttclient.h"
 
 // #define TEST_USEING_TLS  
