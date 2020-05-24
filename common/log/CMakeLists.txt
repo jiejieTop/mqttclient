@@ -7,7 +7,7 @@ set(OUTDIRS "build")
 
 aux_source_directory(. LOG_DIR_SRCS)
 
-add_library("salof" STATIC ${LOG_DIR_SRCS})
+add_library("salof" ${CMAKE_LIB_TYPE} ${LOG_DIR_SRCS})
 target_link_libraries("salof" "arch")
 
 foreach(incdir ${INCDIRS})

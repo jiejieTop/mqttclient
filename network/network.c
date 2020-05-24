@@ -2,13 +2,13 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:30:54
- * @LastEditTime: 2020-05-20 23:01:12
+ * @LastEditTime: 2020-05-24 15:50:12
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_timer.h"
 #include "platform_memory.h"
-#include "platform_nettype_tcp.h"
-#include "platform_nettype_tls.h"
+#include "nettype_tcp.h"
+#include "nettype_tls.h"
 
 int network_read(network_t *n, unsigned char *buf, int len, int timeout)
 {
