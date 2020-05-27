@@ -13,8 +13,8 @@ SRC = \$(wildcard ../*.c \\
         ../common/*.c \\
         ../common/log/*.c \\
         ../common/log/arch/linux/*.c \\
-        ../common/mbedtls/library/*.c \\
-        ../common/mbedtls/wrapper/*.c \\
+        ../network/mbedtls/library/*.c \\
+        ../network/mbedtls/wrapper/*.c \\
         ../mqtt/*.c \\
         ../mqttclient/*.c \\
         ../network/*.c \\
@@ -24,9 +24,9 @@ SRC = \$(wildcard ../*.c \\
 INC =   -lpthread \\
         -I../common \\
         -I../common/log \\
-        -I../common/mbedtls/include \\
-        -I../common/mbedtls/include/mbedtls \\
-        -I../common/mbedtls/wrapper \\
+        -I../network/mbedtls/include \\
+        -I../network/mbedtls/include/mbedtls \\
+        -I../network/mbedtls/wrapper \\
         -I../mqtt \\
         -I../mqttclient \\
         -I../network \\
@@ -66,8 +66,8 @@ cp -r ../network/*.h include/.
 cp -r ../mqttclient/*.h include/.
 cp -r ../common/log/*.h include/.
 cp -r ../platform/linux/*.h include/.
-cp -r ../common/mbedtls/include/mbedtls include/.
-cp -r ../common/mbedtls/wrapper/*.h include/.
+cp -r ../network/mbedtls/include/mbedtls include/.
+cp -r ../network/mbedtls/wrapper/*.h include/.
 
 if [ " $1" == " " ]; then
     make
