@@ -1093,7 +1093,13 @@ int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
     c->reconnect_handler = init->reconnect_handler;
     c->interceptor_handler = NULL;
 
-    if ((rc = network_init(c->network, init->network.host, init->network.port, init->network.ca_crt)) < 0)
+#ifndef MQTT_NETWORK_TYPE_NO_TLS
+    rc = network_init(c->network, init->network.host, init->network.port, init->network.ca_crt);
+#else
+    rc = network_init(c->network, init->network.host, init->network.port, NULL);
+#endif
+
+    if (rc < 0)
         RETURN_ERROR(rc);
 
     mqtt_list_init(&c->msg_handler_list);
