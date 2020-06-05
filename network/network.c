@@ -2,13 +2,16 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:30:54
- * @LastEditTime: 2020-05-25 19:38:17
+ * @LastEditTime: 2020-06-05 17:17:48
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_timer.h"
 #include "platform_memory.h"
 #include "nettype_tcp.h"
+
+#ifndef MQTT_NETWORK_TYPE_NO_TLS
 #include "nettype_tls.h"
+#endif
 
 int network_read(network_t *n, unsigned char *buf, int len, int timeout)
 {
