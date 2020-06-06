@@ -49,52 +49,57 @@ int platform_net_socket_recv(int fd, void *buf, size_t len, int flags)
 
 int platform_net_socket_recv_timeout(int fd, unsigned char *buf, int len, int timeout)
 {
-    int rc;
-    int bytes = 0;
-	struct timeval tv = {
+    int nread;
+    int nleft = len;
+    unsigned char *ptr; 
+    ptr = buf;
+
+    struct timeval tv = {
         timeout / 1000, 
         (timeout % 1000) * 1000
     };
     
-	if (tv.tv_sec < 0 || (tv.tv_sec == 0 && tv.tv_usec <= 0)) {
-		tv.tv_sec = 0;
-		tv.tv_usec = 100;
-	}
+    if (tv.tv_sec < 0 || (tv.tv_sec == 0 && tv.tv_usec <= 0)) {
+        tv.tv_sec = 0;
+        tv.tv_usec = 100;
+    }
 
-	platform_net_socket_setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
+    platform_net_socket_setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
 
-	while (bytes < len) {
-		rc = platform_net_socket_recv(fd, &buf[bytes], (size_t)(len - bytes), 0);
-		if (rc <= 0) {
-			bytes = rc;
-			break;
-		} else {
-			bytes += rc;
-		}
-	}
-	return bytes;
+    while (nleft > 0) {
+        nread = platform_net_socket_recv(fd, ptr, nleft, 0);
+        if (nread < 0) {
+            return -1;
+        } else if (nread == 0) {
+            break;
+        }
+
+        nleft -= nread;
+        ptr += nread;
+    }
+    return len - nleft;
 }
 
 int platform_net_socket_write(int fd, void *buf, size_t len)
 {
-    return send(fd, buf, len, 0);
+    return write(fd, buf, len);
 }
 
 int platform_net_socket_write_timeout(int fd, unsigned char *buf, int len, int timeout)
 {
-	struct timeval tv = {
+    struct timeval tv = {
         timeout / 1000, 
         (timeout % 1000) * 1000
     };
     
-	if (tv.tv_sec < 0 || (tv.tv_sec == 0 && tv.tv_usec <= 0)) {
-		tv.tv_sec = 0;
-		tv.tv_usec = 100;
-	}
+    if (tv.tv_sec < 0 || (tv.tv_sec == 0 && tv.tv_usec <= 0)) {
+        tv.tv_sec = 0;
+        tv.tv_usec = 100;
+    }
 
-	setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,sizeof(struct timeval));
-	
-	return send(fd, buf, len, 0);
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tv,sizeof(struct timeval));
+    
+    return write(fd, buf, len);
 }
 
 int platform_net_socket_close(int fd)
