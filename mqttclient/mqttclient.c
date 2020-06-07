@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-05-24 17:12:01
+ * @LastEditTime: 2020-06-07 23:53:13
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1004,6 +1004,68 @@ exit:
     RETURN_ERROR(rc);
 }
 
+static int _mqtt_init(mqtt_client_t* c)
+{
+    int rc;
+    
+    /* network init */
+    c->network = (network_t*) platform_memory_alloc(sizeof(network_t));
+    c->connect_params = (connect_params_t*) platform_memory_alloc(sizeof(connect_params_t));
+
+    if ((NULL == c->network) || (NULL == c->connect_params)) {
+        MQTT_LOG_E("%s:%d %s()... malloc memory failed...", __FILE__, __LINE__, __FUNCTION__);
+        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
+    }
+    memset(c->network, 0, sizeof(network_t));
+    memset(c->connect_params, 0, sizeof(network_t));
+
+    c->read_buf_size = MQTT_DEFAULT_BUF_SIZE;
+    c->write_buf_size = MQTT_DEFAULT_BUF_SIZE;
+    
+    c->read_buf = (unsigned char*) platform_memory_alloc(MQTT_DEFAULT_BUF_SIZE);
+    c->write_buf = (unsigned char*) platform_memory_alloc(MQTT_DEFAULT_BUF_SIZE);
+    
+    if ((NULL == c->read_buf) || (NULL == c->write_buf)) {
+        MQTT_LOG_E("%s:%d %s()... malloc buf failed...", __FILE__, __LINE__, __FUNCTION__);
+        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
+    }
+    
+    c->packet_id = 1;
+    c->cmd_timeout = MQTT_DEFAULT_CMD_TIMEOUT;
+    c->client_state = CLIENT_STATE_INITIALIZED;
+    
+    c->ping_outstanding = 0;
+    c->ack_handler_number = 0;
+    c->connect_params->client_id_len = 0;
+    c->connect_params->user_name_len = 0;
+    c->connect_params->password_len = 0;
+    c->connect_params->keep_alive_interval = MQTT_KEEP_ALIVE_INTERVAL;
+    c->connect_params->mqtt_version = MQTT_VERSION;
+    c->reconnect_try_duration = MQTT_RECONNECT_DEFAULT_DURATION;
+
+    c->reconnect_date = NULL;
+    c->reconnect_handler = NULL;
+    c->interceptor_handler = NULL;
+
+// #ifndef MQTT_NETWORK_TYPE_NO_TLS
+//     rc = network_init(c->network, init->network.host, init->network.port, init->network.ca_crt);
+// #else
+//     rc = network_init(c->network, init->network.host, init->network.port, NULL);
+// #endif
+
+    mqtt_list_init(&c->msg_handler_list);
+    mqtt_list_init(&c->ack_handler_list);
+    
+    platform_mutex_init(&c->write_lock);
+    platform_mutex_init(&c->global_lock);
+
+    platform_timer_init(&c->reconnect_timer);
+    platform_timer_init(&c->last_sent);
+    platform_timer_init(&c->last_received);
+
+    RETURN_ERROR(MQTT_SUCCESS_ERROR);
+}
+
 /********************************************************* mqttclient global function ********************************************************/
 
 int mqtt_keep_alive(mqtt_client_t* c)
@@ -1030,89 +1092,22 @@ int mqtt_keep_alive(mqtt_client_t* c)
     RETURN_ERROR(rc);
 }
 
-int mqtt_init(mqtt_client_t* c, client_init_params_t* init)
+mqtt_client_t *mqtt_lease(void)
 {
     int rc;
-    if ((NULL == c) || (NULL == init)) 
-        RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
+    mqtt_client_t* c;
+
+    c = (mqtt_client_t *)platform_memory_alloc(sizeof(mqtt_client_t));
+    if (NULL == c)
+        return NULL;
 
     memset(c, 0, sizeof(mqtt_client_t));
 
-    /* network init */
-    c->network = (network_t*) platform_memory_alloc(sizeof(network_t));
-    if (NULL == c->network) {
-        MQTT_LOG_E("%s:%d %s()... malloc network failed...", __FILE__, __LINE__, __FUNCTION__);
-        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
-    }
-    memset(c->network, 0, sizeof(network_t));
-
-    if ((MQTT_MIN_PAYLOAD_SIZE >= init->read_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= init->read_buf_size))
-        init->read_buf_size = MQTT_DEFAULT_BUF_SIZE;
-    if ((MQTT_MIN_PAYLOAD_SIZE >= init->write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= init->read_buf_size))
-        init->write_buf_size = MQTT_DEFAULT_BUF_SIZE;
+    rc = _mqtt_init(c);
+    if (MQTT_SUCCESS_ERROR != rc)
+        return NULL;
     
-    c->read_buf = (unsigned char*) platform_memory_alloc(init->read_buf_size);
-    c->write_buf = (unsigned char*) platform_memory_alloc(init->write_buf_size);
-    
-    if ((NULL == c->read_buf) || (NULL == c->write_buf)) {
-        MQTT_LOG_E("%s:%d %s()... malloc buf failed...", __FILE__, __LINE__, __FUNCTION__);
-        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
-    }
-
-    c->read_buf_size = init->read_buf_size;
-    c->write_buf_size =  init->write_buf_size;
-
-    c->packet_id = 1;
-    if ((init->cmd_timeout < MQTT_MIN_CMD_TIMEOUT) || (init->cmd_timeout > MQTT_MAX_CMD_TIMEOUT))
-        c->cmd_timeout = MQTT_DEFAULT_CMD_TIMEOUT;
-    else
-        c->cmd_timeout = init->cmd_timeout;
-    
-    c->ping_outstanding = 0;
-    c->ack_handler_number = 0;
-    c->client_state = CLIENT_STATE_INITIALIZED;
-
-    if (0 == init->connect_params.keep_alive_interval)
-        init->connect_params.keep_alive_interval = MQTT_KEEP_ALIVE_INTERVAL;
-    
-    if (0 == init->connect_params.mqtt_version)
-        init->connect_params.mqtt_version = MQTT_VERSION;
-    
-    if (0 == init->reconnect_try_duration)
-        init->reconnect_try_duration = MQTT_RECONNECT_DEFAULT_DURATION;
-    
-    init->connect_params.client_id_len = strlen(init->connect_params.client_id);
-    init->connect_params.user_name_len = strlen(init->connect_params.user_name);
-    init->connect_params.password_len = strlen(init->connect_params.password);
-    
-    c->connect_params = &init->connect_params;
-    c->reconnect_try_duration = init->reconnect_try_duration;
-    c->connect_params->keep_alive_interval = init->connect_params.keep_alive_interval;
-
-    c->reconnect_date = init->reconnect_date;
-    c->reconnect_handler = init->reconnect_handler;
-    c->interceptor_handler = NULL;
-
-#ifndef MQTT_NETWORK_TYPE_NO_TLS
-    rc = network_init(c->network, init->network.host, init->network.port, init->network.ca_crt);
-#else
-    rc = network_init(c->network, init->network.host, init->network.port, NULL);
-#endif
-
-    if (rc < 0)
-        RETURN_ERROR(rc);
-
-    mqtt_list_init(&c->msg_handler_list);
-    mqtt_list_init(&c->ack_handler_list);
-    
-    platform_mutex_init(&c->write_lock);
-    platform_mutex_init(&c->global_lock);
-
-    platform_timer_init(&c->reconnect_timer);
-    platform_timer_init(&c->last_sent);
-    platform_timer_init(&c->last_received);
-
-    RETURN_ERROR(MQTT_SUCCESS_ERROR);
+    return c;
 }
 
 int mqtt_release(mqtt_client_t* c)

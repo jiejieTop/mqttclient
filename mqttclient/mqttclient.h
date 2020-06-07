@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-05-20 15:53:04
+ * @LastEditTime: 2020-06-07 23:36:21
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -118,19 +118,9 @@ typedef struct mqtt_client {
     interceptor_handler_t       interceptor_handler;
 } mqtt_client_t;
 
-typedef struct client_init_params{
-	unsigned int                cmd_timeout;
-    unsigned int                read_buf_size;
-    unsigned int                write_buf_size;
-    unsigned int                reconnect_try_duration;
-    void                        *reconnect_date;
-    reconnect_handler_t         reconnect_handler;
-    connect_params_t            connect_params;
-    network_t                   network;
-} client_init_params_t;
 
 int mqtt_keep_alive(mqtt_client_t* c);
-int mqtt_init(mqtt_client_t* c, client_init_params_t* init);
+mqtt_client_t *mqtt_lease(void);
 int mqtt_release(mqtt_client_t* c);
 int mqtt_connect(mqtt_client_t* c);
 int mqtt_disconnect(mqtt_client_t* c);
