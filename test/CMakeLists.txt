@@ -1,4 +1,4 @@
-set(SUBDIRS "emqx" "onenet" "baidu" "ali")
+set(SUBDIRS "emqx")
 
 foreach(subdir ${SUBDIRS})
     add_subdirectory(${subdir})

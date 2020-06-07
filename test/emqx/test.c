@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-05-24 17:12:12
+ * @LastEditTime: 2020-06-07 23:55:08
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -19,8 +19,7 @@
 
 extern const char *test_ca_get();
 
-mqtt_client_t client;
-client_init_params_t init_params;
+mqtt_client_t *client;
 
 static void topic1_handler(void* client, message_data_t* msg)
 {
@@ -39,7 +38,7 @@ void *mqtt_publish_thread(void *arg)
 
     sleep(2);
 
-    mqtt_list_subscribe_topic(&client);
+    mqtt_list_subscribe_topic(client);
 
     msg.payload = (void *) buf;
     
@@ -47,13 +46,13 @@ void *mqtt_publish_thread(void *arg)
         sprintf(buf, "welcome to mqttclient, this is a publish test, a rand number: %d ...", random_number());
 
         msg.qos = 0;
-        mqtt_publish(&client, "topic1", &msg);
+        mqtt_publish(client, "topic1", &msg);
 
         msg.qos = 1;
-        mqtt_publish(&client, "topic2", &msg);
+        mqtt_publish(client, "topic2", &msg);
 
         msg.qos = 2;
-        mqtt_publish(&client, "topic3", &msg);
+        mqtt_publish(client, "topic3", &msg);
         
         sleep(4);
     }
@@ -69,29 +68,13 @@ int main(void)
 
     mqtt_log_init();
 
-    init_params.read_buf_size = 1024;
-    init_params.write_buf_size = 1024;
+    client = mqtt_lease();
 
-#ifdef TEST_USEING_TLS
-    init_params.network.ca_crt = test_ca_get();
-    init_params.network.port = "8883";
-#else
-    init_params.network.port = "1883";
-#endif
-    init_params.network.host = "www.jiejie01.top"; //"47.95.164.112";//"jiejie01.top"; //"129.204.201.235"; //"192.168.1.101";
-
-    init_params.connect_params.user_name = random_string(10); // random_string(10); //"jiejietop-acer1";
-    init_params.connect_params.password = random_string(10); //random_string(10); // "123456";
-    init_params.connect_params.client_id = random_string(10); //random_string(10); // "clientid-acer1";
-    init_params.connect_params.clean_session = 1;
-
-    mqtt_init(&client, &init_params);
-
-    mqtt_connect(&client);
+    mqtt_connect(client);
     
-    mqtt_subscribe(&client, "topic1", QOS0, topic1_handler);
-    mqtt_subscribe(&client, "topic2", QOS1, NULL);
-    mqtt_subscribe(&client, "topic3", QOS2, NULL);
+    mqtt_subscribe(client, "topic1", QOS0, topic1_handler);
+    mqtt_subscribe(client, "topic2", QOS1, NULL);
+    mqtt_subscribe(client, "topic3", QOS2, NULL);
     
     res = pthread_create(&thread2, NULL, mqtt_publish_thread, NULL);
     if(res != 0) {
