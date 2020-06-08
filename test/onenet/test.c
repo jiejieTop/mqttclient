@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-04-18 12:37:34
- * @LastEditTime: 2020-05-27 11:00:07
+ * @LastEditTime: 2020-06-08 20:32:33
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -14,8 +14,6 @@
 
 extern const char *test_ca_get();
 
-mqtt_client_t client;
-client_init_params_t init_params;
 
 static void interceptor_handler(void* client, message_data_t* msg)
 {
@@ -27,6 +25,8 @@ static void interceptor_handler(void* client, message_data_t* msg)
 
 void *mqtt_publish_thread(void *arg)
 {
+    mqtt_client_t *client = (mqtt_client_t *)arg;
+
     char buf[100] = { 0 };
     mqtt_message_t msg;
     memset(&msg, 0, sizeof(msg));
@@ -36,7 +36,7 @@ void *mqtt_publish_thread(void *arg)
     msg.payload = (void *) buf;
     while(1) {
         sprintf(buf, "welcome to mqttclient, this is a publish test, a rand number: %d ...", random_number());
-        mqtt_publish(&client, "temp_hum", &msg);
+        mqtt_publish(client, "topic1", &msg);
         sleep(4);
     }
 }
@@ -44,33 +44,29 @@ void *mqtt_publish_thread(void *arg)
 int main(void)
 {
     int res;
-    // pthread_t thread1;
-    pthread_t thread2;
+    pthread_t thread1;
+    mqtt_client_t *client = NULL;
     
     printf("\nwelcome to mqttclient test...\n");
 
     mqtt_log_init();
 
-    init_params.read_buf_size = 1024;
-    init_params.write_buf_size = 1024;
+    client = mqtt_lease();
 
-    init_params.network.port = "6002";    // onenet platform
-    init_params.network.host = "183.230.40.39"; 
-
-    init_params.connect_params.user_name = "348547";
-    init_params.connect_params.password = "mqttclienttest1"; 
-    init_params.connect_params.client_id = "599908192";
-    init_params.connect_params.clean_session = 1;
-
-    mqtt_init(&client, &init_params);
-
-    mqtt_connect(&client);
+    mqtt_set_port(client, "6002");
+    mqtt_set_host(client, "183.230.40.39");
+    mqtt_set_client_id(client, "599908192");
+    mqtt_set_user_name(client, "348547");
+    mqtt_set_password(client, "mqttclienttest1");
+    mqtt_set_clean_session(client, 1);
     
-    mqtt_subscribe(&client, "temp_hum", QOS0, NULL);
-
-    mqtt_set_interceptor_handler(&client, interceptor_handler);     // set interceptor handler
+    mqtt_connect(client);
     
-    res = pthread_create(&thread2, NULL, mqtt_publish_thread, NULL);
+    mqtt_subscribe(client, "topic1", QOS0, NULL);
+
+    mqtt_set_interceptor_handler(client, interceptor_handler);     // set interceptor handler
+    
+    res = pthread_create(&thread1, NULL, mqtt_publish_thread, client);
     if(res != 0) {
         MQTT_LOG_E("create mqtt publish thread fail");
         exit(res);
