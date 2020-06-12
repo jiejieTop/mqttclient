@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-08 20:29:35
+ * @LastEditTime: 2020-06-12 09:46:45
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -513,7 +513,13 @@ static void mqtt_clean_session(mqtt_client_t* c)
     mqtt_set_client_state(c, CLIENT_STATE_INVALID);
 }
 
-static void mqtt_ack_list_scan(mqtt_client_t* c)
+
+/**
+ * see if there is a message waiting for the server to answer in the ack list, if there is, then process it according to the flag.
+ * flag : 0 means it does not need to wait for the timeout to process these packets immediately. usually immediately after reconnecting.
+ *        1 means it needs to wait for timeout before processing these messages, usually timeout processing in a stable connection.
+ */
+static void mqtt_ack_list_scan(mqtt_client_t* c, uint8_t flag)
 {
     mqtt_list_t *curr, *next;
     ack_handlers_t *ack_handler;
@@ -523,8 +529,8 @@ static void mqtt_ack_list_scan(mqtt_client_t* c)
 
     LIST_FOR_EACH_SAFE(curr, next, &c->mqtt_ack_handler_list) {
         ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);
-
-        if (!platform_timer_is_expired(&ack_handler->timer))
+        
+        if ((!platform_timer_is_expired(&ack_handler->timer)) && (flag == 1))
             continue;
         
         if ((ack_handler->type ==  PUBACK) || (ack_handler->type ==  PUBREC) || (ack_handler->type ==  PUBREL) || (ack_handler->type ==  PUBCOMP)) {
@@ -533,6 +539,7 @@ static void mqtt_ack_list_scan(mqtt_client_t* c)
             mqtt_ack_handler_resend(c, ack_handler);
             continue;
         }
+        /* if it is not a qos1 or qos2 message, it will be destroyed in every processing */
         mqtt_ack_handler_destroy(ack_handler);
     }
 }
@@ -569,9 +576,11 @@ static int mqtt_try_do_reconnect(mqtt_client_t* c)
     
     if (MQTT_SUCCESS_ERROR == rc) {
         rc = mqtt_try_resubscribe(c);   /* resubscribe */
+        /* process these ack messages immediately after reconnecting */
+        mqtt_ack_list_scan(c, 0);
     }
 
-    MQTT_LOG_I("%s:%d %s()... mqtt try connect result is -0x%04x", __FILE__, __LINE__, __FUNCTION__, -rc);
+    MQTT_LOG_D("%s:%d %s()... mqtt try connect result is -0x%04x", __FILE__, __LINE__, __FUNCTION__, -rc);
     
     RETURN_ERROR(rc);
 }
@@ -878,7 +887,7 @@ static int mqtt_yield(mqtt_client_t* c, int timeout_ms)
 
         if (rc >= 0) {
             /* scan ack list, destroy ack handler that have timed out or resend them */
-            mqtt_ack_list_scan(c);
+            mqtt_ack_list_scan(c, 1);
 
         } else if (MQTT_NOT_CONNECT_ERROR == rc) {
             MQTT_LOG_E("%s:%d %s()... mqtt not connect", __FILE__, __LINE__, __FUNCTION__);
@@ -972,6 +981,12 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     connect_data.clientID.cstring= c->mqtt_client_id;
     connect_data.username.cstring = c->mqtt_user_name;
     connect_data.password.cstring = c->mqtt_password;
+
+    connect_data.willFlag = 1;
+    connect_data.will.message.cstring = "will message";
+    connect_data.will.qos = 1;
+    connect_data.will.retained = 0;
+    connect_data.will.topicName.cstring = "will topic";
 
     platform_timer_cutdown(&c->mqtt_last_received, (c->mqtt_keep_alive_interval * 1000));
 
