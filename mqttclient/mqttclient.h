@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-08 20:42:54
+ * @LastEditTime: 2020-06-12 14:26:57
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -46,9 +46,9 @@ typedef struct mqtt_connack_data {
 
 typedef struct mqtt_message {
     mqtt_qos_t          qos;
-    uint8_t       retained;
-    uint8_t       dup;
-    uint16_t      id;
+    uint8_t             retained;
+    uint8_t             dup;
+    uint16_t            id;
     size_t              payloadlen;
     void                *payload;
 } mqtt_message_t;
@@ -72,12 +72,19 @@ typedef struct message_handlers {
 typedef struct ack_handlers {
     mqtt_list_t         list;
     platform_timer_t    timer;
-    uint32_t        type;
-    uint16_t      packet_id;
+    uint32_t            type;
+    uint16_t            packet_id;
     message_handlers_t  *handler;
-    uint16_t      payload_len;
-    uint8_t       *payload;
+    uint16_t            payload_len;
+    uint8_t             *payload;
 } ack_handlers_t;
+
+typedef struct mqtt_will_options {
+    mqtt_qos_t          will_qos;
+    uint8_t             will_retained;
+    char                *will_topic;
+    char                *will_message;
+} mqtt_will_options_t;
 
 typedef struct mqtt_client {
     char                        *mqtt_client_id;
@@ -88,7 +95,6 @@ typedef struct mqtt_client {
     char                        *mqtt_host;
     char                        *mqtt_port;
     char                        *mqtt_ca;
-    void                        *mqtt_will_options;
     void                        *mqtt_reconnect_data;
     uint16_t                    mqtt_keep_alive_interval;
     uint16_t                    mqtt_packet_id;
@@ -104,6 +110,7 @@ typedef struct mqtt_client {
     size_t                      mqtt_client_id_len;
     size_t                      mqtt_user_name_len;
     size_t                      mqtt_password_len;
+    mqtt_will_options_t         *mqtt_will_options;
     client_state_t              mqtt_client_state;
     platform_mutex_t            mqtt_write_lock;
     platform_mutex_t            mqtt_global_lock;
@@ -139,7 +146,6 @@ MQTT_CLIENT_SET_STATEMENT(password, char*)
 MQTT_CLIENT_SET_STATEMENT(host, char*)
 MQTT_CLIENT_SET_STATEMENT(port, char*)
 MQTT_CLIENT_SET_STATEMENT(ca, char*)
-MQTT_CLIENT_SET_STATEMENT(will_options, void*)
 MQTT_CLIENT_SET_STATEMENT(reconnect_data, void*)
 MQTT_CLIENT_SET_STATEMENT(keep_alive_interval, uint16_t)
 MQTT_CLIENT_SET_STATEMENT(will_flag, uint32_t)
@@ -152,14 +158,16 @@ MQTT_CLIENT_SET_STATEMENT(reconnect_try_duration, uint32_t)
 MQTT_CLIENT_SET_STATEMENT(reconnect_handler, reconnect_handler_t)
 MQTT_CLIENT_SET_STATEMENT(interceptor_handler, interceptor_handler_t)
 
-int mqtt_keep_alive(mqtt_client_t* c);
+void mqtt_sleep_ms(int ms);
 mqtt_client_t *mqtt_lease(void);
 int mqtt_release(mqtt_client_t* c);
 int mqtt_connect(mqtt_client_t* c);
 int mqtt_disconnect(mqtt_client_t* c);
+int mqtt_keep_alive(mqtt_client_t* c);
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter);
 int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg);
 int mqtt_list_subscribe_topic(mqtt_client_t* c);
+int mqtt_set_will_options(mqtt_client_t* c, char *topic, mqtt_qos_t qos, uint8_t retained, char *message);
 
 #endif /* _MQTTCLIENT_H_ */

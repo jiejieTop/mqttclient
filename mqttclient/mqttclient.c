@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-12 09:46:45
+ * @LastEditTime: 2020-06-12 14:28:03
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -982,12 +982,14 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     connect_data.username.cstring = c->mqtt_user_name;
     connect_data.password.cstring = c->mqtt_password;
 
-    connect_data.willFlag = 1;
-    connect_data.will.message.cstring = "will message";
-    connect_data.will.qos = 1;
-    connect_data.will.retained = 0;
-    connect_data.will.topicName.cstring = "will topic";
-
+    if (c->mqtt_will_flag) {
+        connect_data.willFlag = c->mqtt_will_flag;
+        connect_data.will.message.cstring = c->mqtt_will_options->will_message;
+        connect_data.will.qos = c->mqtt_will_options->will_qos;
+        connect_data.will.retained = c->mqtt_will_options->will_retained;
+        connect_data.will.topicName.cstring = c->mqtt_will_options->will_topic;
+    }
+    
     platform_timer_cutdown(&c->mqtt_last_received, (c->mqtt_keep_alive_interval * 1000));
 
     platform_mutex_lock(&c->mqtt_write_lock);
@@ -1052,7 +1054,8 @@ static int _mqtt_init(mqtt_client_t* c)
     memset(c->mqtt_network, 0, sizeof(network_t));
 
     c->mqtt_packet_id = 1;
-    c->mqtt_clean_session = 1;          //clear session by default
+    c->mqtt_clean_session = 0;          //no clear session by default
+    c->mqtt_will_flag = 0;
     c->mqtt_cmd_timeout = MQTT_DEFAULT_CMD_TIMEOUT;
     c->mqtt_client_state = CLIENT_STATE_INITIALIZED;
     
@@ -1065,6 +1068,7 @@ static int _mqtt_init(mqtt_client_t* c)
     c->mqtt_version = MQTT_VERSION;
     c->mqtt_reconnect_try_duration = MQTT_RECONNECT_DEFAULT_DURATION;
 
+    c->mqtt_will_options = NULL;
     c->mqtt_reconnect_data = NULL;
     c->mqtt_reconnect_handler = NULL;
     c->mqtt_interceptor_handler = NULL;
@@ -1083,6 +1087,29 @@ static int _mqtt_init(mqtt_client_t* c)
 }
 
 /********************************************************* mqttclient global function ********************************************************/
+
+MQTT_CLIENT_SET_DEFINE(client_id, char*, NULL)
+MQTT_CLIENT_SET_DEFINE(user_name, char*, NULL)
+MQTT_CLIENT_SET_DEFINE(password, char*, NULL)
+MQTT_CLIENT_SET_DEFINE(host, char*, NULL)
+MQTT_CLIENT_SET_DEFINE(port, char*, NULL)
+MQTT_CLIENT_SET_DEFINE(ca, char*, NULL)
+MQTT_CLIENT_SET_DEFINE(reconnect_data, void*, NULL)
+MQTT_CLIENT_SET_DEFINE(keep_alive_interval, uint16_t, 0)
+MQTT_CLIENT_SET_DEFINE(will_flag, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(clean_session, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(version, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(cmd_timeout, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(read_buf_size, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(write_buf_size, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(reconnect_try_duration, uint32_t, 0)
+MQTT_CLIENT_SET_DEFINE(reconnect_handler, reconnect_handler_t, NULL)
+MQTT_CLIENT_SET_DEFINE(interceptor_handler, interceptor_handler_t, NULL)
+
+void mqtt_sleep_ms(int ms)
+{
+    platform_timer_usleep(ms * 1000);
+}
 
 int mqtt_keep_alive(mqtt_client_t* c)
 {
@@ -1358,21 +1385,23 @@ int mqtt_list_subscribe_topic(mqtt_client_t* c)
     RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }
 
-MQTT_CLIENT_SET_DEFINE(client_id, char*, NULL)
-MQTT_CLIENT_SET_DEFINE(user_name, char*, NULL)
-MQTT_CLIENT_SET_DEFINE(password, char*, NULL)
-MQTT_CLIENT_SET_DEFINE(host, char*, NULL)
-MQTT_CLIENT_SET_DEFINE(port, char*, NULL)
-MQTT_CLIENT_SET_DEFINE(ca, char*, NULL)
-MQTT_CLIENT_SET_DEFINE(will_options, void*, NULL)
-MQTT_CLIENT_SET_DEFINE(reconnect_data, void*, NULL)
-MQTT_CLIENT_SET_DEFINE(keep_alive_interval, uint16_t, 0)
-MQTT_CLIENT_SET_DEFINE(will_flag, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(clean_session, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(version, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(cmd_timeout, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(read_buf_size, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(write_buf_size, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(reconnect_try_duration, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(reconnect_handler, reconnect_handler_t, NULL)
-MQTT_CLIENT_SET_DEFINE(interceptor_handler, interceptor_handler_t, NULL)
+int mqtt_set_will_options(mqtt_client_t* c, char *topic, mqtt_qos_t qos, uint8_t retained, char *message)
+{
+    if ((NULL == c) || (NULL == topic))
+        RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
+
+    if (NULL == c->mqtt_will_options) {
+        c->mqtt_will_options = platform_memory_alloc(sizeof(mqtt_will_options_t));
+        MQTT_ROBUSTNESS_CHECK(c->mqtt_will_options, MQTT_MEM_NOT_ENOUGH_ERROR);
+    }
+
+    if (0 == c->mqtt_will_flag)
+        c->mqtt_will_flag = 1;
+
+    c->mqtt_will_options->will_topic = topic;
+    c->mqtt_will_options->will_qos = qos;
+    c->mqtt_will_options->will_retained = retained;
+    c->mqtt_will_options->will_message = message;
+
+    RETURN_ERROR(MQTT_SUCCESS_ERROR);
+}
