@@ -22,7 +22,7 @@ A high-performance, high-stability, cross-platform MQTT client, developed based 
 
 - **Supports synchronous and asynchronous processing**, applications need not block and wait to waste CPU resources.
 
-- **With online code generation tool**, and its simple configuration can generate corresponding code, address: [https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee. io/mqtt/index.html)
+- **With online code generation tool**, and its simple configuration can generate corresponding code, address: [https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
 
 - **Has a very simple API interface**, in general, mqttclient configuration has default values, basically can be used without configuration, can also be arbitrarily configured, the configuration has robustness detection, so designed The API interface is also very simple.
 
@@ -85,25 +85,25 @@ Has a very clear layered framework.
 
 ![Overall Frame](png/mqttclient.png)
 
--At the top of the framework is the **API** function interface, which implements the client's **application, release, set parameters, connect to the server, disconnect, subscribe topic, unsubscribe topic, publish message** and other functional interfaces.
+- At the top of the framework is the **API** function interface, which implements the client's **application, release, set parameters, connect to the server, disconnect, subscribe topic, unsubscribe topic, publish message** and other functional interfaces.
 
--The famous **paho mqtt** library is used as the MQTT message packet library.
+- The famous **paho mqtt** library is used as the MQTT message packet library.
 
--Asynchronous processing mechanism is used to manage all the acks. It does not need to wait for the server's response when sending the message, but only records it. After receiving the server's ack, cancel this record, **very efficient**; and When the mqtt message (QoS1/QoS2) is sent and no response is received from the server, the message will be **retransmitted**.
+- Asynchronous processing mechanism is used to manage all the acks. It does not need to wait for the server's response when sending the message, but only records it. After receiving the server's ack, cancel this record, **very efficient**; and When the mqtt message (QoS1/QoS2) is sent and no response is received from the server, the message will be **retransmitted**.
 
--An **mqtt yield** thread is implemented internally to handle all content in a unified manner, such as **timeout processing, ack message processing, and receiving publish message from the server**, at this time the callback function will be called Inform the user of the data received, **post release, post completion message processing, heartbeat message (keep alive), when disconnected from the server, you need to try to reconnect, resubscribe to the topic, resend the message or reply* *Wait.
+- An **mqtt yield** thread is implemented internally to handle all content in a unified manner, such as **timeout processing, ack message processing, and receiving publish message from the server**, at this time the callback function will be called Inform the user of the data received, **post release, post completion message processing, heartbeat message (keep alive), when disconnected from the server, you need to try to reconnect, resubscribe to the topic, resend the message or reply* *Wait.
 
--Message processing, such as **reading and writing messages, decoding mqtt messages, setting messages (dup flag), destroying messages** and other operations.
+- Message processing, such as **reading and writing messages, decoding mqtt messages, setting messages (dup flag), destroying messages** and other operations.
 
 - **network** is a network component, which can **automatically select a data channel**, if it is an encryption method, **tls encryption** is used for data transmission, and tls can choose mbedtls as the encryption backend; it can also be The **tcp direct connection** method is ultimately transmitted via tcp.
 
 - **platform** is a platform abstraction layer that encapsulates things from different systems, such as socke or AT, thread, time, mutex, memory management**, these are dealing with the system and are also necessary for cross-platform Package.
 
--On the far right is the general content, **list processing, log library, error handling, software random number generator**, etc.
+- On the far right is the general content, **list processing, log library, error handling, software random number generator**, etc.
 
 ## Supported platforms
 
-**At present, Linux, TencentOS tiny, FreeRTOS, RT-Thread platforms have been implemented (software package is named kawaii-mqtt`), in addition to TencentOS tiny AT framework can also be used (RAM consumption is less than 15K ), and the stability is excellent! **
+**At present, Linux, TencentOS tiny, FreeRTOS, RT-Thread platforms have been implemented (software package is named kawaii-mqtt`), in addition to TencentOS tiny AT framework can also be used (RAM consumption is less than 15K ), and the stability is excellent!**
 
 | Platform | Code Location |
 | -------------- | -------- |
