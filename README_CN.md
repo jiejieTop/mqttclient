@@ -1,5 +1,11 @@
 [![](https://img.shields.io/github/v/tag/jiejietop/mqttclient?color=brightgreen&label=version)](https://github.com/jiejieTop/mqttclient/releases)
+
 [![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE)
+
+![](https://img.shields.io/github/forks/jiejieTop/mqttclient)
+
+![](https://img.shields.io/github/stars/jiejieTop/mqttclient)
+
 ![](https://img.shields.io/badge/platform-Linux|Windows|Mac|Embedded-orange.svg)
 
 [English Documents](README.md)
@@ -12,17 +18,19 @@
 
 ## 优势：
 
-- **具有极高的稳定性**：无论是**掉线重连**，**丢包重发**，都是**严格遵循MQTT协议标准**执行，除此之外对**大数据量**的测试无论是收是发，都是非常稳定，高频测试也是非常稳定。
+- **具有极高的稳定性**：无论是**掉线重连**，**丢包重发**，都是**严格遵循MQTT协议标准**执行，除此之外对**大数据量**的测试无论是收是发，都是非常稳定，**高频**测试也是非常稳定。
 
 - **轻量级**：整个代码工程极其简单，不使用mbedtls情况下，占用资源极少，作者曾使用esp8266模组与云端通信，整个工程代码消耗的RAM不足15k。
 
-- **无缝衔接mbedtls加密传输**，让网络传输更加安全，而且接口层完全不需要用户理会，无论是否加密，mqttclient对用户提供的API接口是**固定**的，这就很好的兼容了一套代应用层的码可以加密传输也可以不加密传输。
+- **支持mbedtls加密传输**，让网络传输更加安全，而且接口层完全不需要用户理会，无论是否加密，mqttclient对用户提供的API接口是**固定**的，这就很好的兼容了一套代应用层的码可以加密传输也可以不加密传输。
 
 - **支持多客户端**，同时兼容多个客户端运行工作，一个设备连接多个的服务器。
 
 - **支持同步异步处理**，应用程序无需阻塞等待浪费CPU资源。
 
-- **拥有在线代码生成工具**，及其简单配置就可以生成对应的代码，地址：[https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
+- **支持拦截器配置**，在某些平台中，客户端会默认自动订阅系统主题，而且每次来自服务器的主题都是变动的，此时需要使用拦截器进行拦截，分离主题与数据信息，并递交给用户，极大提高灵活性。
+
+- **拥有在线代码生成工具**，极其简单配置就可以生成对应的代码，地址：[https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
 
 - **拥有极简的API接口**，总的来说，mqttclient的配置都有默认值，基本无需配置都能使用的，也可以随意配置，对配置都有健壮性检测，这样子设计的API接口也是非常简单。
 
@@ -30,7 +38,7 @@
 
 - **支持自动重新订阅主题**，在自动重连后保证主题不会丢失。
 
-- **支持主题通配符`“#”、“+”`。**
+- **支持主题通配符`“#”、“+”`**。
 
 - **订阅的主题与消息处理完全分离**，让编程逻辑更加简单易用，用户无需理会错综复杂的逻辑关系。
 
@@ -50,7 +58,7 @@
 
 ## 在线代码生成工具
 
-本项目拥有代码生成工具，只需要在线配置即可生成代码，及其简单易用，代码生成工具地址：[https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
+本项目拥有代码生成工具，只需要在线配置即可生成代码，极其简单易用，代码生成工具地址：[https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
 
 ![在线代码生成工具](png/mqtt-tool.png)
 
@@ -130,13 +138,14 @@
 
 ## 版权和许可
 
-mqttclient 遵循 [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 开源协议。鼓励代码共享和尊重原作者的著作权，可以自由的使用、修改源代码，也可以将修改后的代码作为开源或闭源软件发布，**但必须保留原作者版权声明**。
+mqttclient 遵循 [Apache License v2.0](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE) 开源协议。鼓励代码共享和尊重原作者的著作权，可以自由的使用、修改源代码，也可以将修改后的代码作为开源或闭源软件发布。
 
 ## linux平台下测试使用
 
 ### 安装cmake：
+
 ```bash
-sudo apt-get install cmake g++
+    sudo apt-get install cmake g++
 ```
 
 ### 测试程序
@@ -146,22 +155,56 @@ sudo apt-get install cmake g++
 | emqx（我私人部署的服务器） | [./test/emqx/test.c](./test/emqx/test.c) |
 | 百度天工 | [./test/baidu/test.c](./test/baidu/test.c) |
 | onenet | [./test/onenet/test.c](./test/onenet/test.c) |
+| 阿里云物联 | [./test/ali/test.c](./test/ali/test.c) |
 
 ### 编译 & 运行
 
 ```bash
-./build.sh
+    ./build.sh
 ```
 
 运行**build.sh**脚本后会在 **./build/bin/**目录下生成可执行文件**emqx**、**baidu**、**onenet**等多个平台的可执行程序，直接运行即可。
 
+```bash
+    ./build/bin/emqx 
+```
+
 ### 编译成动态库libmqttclient.so
 
 ```bash
-./make-libmqttclient.sh
+    ./make-libmqttclient.sh
 ```
 
-运行`make-libmqttclient.sh`脚本后会在 `./libmqttclient/lib`目录下生成一个动态库文件`libmqttclient.so`，并安装到系统的`/usr/lib `目录下，相关头文件已经拷贝到`./libmqttclient/include`目录下，编译应用程序的时候只需要链接动态库即可`-lmqttclient`，动态库的配置文件根据`./test/mqtt_config.h`配置的。
+运行`make-libmqttclient.sh`脚本后会在 `./libmqttclient/lib`目录下生成一个动态库文件`libmqttclient.so`，并安装到系统的`/usr/lib `目录下，相关头文件已经拷贝到`./libmqttclient/include`目录下,将其拷贝到你的工程中即可，编译应用程序的时候只需要链接动态库即可`-lmqttclient -lpthread`，动态库的配置文件是根据`./test/mqtt_config.h`配置的。
 
+如果你是用交叉编译器的话，则应该根据你使用的编译器导出对应的环境变量（此处使用的交叉编译器是arm-linux-gnueabihf-gcc），同时你也必须将动态库文件`libmqttclient.so`拷贝到你的嵌入式系统的`/usr/lib `目录下：
 
+```bash
+    export CROSS_COMPILE=arm-linux-gnueabihf- 
+```
 
+如若需要卸载**libmqttclient.so**，执行以下命令即可：
+
+```bash
+    ./make-libmqttclient.sh remove
+```
+
+## 学习更多
+
+请看文档：
+
+- [MQTT协议简介](./docs/mqtt-introduction.md)
+
+- [MQTT协议通信过程](./docs/mqtt-communication.md)
+
+- [mqttclient代码生成工具](./docs/mqtt-tool.md)
+
+- [mqttclient配置及裁剪工具](./docs/mqtt-config.md)
+
+- [mqttclient设计与实现方式](./docs/mqtt-design.md)
+
+- [mqttclient连接到百度天工物接入](./docs/mqtt-baidu.md)
+
+- [mqttclient连接到OneNET云平台](./docs/mqtt-onenet.md)
+
+- [mqttclient连接到阿里云物联网平台](./docs/mqtt-aliyun.md)

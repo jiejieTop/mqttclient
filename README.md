@@ -1,9 +1,14 @@
 [![](https://img.shields.io/github/v/tag/jiejietop/mqttclient?color=brightgreen&label=version)](https://github.com/jiejieTop/mqttclient/releases)
+
 [![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/jiejieTop/mqttclient/blob/master/LICENSE)
+
+![](https://img.shields.io/github/forks/jiejieTop/mqttclient)
+
+![](https://img.shields.io/github/stars/jiejieTop/mqttclient)
+
 ![](https://img.shields.io/badge/platform-Linux|Windows|Mac|Embedded-orange.svg)
 
 [中文说明](README_CN.md)
-
 # mqttclient
 
 **A high-performance, high-stability, cross-platform MQTT client**
@@ -12,17 +17,19 @@ A high-performance, high-stability, cross-platform MQTT client, developed based 
 
 ## Advantage:
 
-- **Extremely high stability**: Whether it is **drop and reconnect**, **packet loss and retransmission**, it is **strictly abide by the MQTT protocol standard** implementation, in addition to The test of **large data volume** is very stable regardless of whether it is receiving or sending, and the high frequency test is also very stable.
+- **Extremely high stability**: Whether it is **drop and reconnect**, **packet loss and retransmission**, it is **strictly abide by the MQTT protocol standard**, in addition to The test of **large data volume** is very stable whether it is receiving or sending, and the **high frequency** test is also very stable.
 
 - **Lightweight**: The entire code project is extremely simple. Without mbedtls, it takes up very few resources. The author used the esp8266 module to communicate with the cloud. The entire project code consumes less than 15k of RAM.
 
-- **Seamless connection with mbedtls encrypted transmission**, making network transmission more secure, and the interface layer does not require users to care at all, no matter whether it is encrypted or not, mqttclient provides **fixed** to the API interface provided by the user, which is very A good code compatible with a set of application layer can be transmitted with or without encryption.
+- **Support mbedtls encrypted transmission**, make the network transmission more secure, and the interface layer does not require users to care, no matter whether it is encrypted or not, mqttclient is **fixed** for the API interface provided by the user, which is very compatible A set of codes on behalf of the application layer can be transmitted with or without encryption.
 
 - **Supports multiple clients**, compatible with multiple clients running at the same time, one device connected to multiple servers.
 
 - **Supports synchronous and asynchronous processing**, applications need not block and wait to waste CPU resources.
 
-- **With online code generation tool**, and its simple configuration can generate corresponding code, address: [https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
+- **Support interceptor configuration**, on some platforms, the client will automatically subscribe to the system theme by default, and the theme from the server changes every time. In this case, you need to use an interceptor to intercept and separate the theme and data Information and deliver it to users, greatly improving flexibility.
+
+- **With online code generation tool**, the code can be generated with extremely simple configuration, address: [https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
 
 - **Has a very simple API interface**, in general, mqttclient configuration has default values, basically can be used without configuration, can also be arbitrarily configured, the configuration has robustness detection, so designed The API interface is also very simple.
 
@@ -30,7 +37,7 @@ A high-performance, high-stability, cross-platform MQTT client, developed based 
 
 - **Support automatic re-subscription of topics**, after automatic reconnection to ensure that the topics will not be lost.
 
-- **Support theme wildcards ""#", "+"`. **
+- **Support theme wildcards ""#", "+"`**.
 
 - **Subscribed topics are completely separated from message processing**, making programming logic easier and easier to use, users don’t have to deal with intricate logical relationships.
 
@@ -44,13 +51,13 @@ A high-performance, high-stability, cross-platform MQTT client, developed based 
 
 - **Seamless connection of salof**: It is a synchronous and asynchronous log output framework. It outputs the corresponding log information when it is idle, and it can also write the information into flash to save it, which is convenient for debugging.
 
-- **Use the famous paho mqtt library package**
+- **Use the famous paho mqtt library package**.
 
-- **No other dependencies.**
+- **No other dependencies**.
 
 ## Online code generation tool
 
-This project has a code generation tool, which only needs online configuration to generate code, and it is simple and easy to use. Code generation tool address: [https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
+This project has a code generation tool that only requires online configuration to generate code, which is extremely simple and easy to use. The code generation tool address is: [https://jiejietop.gitee.io/mqtt/index.html](https://jiejietop.gitee.io/mqtt/index.html)
 
 ![Online code generation tool](png/mqtt-tool.png)
 
@@ -135,8 +142,9 @@ mqttclient follows the [Apache License v2.0](https://github.com/jiejieTop/mqttcl
 ## Test and use under Linux platform
 
 ### Install cmake:
+
 ```bash
-sudo apt-get install cmake g++
+    sudo apt-get install cmake g++
 ```
 
 ### test program
@@ -146,21 +154,56 @@ sudo apt-get install cmake g++
 | emqx (my privately deployed server) | [./test/emqx/test.c](./test/emqx/test.c) |
 | Baidu Tiangong | [./test/baidu/test.c](./test/baidu/test.c) |
 | onenet | [./test/onenet/test.c](./test/onenet/test.c) |
-| aliyun iot | [./test/ali/test.c](./test/ali/test.c) |
+| Alibaba Cloud Internet of Things | [./test/ali/test.c](./test/ali/test.c) |
 
 ### Compile & Run
 
 ```bash
-./build.sh
+    ./build.sh
 ```
 
-After running the **build.sh** script, the executable files **emqx**, **baidu**, **onenet** and other platforms will be generated in the **./build/bin/** directory Executable programs can be run directly.
+After running the **build.sh** script, the executable files **emqx**, **baidu**, **onenet** and other platforms will be generated under the **./build/bin/** directory Executable programs can be run directly.
+
+```bash
+    ./build/bin/emqx
+```
 
 ### Compile into a dynamic library libmqttclient.so
 
 ```bash
-./make-libmqttclient.sh
+    ./make-libmqttclient.sh
 ```
 
-After running the `make-libmqttclient.sh` script, a dynamic library file `libmqttclient.so` will be generated in the `./libmqttclient/lib` directory, and installed into the system’s `/usr/lib` directory, the relevant header files have been Copy to the `./libmqttclient/include` directory, when compiling the application, you only need to link the dynamic library `-lmqttclient`, the configuration file of the dynamic library is configured according to `./test/mqtt_config.h`.
+After running the `make-libmqttclient.sh` script, a dynamic library file `libmqttclient.so` will be generated in the `./libmqttclient/lib` directory, and installed into the system’s `/usr/lib` directory, the relevant header files have been Copy to the `./libmqttclient/include` directory and copy it to your project. You only need to link the dynamic library when compiling the application. `-lmqttclient -lpthread`, the configuration file of the dynamic library is based on` ./test/mqtt_config.h` configuration.
 
+If you are using a cross-compiler, you should export the corresponding environment variables according to the compiler you are using (the cross-compiler used here is arm-linux-gnueabihf-gcc), and you must also set the dynamic library file `libmqttclient .so` is copied to the `/usr/lib` directory of your embedded system:
+
+```bash
+    export CROSS_COMPILE=arm-linux-gnueabihf-
+```
+
+If you need to uninstall **libmqttclient.so**, execute the following command:
+
+```bash
+    ./make-libmqttclient.sh remove
+```
+
+## Learn more
+
+Please see the documentation:
+
+- [MQTT Protocol Introduction](./docs/mqtt-introduction.md)
+
+- [MQTT protocol communication process](./docs/mqtt-communication.md)
+
+- [mqttclient code generation tool](./docs/mqtt-tool.md)
+
+- [mqttclient configuration and cutting tool](./docs/mqtt-config.md)
+
+- [mqttclient design and implementation](./docs/mqtt-design.md)
+
+- [mqttclient connects to Baidu Tiangongwu Access](./docs/mqtt-baidu.md)
+
+- [mqttclient connects to OneNET cloud platform](./docs/mqtt-onenet.md)
+
+- [mqttclient connects to Alibaba Cloud IoT platform](./docs/mqtt-aliyun.md)
