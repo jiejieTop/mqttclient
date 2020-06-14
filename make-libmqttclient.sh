@@ -7,7 +7,7 @@ cd libmqttclient
 if [ ! -f "Makefile" ]; then
 
 cat  <<-EOF > Makefile
-CC=gcc
+CC=\$(CROSS_COMPILE)gcc
 
 SRC = \$(wildcard ../*.c \\
         ../common/*.c \\
