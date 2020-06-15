@@ -14,7 +14,7 @@ MQTT 协议提供一对多的消息发布，可以降低应用程序的耦合性
 
 MQTT通信模型示意图如下：
 
-![mqtt001](../png/mqtt001.png)
+![mqtt001](http://qiniu.jiejie01.top/mqtt001.png)
 
 
 ## MQTT客户端的功能：
@@ -62,7 +62,7 @@ MQTT 服务器常被称为 Broker（消息代理），以是一个应用程序�
 MQTT协议工作在TCP协议之上，因为客户端和服务器都是应用层，那么必然需要一种协议在两者之间进行通信，那么随之而来的就是MQTT控制报文， MQTT控制报文有3个部分组成，分别是固定报头（fixed header）、可变报头（variable header）、有效荷载（数据区域payload）。固定报头，所有的MQTT控制报文都包含，可变报头与有效载荷是部分MQTT控制报文包含。
 固定报头占据两字节的空间，具体见
 
-![mqtt002](../png/mqtt002.png)
+![mqtt002](http://qiniu.jiejie01.top/mqtt002.png)
 
 
 固定报头的第一个字节分为控制报文的类型（4bit），以及控制报文类型的标志位，控制类型共有14种，其中0与15被系统保留出来，其他的类型具体见：
@@ -120,7 +120,7 @@ MQTT协议工作在TCP协议之上，因为客户端和服务器都是应用层�
 | PINGRESP | 不需要 |
 | DISCONNECT | 不需要 |
 
-![mqtt003](../png/mqtt003.png)
+![mqtt003](http://qiniu.jiejie01.top/mqtt003.png)
 
 因为对于不同的报文，可变报头是不一样的，下面就简单讲解几个报文的可变报头。
 
@@ -136,7 +136,7 @@ CONNECT报文的可变报头包含四个字段：协议名（Protocol Name）、
 
 连接标志字段涉及的内容比较多，它在协议级别之后使用一个字节表示，但分成很多个标志位，具体见
 
-![mqtt004](../png/mqtt004.png)
+![mqtt004](http://qiniu.jiejie01.top/mqtt004.png)
 
 bit0是MQTT保留的标志位，在连接过程中，服务器会检测连接标志的bit0是否为0，如果不为0则服务器任务这个连接报文是不合法的，会终止连接请求。
 
@@ -156,7 +156,7 @@ bit7是用户名标志位User Name Flag，如果用户名标志被设置为0，�
 
 总的来说，整个CONNECT报文可变报头的内容如下，具体见
 
-![mqtt005](../png/mqtt005.png)
+![mqtt005](http://qiniu.jiejie01.top/mqtt005.png)
 
 ## CONNACK报文
 
@@ -180,7 +180,7 @@ bit7是用户名标志位User Name Flag，如果用户名标志被设置为0，�
 
 那么总的来说，CONNACK报文的可变报头部分内容具体见
 
-![mqtt006](../png/mqtt006.png)
+![mqtt006](http://qiniu.jiejie01.top/mqtt006.png)
 
 在此，就不再对MQTT报文的可变报头部分过多赘述，大家可以参考MQTT协议手册，里面有很详细的描述。
 

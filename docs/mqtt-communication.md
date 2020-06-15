@@ -10,7 +10,7 @@
 
 对于正常的连接请求，服务器必须产生应答报文，如果无法建立会话，服务器应该在应答报文中报告对应的错误代码。
 
-![mqtt007](../png/mqtt007.png)
+![mqtt007](http://qiniu.jiejie01.top/mqtt007.png)
 
 # MQTT订阅主题
 
@@ -27,7 +27,7 @@ SUBSCRIBE报文拥有固定报头、可变报头、有效载荷。
 
 如果服务器收到一个SUBSCRIBE报文，报文的主题过滤器与一个现存订阅的主题过滤器相同，那么必须使用新的订阅彻底替换现存的订阅。新订阅的主题过滤器和之前订阅的相同，但是它的最大QoS值可以不同。与这个主题过滤器匹配的任何现存的保留消息必须被重发，但是发布流程不能中断。
 
-![mqtt008](../png/mqtt008.png)
+![mqtt008](http://qiniu.jiejie01.top/mqtt008.png)
 
 SUBSCRIBE报文的有效载荷包含了一个主题过滤器列表，它们表示客户端想要订阅的主题，SUBSCRIBE报文有效载荷中的主题过滤器列表必须是UTF-8字符串。
 
@@ -63,7 +63,7 @@ MQTT按照这里定义的服务质量 (QoS) 等级分发应用消息。服务器
 
 在服务器接受PUBLISH报文时要将消息分发给订阅该主题（消息）的订阅者。
 
-![mqtt009](../png/mqtt009.png)
+![mqtt009](http://qiniu.jiejie01.top/mqtt009.png)
 
 
 ## QoS1的PUBLISH控制报文
@@ -76,7 +76,7 @@ MQTT按照这里定义的服务质量 (QoS) 等级分发应用消息。服务器
 
 接收者响应的PUBACK报文必须包含一个报文标识符，这个标识符来自接收到的PUBLISH报文。在发送了PUBACK报文之后，接收者必须将任何包含相同报文标识符的入站PUBLISH报文当作一个新的消息，并忽略它的DUP标志的值。
 
-![mqtt010](../png/mqtt010.png)
+![mqtt010](http://qiniu.jiejie01.top/mqtt010.png)
 
 
 ## QoS2的PUBLISH控制报文
@@ -97,7 +97,7 @@ QoS2的PUBLISH报文的接收者使用一个两步确认过程来确认收到。
 
 所以就如下图所示，在发布消息的时候，立马存储消息，在收到PUBREC报文后必须将存储的消息丢弃掉，然后存储报文标识符，与此同时还要将PUBREL报文发送出去，最后在收到PUBCOMP报文后，才丢弃存储的报文标识符。
 
-![mqtt011](../png/mqtt011.png)
+![mqtt011](http://qiniu.jiejie01.top/mqtt011.png)
 
 
 当然啦，对应分发消息也是比较复杂的，它一般有两种处理方案，每一种方案都要确保消息有且只有处理一次。
@@ -132,7 +132,7 @@ UNSUBSCRIBE报文的有效载荷必须至少包含一个主题过滤器列表，
 
 然后服务器必须发送UNSUBACK报文来响应客户端的UNSUBSCRIBE请求。UNSUBACK报文必须包含和UNSUBSCRIBE报文相同的报文标识符。即使没有删除任何主题订阅（客户端取消订阅的主题未被订阅），服务器也必须发送一个UNSUBACK响应。
 
-![mqtt012](../png/mqtt012.png)
+![mqtt012](http://qiniu.jiejie01.top/mqtt012.png)
 
 
 # 断开连接
@@ -145,7 +145,7 @@ DISCONNECT报文的固定报头保留位必须全为0。
 
 服务端在收到DISCONNECT报文时必须丢弃任何与当前连接关联的未发布的遗嘱消息。而且当客户端没有关闭网络连接的时候服务器应该主动去关闭网络连接。
 
-![mqtt013](../png/mqtt013.png)
+![mqtt013](http://qiniu.jiejie01.top/mqtt013.png)
 
 
 **上一篇**：[MQTT协议简介](./mqtt-introduction.md)
