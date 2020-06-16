@@ -67,7 +67,7 @@
 总计占 **10857字节** 的ROM，而RAM的开销则几乎只依赖动态内存，在不使用TLS加密传输的情况下，维持QOS0服务质量等级的通信动态内存大约仅需要**3694**字节，这包括1024读缓冲区 + 1024写缓冲区 + 1024内部线程栈大小，相对于其他MQTT客户端来说，mqttclient需要的RAM资源开销极少。
 
 | Code | RO Data | RW Data | ZI Data | Object Name |
-| -- | -- | -- | -- | -- | -- |
+| -- | -- | -- | -- | -- |
 | 7118 | 791 | 0 | 0 | mqttclient.o |
 | 546 | 0 | 0 | 0 | mqttconnectclient.o |
 | 212 | 0 | 0 | 0 | mqttdeserializepublish.o |

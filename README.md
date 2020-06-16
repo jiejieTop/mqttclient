@@ -66,7 +66,7 @@ This project has a code generation tool that only requires online configuration 
 A total of **10857 bytes** of ROM, and the overhead of RAM is almost only dependent on dynamic memory. Without using TLS encrypted transmission, the communication dynamic memory that maintains the QOS0 quality of service level requires only about **3694** bytes. Including 1024 read buffer + 1024 write buffer + 1024 internal thread stack size, compared with other MQTT clients, mqttclient requires very little RAM resource overhead.
 
 | Code | RO Data | RW Data | ZI Data | Object Name |
-| -- | -- | -- | -- | -- | -- |
+| -- | -- | -- | -- | -- |
 | 7118 | 791 | 0 | 0 | mqttclient.o |
 | 546 | 0 | 0 | 0 | mqttconnectclient.o |
 | 212 | 0 | 0 | 0 | mqttdeserializepublish.o |
