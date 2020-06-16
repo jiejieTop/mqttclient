@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-12 14:28:03
+ * @LastEditTime: 2020-06-16 17:34:37
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1040,10 +1040,8 @@ exit:
     RETURN_ERROR(rc);
 }
 
-static int _mqtt_init(mqtt_client_t* c)
+static int mqtt_init(mqtt_client_t* c)
 {
-    int rc;
-    
     /* network init */
     c->mqtt_network = (network_t*) platform_memory_alloc(sizeof(network_t));
 
@@ -1146,7 +1144,7 @@ mqtt_client_t *mqtt_lease(void)
 
     memset(c, 0, sizeof(mqtt_client_t));
 
-    rc = _mqtt_init(c);
+    rc = mqtt_init(c);
     if (MQTT_SUCCESS_ERROR != rc)
         return NULL;
     
@@ -1349,6 +1347,8 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
     }
     
 exit:
+    msg->payloadlen = 0;        // clear
+
     platform_mutex_unlock(&c->mqtt_write_lock);
 
     if ((MQTT_ACK_HANDLER_NUM_TOO_MUCH_ERROR == rc) || (MQTT_MEM_NOT_ENOUGH_ERROR == rc)) {

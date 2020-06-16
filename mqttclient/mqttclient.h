@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-12 14:26:57
+ * @LastEditTime: 2020-06-16 16:57:40
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -90,12 +90,12 @@ typedef struct mqtt_client {
     char                        *mqtt_client_id;
     char                        *mqtt_user_name;
     char                        *mqtt_password;
-    char                        *mqtt_read_buf;
-    char                        *mqtt_write_buf;
     char                        *mqtt_host;
     char                        *mqtt_port;
     char                        *mqtt_ca;
     void                        *mqtt_reconnect_data;
+    uint8_t                     *mqtt_read_buf;
+    uint8_t                     *mqtt_write_buf;
     uint16_t                    mqtt_keep_alive_interval;
     uint16_t                    mqtt_packet_id;
     uint32_t                    mqtt_will_flag          : 1;
