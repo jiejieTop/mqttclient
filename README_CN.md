@@ -64,28 +64,28 @@
 
 ## 占用资源大小
 
-总计占**11042字节**的ROM，而RAM的开销则几乎只依赖动态内存（这依然是极少的）。
+总计占 **10857字节** 的ROM，而RAM的开销则几乎只依赖动态内存，在不使用TLS加密传输的情况下，维持QOS0服务质量等级的通信动态内存大约仅需要**3694**字节，这包括1024读缓冲区 + 1024写缓冲区 + 1024内部线程栈大小，相对于其他MQTT客户端来说，mqttclient需要的RAM资源开销极少。
 
-| Code | (inc. data) | RO Data | RW Data | ZI Data | Object Name |
+| Code | RO Data | RW Data | ZI Data | Object Name |
 | -- | -- | -- | -- | -- | -- |
-| 6086 | 1684 | 404 | 0 | 0 | mqttclient.o |
-| 546 | 18 | 0 | 0 | 0 | mqttconnectclient.o |
-| 212 | 0 | 0 | 0 | 0 | mqttdeserializepublish.o |
-| 476 | 22 | 0 | 4 | 0 | mqttpacket.o |
-| 236 | 0 | 0 | 0 | 0 | mqttserializepublish.o |
-| 310 | 0 | 0 | 0 | 0 | mqttsubscribeclient.o |
-| 38 | 0 | 0 | 0 | 0 | mqttunsubscribeclient.o |
-| 56 | 0 | 0 | 0 | 0 | nettype_tcp.o |
-| 62 | 0 | 0 | 0 | 0 | network.o |
-| 24 | 0 | 0 | 0 | 0 | platform_memory.o |
-| 40 | 0 | 0 | 0 | 0 | platform_mutex.o |
-| 346 | 0 | 0 | 0 | 0 | platform_net_socket.o |
-| 94 | 0 | 0 | 0 | 0 | platform_thread.o |
-| 70 | 0 | 0 | 0 | 0 | platform_timer.o |
-| 246 | 10 | 0 | 4 | 0 | random.o |
-| 62 | 0 | 0 | 0 | 0 | mqtt_list.o |
-| - | - | - | - | - | - |
-| 8904 | 1734 | 404 | 8 | 0 | total |
+| 7118 | 791 | 0 | 0 | mqttclient.o |
+| 546 | 0 | 0 | 0 | mqttconnectclient.o |
+| 212 | 0 | 0 | 0 | mqttdeserializepublish.o |
+| 476 | 0 | 4 | 0 | mqttpacket.o |
+| 236 | 0 | 0 | 0 | mqttserializepublish.o |
+| 310 | 0 | 0 | 0 | mqttsubscribeclient.o |
+| 38 | 0 | 0 | 0 | mqttunsubscribeclient.o |
+| 56 | 0 | 0 | 0 | nettype_tcp.o |
+| 62 | 0 | 0 | 0 | network.o |
+| 24 | 0 | 0 | 0 | platform_memory.o |
+| 40 | 0 | 0 | 0 | platform_mutex.o |
+| 344 | 0 | 0 | 0 | platform_net_socket.o |
+| 94 | 0 | 0 | 0 | platform_thread.o |
+| 70 | 0 | 0 | 0 | platform_timer.o |
+| 246 | 0 | 4 | 0 | random.o |
+| 62 | 0 | 0 | 0 | mqtt_list.o |
+| - | - | - | - | - |
+| 10066  | 791 | 8 | 0 | total |
 
 ## 整体框架
 
@@ -111,7 +111,7 @@
 
 ## 支持的平台
 
-**目前已实现了Linux、TencentOS tiny、FreeRTOS、RT-Thread平台（已做成软件包，名字为`kawaii-mqtt`），除此之外TencentOS tiny的AT框架亦可以使用（RAM消耗不足15K），并且稳定性极好！**
+**目前已实现了Linux、TencentOS tiny、FreeRTOS、RT-Thread平台（已做成软件包，名字为`kawaii-mqtt`），除此之外TencentOS tiny的AT框架亦可以使用，并且稳定性极好！**
 
 | 平台           | 代码位置 |
 | -------------- | -------- |
@@ -131,6 +131,7 @@
 | [v1.0.2] | 添加新特性——拦截器，修复一些小bug |
 | [v1.0.3] | 避免造成全局污染修改了log、list相关函数的命名 |
 | [v1.0.4] | 重新调整了network结构与mbedtls数据通道 |
+| [v1.1.0] | 一个较大版本的更新，重构部分代码，优化MQTT处理的逻辑，提升整体的稳定性，支持多客户端，支持设置遗嘱，优化API接口，增加多个云平台的测试代码与说明文档，增加在线代码生成工具、在线裁剪配置工具 |
 
 ## 问题
 

@@ -63,28 +63,28 @@ This project has a code generation tool that only requires online configuration 
 
 ## occupied resource size
 
-A total of **11042 bytes** of ROM, and the overhead of RAM depends almost exclusively on dynamic memory (which is still very little).
+A total of **10857 bytes** of ROM, and the overhead of RAM is almost only dependent on dynamic memory. Without using TLS encrypted transmission, the communication dynamic memory that maintains the QOS0 quality of service level requires only about **3694** bytes. Including 1024 read buffer + 1024 write buffer + 1024 internal thread stack size, compared with other MQTT clients, mqttclient requires very little RAM resource overhead.
 
-| Code | (inc. data) | RO Data | RW Data | ZI Data | Object Name |
-| - | - | - | - | - | - |
-| 6086 | 1684 | 404 | 0 | 0 | mqttclient.o |
-| 546 | 18 | 0 | 0 | 0 | mqttconnectclient.o |
-| 212 | 0 | 0 | 0 | 0 | mqttdeserializepublish.o |
-| 476 | 22 | 0 | 4 | 0 | mqttpacket.o |
-| 236 | 0 | 0 | 0 | 0 | mqttserializepublish.o |
-| 310 | 0 | 0 | 0 | 0 | mqttsubscribeclient.o |
-| 38 | 0 | 0 | 0 | 0 | mqttunsubscribeclient.o |
-| 56 | 0 | 0 | 0 | 0 | nettype_tcp.o |
-| 62 | 0 | 0 | 0 | 0 | network.o |
-| 24 | 0 | 0 | 0 | 0 | platform_memory.o |
-| 40 | 0 | 0 | 0 | 0 | platform_mutex.o |
-| 346 | 0 | 0 | 0 | 0 | platform_net_socket.o |
-| 94 | 0 | 0 | 0 | 0 | platform_thread.o |
-| 70 | 0 | 0 | 0 | 0 | platform_timer.o |
-| 246 | 10 | 0 | 4 | 0 | random.o |
-| 62 | 0 | 0 | 0 | 0 | mqtt_list.o |
-|-|-|-|-|-|-|
-| 8904 | 1734 | 404 | 8 | 0 | total |
+| Code | RO Data | RW Data | ZI Data | Object Name |
+| -- | -- | -- | -- | -- | -- |
+| 7118 | 791 | 0 | 0 | mqttclient.o |
+| 546 | 0 | 0 | 0 | mqttconnectclient.o |
+| 212 | 0 | 0 | 0 | mqttdeserializepublish.o |
+| 476 | 0 | 4 | 0 | mqttpacket.o |
+| 236 | 0 | 0 | 0 | mqttserializepublish.o |
+| 310 | 0 | 0 | 0 | mqttsubscribeclient.o |
+| 38 | 0 | 0 | 0 | mqttunsubscribeclient.o |
+| 56 | 0 | 0 | 0 | nettype_tcp.o |
+| 62 | 0 | 0 | 0 | network.o |
+| 24 | 0 | 0 | 0 | platform_memory.o |
+| 40 | 0 | 0 | 0 | platform_mutex.o |
+| 344 | 0 | 0 | 0 | platform_net_socket.o |
+| 94 | 0 | 0 | 0 | platform_thread.o |
+| 70 | 0 | 0 | 0 | platform_timer.o |
+| 246 | 0 | 4 | 0 | random.o |
+| 62 | 0 | 0 | 0 | mqtt_list.o |
+| - | - | - | - | - |
+| 10066  | 791 | 8 | 0 | total |
 
 ## Overall framework
 
@@ -110,7 +110,7 @@ Has a very clear layered framework.
 
 ## Supported platforms
 
-**At present, Linux, TencentOS tiny, FreeRTOS, RT-Thread platforms have been implemented (software package is named kawaii-mqtt`), in addition to TencentOS tiny AT framework can also be used (RAM consumption is less than 15K ), and the stability is excellent!**
+**At present, Linux, TencentOS tiny, FreeRTOS, RT-Thread platforms have been implemented (software package is named kawaii-mqtt`), in addition to TencentOS tiny AT framework can also be used, and the stability is excellent!**
 
 | Platform | Code Location |
 | -------------- | -------- |
@@ -130,7 +130,7 @@ Has a very clear layered framework.
 | [v1.0.2] | Add a new feature-interceptor, fix some small bugs |
 | [v1.0.3] | To avoid global pollution, modify the naming of log and list related functions |
 | [v1.0.4] | Network structure and mbedtls data channel readjusted |
-
+| [v1.1.0] | A larger version of the update, refactoring part of the code, optimizing the logic of MQTT processing, improving the overall stability, supporting multiple clients, supporting setting the will, optimizing the API interface, and adding multiple cloud platforms Test code and documentation, add online code generation tool, online cutting configuration tool |
 ## question
 
 Welcome to submit issues and bug reports in the form of [GitHub Issues](https://github.com/jiejieTop/mqttclient/issues)
