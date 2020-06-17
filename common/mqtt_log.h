@@ -2,13 +2,19 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-27 03:25:58
- * @LastEditTime: 2020-06-17 15:26:54
+ * @LastEditTime: 2020-06-17 19:07:25
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTT_LOG_H_
 #define _MQTT_LOG_H_
 
 #include "mqtt_defconfig.h"
+
+#define MQTT_LOG_BASE_LEVEL      (0)
+#define MQTT_LOG_ERR_LEVEL       (MQTT_LOG_BASE_LEVEL + 1)
+#define MQTT_LOG_WARN_LEVEL      (MQTT_LOG_ERR_LEVEL + 1)
+#define MQTT_LOG_INFO_LEVEL      (MQTT_LOG_WARN_LEVEL + 1)
+#define MQTT_LOG_DEBUG_LEVEL     (MQTT_LOG_INFO_LEVEL + 1)
 
 #ifdef MQTT_LOG_IS_SALOF
     #include "salof.h"
@@ -21,12 +27,6 @@
 #else
     #include <stdio.h>
     
-    #define MQTT_LOG_BASE_LEVEL      (0)
-    #define MQTT_LOG_ERR_LEVEL       (MQTT_LOG_BASE_LEVEL + 1)
-    #define MQTT_LOG_WARN_LEVEL      (MQTT_LOG_ERR_LEVEL + 1)
-    #define MQTT_LOG_INFO_LEVEL      (MQTT_LOG_WARN_LEVEL + 1)
-    #define MQTT_LOG_DEBUG_LEVEL     (MQTT_LOG_INFO_LEVEL + 1)
-
 #if MQTT_LOG_LEVEL < MQTT_LOG_DEBUG_LEVEL
     #define MQTT_LOG_D(fmt, ...)
 #else

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-25 23:56:34
- * @LastEditTime: 2020-06-17 15:44:16
+ * @LastEditTime: 2020-06-17 18:50:26
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _SALOF_DEFCONFIG_H_
@@ -89,7 +89,7 @@
     #define salof_sem       k_sem_t*
     #define salof_tcb       k_task_t*
     #define SALOF_TASK_PRIO (TOS_CFG_TASK_PRIO_MAX - 2u)
-    #undef  SALOF_SALOF_USING_IDLE_HOOK
+    #undef  SALOF_USING_IDLE_HOOK
     
 #elif (SALOF_OS == SALOF_USING_RTT)
     #include <rtconfig.h>
@@ -111,7 +111,7 @@
     #define salof_sem       sem_t*
     #define salof_tcb       pthread_t*
     #define SALOF_TASK_PRIO (0U)
-    #undef  SALOF_SALOF_USING_IDLE_HOOK
+    #undef  SALOF_USING_IDLE_HOOK
 
 #else
     #error "not supported OS type"
