@@ -2,12 +2,12 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-26 19:11:34
- * @LastEditTime : 2019-12-28 01:51:38
+ * @LastEditTime: 2020-06-17 16:25:18
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
-#include "config.h"
+#include "salof_defconfig.h"
 
-#ifdef USE_LOG
+#ifdef SALOF_USING_LOG
 
 void *salof_alloc(unsigned int size)
 {

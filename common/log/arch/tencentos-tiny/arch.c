@@ -7,7 +7,7 @@
  */
 #include "salof_defconfig.h"
 
-#ifdef USE_LOG
+#ifdef SALOF_USING_LOG
 
 void *salof_alloc(unsigned int size)
 {
