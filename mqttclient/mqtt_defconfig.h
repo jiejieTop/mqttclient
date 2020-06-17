@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-02-25 03:36:09
- * @LastEditTime: 2020-05-20 16:24:20
+ * @LastEditTime: 2020-06-17 19:59:41
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 
@@ -10,6 +10,10 @@
 #define _DEFCONFIG_H_
 
 #include "mqtt_config.h"
+
+#ifndef MQTT_LOG_LEVEL
+    #define MQTT_LOG_LEVEL                          MQTT_LOG_DEBUG_LEVEL   //MQTT_LOG_WARN_LEVEL MQTT_LOG_DEBUG_LEVEL
+#endif // !MQTT_LOG_LEVEL
 
 #ifndef MQTT_MAX_PACKET_ID
     #define     MQTT_MAX_PACKET_ID                  (0xFFFF - 1)
