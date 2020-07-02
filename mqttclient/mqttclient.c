@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-16 17:34:37
+ * @LastEditTime: 2020-07-02 08:53:41
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -495,6 +495,7 @@ static void mqtt_clean_session(mqtt_client_t* c)
     if (!(mqtt_list_is_empty(&c->mqtt_ack_handler_list))) {
         LIST_FOR_EACH_SAFE(curr, next, &c->mqtt_ack_handler_list) {
             ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);
+            mqtt_list_del(&ack_handler->list);
             platform_memory_free(ack_handler);
         }
         mqtt_list_del_init(&c->mqtt_ack_handler_list);
@@ -504,6 +505,7 @@ static void mqtt_clean_session(mqtt_client_t* c)
     if (!(mqtt_list_is_empty(&c->mqtt_msg_handler_list))) {
         LIST_FOR_EACH_SAFE(curr, next, &c->mqtt_msg_handler_list) {
             msg_handler = LIST_ENTRY(curr, message_handlers_t, list);
+            mqtt_list_del(&msg_handler->list);
             msg_handler->topic_filter = NULL;
             platform_memory_free(msg_handler);
         }
@@ -917,12 +919,12 @@ static void mqtt_yield_thread(void *arg)
     while (1) {
         rc = mqtt_yield(c, c->mqtt_cmd_timeout);
         if (MQTT_CLEAN_SESSION_ERROR == rc) {
-            MQTT_LOG_E("%s:%d %s()..., mqtt clean session....", __FILE__, __LINE__, __FUNCTION__);
+            MQTT_LOG_W("%s:%d %s()..., mqtt clean session....", __FILE__, __LINE__, __FUNCTION__);
             network_disconnect(c->mqtt_network);
             mqtt_clean_session(c);
             goto exit;
         } else if (MQTT_RECONNECT_TIMEOUT_ERROR == rc) {
-            MQTT_LOG_E("%s:%d %s()..., mqtt reconnect timeout....", __FILE__, __LINE__, __FUNCTION__);
+            MQTT_LOG_W("%s:%d %s()..., mqtt reconnect timeout....", __FILE__, __LINE__, __FUNCTION__);
         }
     }
     
