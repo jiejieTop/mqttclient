@@ -2,13 +2,16 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-07-02 08:53:41
+ * @LastEditTime: 2020-07-03 15:40:52
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
 
 #define     MQTT_MIN_PAYLOAD_SIZE   2               
 #define     MQTT_MAX_PAYLOAD_SIZE   268435455       // MQTT imposes a maximum payload size of 268435455 bytes.
+
+#define     MQTT_SUBSCRIBE_ASYNC    0         
+#define     MQTT_SUBSCRIBE_SYNC     1         
 
 static void default_msg_handler(void* client, message_data_t* msg)
 {
@@ -1086,6 +1089,66 @@ static int mqtt_init(mqtt_client_t* c)
     RETURN_ERROR(MQTT_SUCCESS_ERROR);
 }
 
+static int mqtt_subscribe_by_opt(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler, int timeout, int opt)
+{
+    int rc = MQTT_SUBSCRIBE_ERROR;
+    int len = 0;
+    uint16_t packet_id;
+    platform_timer_t timer;
+    MQTTString topic = MQTTString_initializer;
+    topic.cstring = (char *)topic_filter;
+    message_handlers_t *msg_handler = NULL;
+
+    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
+        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
+    
+    platform_mutex_lock(&c->mqtt_write_lock);
+
+    packet_id = mqtt_get_next_packet_id(c);
+
+    /* serialize subscribe packet and send it */
+    len = MQTTSerialize_subscribe(c->mqtt_write_buf, c->mqtt_write_buf_size, 0, packet_id, 1, &topic, (int*)&qos);
+    if (len <= 0)
+        goto exit;
+    
+    if ((rc = mqtt_send_packet(c, len, &timer)) != MQTT_SUCCESS_ERROR)
+        goto exit; 
+
+    if (NULL == handler)
+        handler = default_msg_handler;  /* if handler is not specified, the default handler is used */
+
+    /* create a message and record it */
+    msg_handler = mqtt_msg_handler_create(topic_filter, qos, handler);
+    if (NULL == msg_handler)
+        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
+
+    if (MQTT_SUBSCRIBE_ASYNC == opt) {
+        rc = mqtt_ack_list_record(c, SUBACK, packet_id, len, msg_handler);
+    } else {
+        platform_timer_t sub_ack_timer;
+        if (0 == timeout)
+            timeout = c->mqtt_cmd_timeout;
+
+        platform_timer_init(&sub_ack_timer);
+        platform_timer_cutdown(&sub_ack_timer, timeout);
+
+        platform_mutex_unlock(&c->mqtt_write_lock);
+        
+        if (mqtt_wait_packet(c, SUBACK, &sub_ack_timer) == SUBACK) {
+            rc = mqtt_msg_handlers_install(c, msg_handler);
+            RETURN_ERROR(rc);
+        }
+
+        RETURN_ERROR(MQTT_SUBSCRIBE_ERROR);
+    }
+exit:
+
+    platform_mutex_unlock(&c->mqtt_write_lock);
+
+    RETURN_ERROR(rc);
+}
+
+
 /********************************************************* mqttclient global function ********************************************************/
 
 MQTT_CLIENT_SET_DEFINE(client_id, char*, NULL)
@@ -1223,92 +1286,12 @@ int mqtt_disconnect(mqtt_client_t* c)
 
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler)
 {
-    int rc = MQTT_SUBSCRIBE_ERROR;
-    int len = 0;
-    uint16_t packet_id;
-    platform_timer_t timer;
-    MQTTString topic = MQTTString_initializer;
-    topic.cstring = (char *)topic_filter;
-    message_handlers_t *msg_handler = NULL;
-
-    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
-        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
-    
-    platform_mutex_lock(&c->mqtt_write_lock);
-
-    packet_id = mqtt_get_next_packet_id(c);
-
-    /* serialize subscribe packet and send it */
-    len = MQTTSerialize_subscribe(c->mqtt_write_buf, c->mqtt_write_buf_size, 0, packet_id, 1, &topic, (int*)&qos);
-    if (len <= 0)
-        goto exit;
-    
-    if ((rc = mqtt_send_packet(c, len, &timer)) != MQTT_SUCCESS_ERROR)
-        goto exit; 
-
-    if (NULL == handler)
-        handler = default_msg_handler;  /* if handler is not specified, the default handler is used */
-
-    /* create a message and record it */
-    msg_handler = mqtt_msg_handler_create(topic_filter, qos, handler);
-    if (NULL == msg_handler)
-        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
-
-    rc = mqtt_ack_list_record(c, SUBACK, packet_id, len, msg_handler);
-
-exit:
-
-    platform_mutex_unlock(&c->mqtt_write_lock);
-
-    RETURN_ERROR(rc);
+    return mqtt_subscribe_by_opt(c, topic_filter, qos, handler, 0, MQTT_SUBSCRIBE_ASYNC);
 }
 
-int mqtt_subscribe_sync(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler)
+int mqtt_subscribe_sync(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler, int timeout)
 {
-    int rc = MQTT_SUBSCRIBE_ERROR;
-    int len = 0;
-    uint16_t packet_id;
-    platform_timer_t timer;
-    MQTTString topic = MQTTString_initializer;
-    topic.cstring = (char *)topic_filter;
-    message_handlers_t *msg_handler = NULL;
-    platform_timer_t sub_ack_timer;
-
-    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
-        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
-    
-    platform_mutex_lock(&c->mqtt_write_lock);
-
-    packet_id = mqtt_get_next_packet_id(c);
-
-    /* serialize subscribe packet and send it */
-    len = MQTTSerialize_subscribe(c->mqtt_write_buf, c->mqtt_write_buf_size, 0, packet_id, 1, &topic, (int*)&qos);
-    if (len <= 0)
-        goto exit;
-    
-    if ((rc = mqtt_send_packet(c, len, &timer)) != MQTT_SUCCESS_ERROR)
-        goto exit; 
-
-    if (NULL == handler)
-        handler = default_msg_handler;  /* if handler is not specified, the default handler is used */
-    
-    /* create a message */
-    msg_handler = mqtt_msg_handler_create(topic_filter, qos, handler);
-    if (NULL == msg_handler)
-        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
-
-    /* wait for sub result in blocking mode */
-    if (mqtt_wait_packet(c, SUBACK, &sub_ack_timer) == SUBACK) {
-        rc = mqtt_msg_handlers_install(c, msg_handler);
-        RETURN_ERROR(rc);
-    } else
-        rc = MQTT_CONNECT_FAILED_ERROR;
-
-exit:
-
-    platform_mutex_unlock(&c->mqtt_write_lock);
-
-    RETURN_ERROR(rc);
+    return mqtt_subscribe_by_opt(c, topic_filter, qos, handler, timeout, MQTT_SUBSCRIBE_SYNC);
 }
 
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
