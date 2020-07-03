@@ -1263,6 +1263,54 @@ exit:
     RETURN_ERROR(rc);
 }
 
+int mqtt_subscribe_sync(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler)
+{
+    int rc = MQTT_SUBSCRIBE_ERROR;
+    int len = 0;
+    uint16_t packet_id;
+    platform_timer_t timer;
+    MQTTString topic = MQTTString_initializer;
+    topic.cstring = (char *)topic_filter;
+    message_handlers_t *msg_handler = NULL;
+    platform_timer_t sub_ack_timer;
+
+    if (CLIENT_STATE_CONNECTED != mqtt_get_client_state(c))
+        RETURN_ERROR(MQTT_NOT_CONNECT_ERROR);
+    
+    platform_mutex_lock(&c->mqtt_write_lock);
+
+    packet_id = mqtt_get_next_packet_id(c);
+
+    /* serialize subscribe packet and send it */
+    len = MQTTSerialize_subscribe(c->mqtt_write_buf, c->mqtt_write_buf_size, 0, packet_id, 1, &topic, (int*)&qos);
+    if (len <= 0)
+        goto exit;
+    
+    if ((rc = mqtt_send_packet(c, len, &timer)) != MQTT_SUCCESS_ERROR)
+        goto exit; 
+
+    if (NULL == handler)
+        handler = default_msg_handler;  /* if handler is not specified, the default handler is used */
+    
+    /* create a message */
+    msg_handler = mqtt_msg_handler_create(topic_filter, qos, handler);
+    if (NULL == msg_handler)
+        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
+
+    /* wait for sub result in blocking mode */
+    if (mqtt_wait_packet(c, SUBACK, &sub_ack_timer) == SUBACK) {
+        rc = mqtt_msg_handlers_install(c, msg_handler);
+        RETURN_ERROR(rc);
+    } else
+        rc = MQTT_CONNECT_FAILED_ERROR;
+
+exit:
+
+    platform_mutex_unlock(&c->mqtt_write_lock);
+
+    RETURN_ERROR(rc);
+}
+
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
 {
     int len = 0;

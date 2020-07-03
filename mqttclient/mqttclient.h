@@ -165,6 +165,7 @@ int mqtt_connect(mqtt_client_t* c);
 int mqtt_disconnect(mqtt_client_t* c);
 int mqtt_keep_alive(mqtt_client_t* c);
 int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t msg_handler);
+int mqtt_subscribe_sync(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, message_handler_t handler);
 int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter);
 int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg);
 int mqtt_list_subscribe_topic(mqtt_client_t* c);
