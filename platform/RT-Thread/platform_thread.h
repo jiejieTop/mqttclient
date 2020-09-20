@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-15 18:31:44
- * @LastEditTime : 2020-01-08 20:24:17
+ * @LastEditTime: 2020-09-20 14:30:25
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _PLATFORM_THREAD_H_
@@ -11,7 +11,7 @@
 #include <rtthread.h>
 
 typedef struct platform_thread {
-    struct rt_thread thread;
+    rt_thread_t thread;
 } platform_thread_t;
 
 platform_thread_t *platform_thread_init( const char *name,

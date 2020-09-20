@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-06-16 16:57:40
+ * @LastEditTime: 2020-09-20 14:27:52
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -118,7 +118,6 @@ typedef struct mqtt_client {
     mqtt_list_t                 mqtt_ack_handler_list;
     network_t                   *mqtt_network;
     platform_thread_t           *mqtt_thread;
-    platform_timer_t            mqtt_reconnect_timer;
     platform_timer_t            mqtt_last_sent;
     platform_timer_t            mqtt_last_received;
     reconnect_handler_t         mqtt_reconnect_handler;
