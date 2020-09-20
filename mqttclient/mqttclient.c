@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-07-02 08:53:41
+ * @LastEditTime: 2020-09-20 11:18:56
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -951,8 +951,11 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if ((MQTT_MIN_PAYLOAD_SIZE >= c->mqtt_write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= c->mqtt_write_buf_size))
         c->mqtt_write_buf_size = MQTT_DEFAULT_BUF_SIZE;
     
-    c->mqtt_read_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
-    c->mqtt_write_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
+    if (NULL == c->mqtt_read_buf)
+        c->mqtt_read_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
+    
+    if (NULL == c->mqtt_write_buf)
+        c->mqtt_write_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
     
     if ((NULL == c->mqtt_read_buf) || (NULL == c->mqtt_write_buf)) {
         MQTT_LOG_E("%s:%d %s()... malloc buf failed...", __FILE__, __LINE__, __FUNCTION__);
@@ -969,8 +972,6 @@ static int mqtt_connect_with_results(mqtt_client_t* c)
     if (MQTT_SUCCESS_ERROR != rc) {
         if (NULL != c->mqtt_network) {
             network_release(c->mqtt_network);
-            platform_memory_free(c->mqtt_network);
-            c->mqtt_network = NULL;
             RETURN_ERROR(rc);
         }  
     }
