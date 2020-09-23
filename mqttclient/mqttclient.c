@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-09-20 14:25:43
+ * @LastEditTime: 2020-09-23 09:00:00
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -499,6 +499,8 @@ static void mqtt_clean_session(mqtt_client_t* c)
         }
         mqtt_list_del_init(&c->mqtt_ack_handler_list);
     }
+    /* need clean mqtt_ack_handler_number value, find the bug by @lchnu */
+    c->mqtt_ack_handler_number = 0;
 
     /* release all msg_handler_list memory */
     if (!(mqtt_list_is_empty(&c->mqtt_msg_handler_list))) {
@@ -928,6 +930,7 @@ static void mqtt_yield_thread(void *arg)
     
 exit:
     platform_thread_destroy(c->mqtt_thread);
+    c->mqtt_thread = NULL;
 }
 
 static int mqtt_connect_with_results(mqtt_client_t* c)

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-23 19:26:27
- * @LastEditTime: 2020-04-27 22:22:37
+ * @LastEditTime: 2020-09-23 08:53:43
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_thread.h"
@@ -22,7 +22,7 @@ platform_thread_t *platform_thread_init( const char *name,
 
     (void)tick;
 
-    err =  xTaskCreate(entry, name, stack_size, param, priority, thread->thread);
+    err =  xTaskCreate(entry, name, stack_size, param, priority, &thread->thread);
 
     if(pdPASS != err) {
         platform_memory_free(thread);
