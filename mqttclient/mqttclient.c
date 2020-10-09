@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-10-09 14:18:22
+ * @LastEditTime: 2020-10-09 14:36:40
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -495,6 +495,11 @@ static void mqtt_clean_session(mqtt_client_t* c)
         LIST_FOR_EACH_SAFE(curr, next, &c->mqtt_ack_handler_list) {
             ack_handler = LIST_ENTRY(curr, ack_handlers_t, list);
             mqtt_list_del(&ack_handler->list);
+            //@lchnu, 2020-10-08, avoid socket disconnet when waiting for suback/unsuback....
+            if(NULL != ack_handler->handler) {
+              mqtt_msg_handler_destory(ack_handler->handler);
+              ack_handler->handler = NULL;
+            }
             platform_memory_free(ack_handler);
         }
         mqtt_list_del_init(&c->mqtt_ack_handler_list);
@@ -546,6 +551,7 @@ static void mqtt_ack_list_scan(mqtt_client_t* c, uint8_t flag)
             /*@lchnu, 2020-10-08, destory handler memory, if suback/unsuback is overdue!*/
             if (NULL != ack_handler->handler) {
                 mqtt_msg_handler_destory(ack_handler->handler);
+                ack_handler->handler = NULL;
             }
         }
         /* if it is not a qos1 or qos2 message, it will be destroyed in every processing */
