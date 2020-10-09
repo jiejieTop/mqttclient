@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-09-23 09:00:00
+ * @LastEditTime: 2020-10-09 14:18:22
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -541,9 +541,16 @@ static void mqtt_ack_list_scan(mqtt_client_t* c, uint8_t flag)
             /* timeout has occurred. for qos1 and qos2 packets, you need to resend them. */
             mqtt_ack_handler_resend(c, ack_handler);
             continue;
+        } else if ((ack_handler->type == SUBACK) || (ack_handler->type == UNSUBACK)) {
+            
+            /*@lchnu, 2020-10-08, destory handler memory, if suback/unsuback is overdue!*/
+            if (NULL != ack_handler->handler) {
+                mqtt_msg_handler_destory(ack_handler->handler);
+            }
         }
         /* if it is not a qos1 or qos2 message, it will be destroyed in every processing */
         mqtt_ack_handler_destroy(ack_handler);
+        mqtt_subtract_ack_handler_num(c); /*@lchnu, 2020-10-08 */
     }
 }
 
@@ -909,7 +916,8 @@ static void mqtt_yield_thread(void *arg)
     int rc;
     client_state_t state;
     mqtt_client_t *c = (mqtt_client_t *)arg;
-
+    platform_thread_t *thread_to_be_destoried = NULL;
+    
     state = mqtt_get_client_state(c);
         if (CLIENT_STATE_CONNECTED !=  state) {
             MQTT_LOG_W("%s:%d %s()..., mqtt is not connected to the server...",  __FILE__, __LINE__, __FUNCTION__);
@@ -929,8 +937,9 @@ static void mqtt_yield_thread(void *arg)
     }
     
 exit:
-    platform_thread_destroy(c->mqtt_thread);
-    c->mqtt_thread = NULL;
+    thread_to_be_destoried = c->mqtt_thread;
+    c->mqtt_thread = (platform_thread_t *)0;
+    platform_thread_destroy(thread_to_be_destoried);
 }
 
 static int mqtt_connect_with_results(mqtt_client_t* c)
