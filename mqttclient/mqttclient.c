@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-10-09 14:36:40
+ * @LastEditTime: 2020-10-17 11:13:06
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -814,7 +814,11 @@ static int mqtt_packet_handle(mqtt_client_t* c, platform_timer_t* timer)
     rc = mqtt_read_packet(c, &packet_type, timer);
 
     switch (packet_type) {
-        case 0: /* timed out reading packet */
+        case 0: /* timed out reading packet or an error occurred while reading data*/
+            if (MQTT_BUFFER_TOO_SHORT_ERROR == rc) {
+                MQTT_LOG_E("the client read buffer is too short, please call mqtt_set_read_buf_size() to reset the buffer size");
+                /* don't return directly, you need to stay active, because there is data readable now, but the buffer is too small */
+            }
             break;
 
         case CONNACK: /* has been processed */
@@ -1049,6 +1053,50 @@ exit:
     RETURN_ERROR(rc);
 }
 
+static uint32_t mqtt_read_buf_malloc(mqtt_client_t* c, uint32_t size)
+{
+    MQTT_ROBUSTNESS_CHECK(c, 0);
+    
+    if (NULL != c->mqtt_read_buf)
+        platform_memory_free(c->mqtt_read_buf);
+    
+    c->mqtt_read_buf_size = size;
+
+    /* limit the size of the read buffer */
+    if ((MQTT_MIN_PAYLOAD_SIZE >= c->mqtt_read_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= c->mqtt_read_buf_size))
+        c->mqtt_read_buf_size = MQTT_DEFAULT_BUF_SIZE;
+    
+    c->mqtt_read_buf = (uint8_t*) platform_memory_alloc(c->mqtt_read_buf_size);
+    
+    if (NULL == c->mqtt_read_buf) {
+        MQTT_LOG_E("%s:%d %s()... malloc read buf failed...", __FILE__, __LINE__, __FUNCTION__);
+        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
+    }
+    return c->mqtt_read_buf_size;
+}
+
+static uint32_t mqtt_write_buf_malloc(mqtt_client_t* c, uint32_t size)
+{
+    MQTT_ROBUSTNESS_CHECK(c, 0);
+    
+    if (NULL != c->mqtt_write_buf)
+        platform_memory_free(c->mqtt_write_buf);
+    
+    c->mqtt_write_buf_size = size;
+
+    /* limit the size of the read buffer */
+    if ((MQTT_MIN_PAYLOAD_SIZE >= c->mqtt_write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= c->mqtt_write_buf_size))
+        c->mqtt_write_buf_size = MQTT_DEFAULT_BUF_SIZE;
+    
+    c->mqtt_write_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
+    
+    if (NULL == c->mqtt_write_buf) {
+        MQTT_LOG_E("%s:%d %s()... malloc write buf failed...", __FILE__, __LINE__, __FUNCTION__);
+        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
+    }
+    return c->mqtt_write_buf_size;
+}
+
 static int mqtt_init(mqtt_client_t* c)
 {
     /* network init */
@@ -1080,22 +1128,8 @@ static int mqtt_init(mqtt_client_t* c)
     c->mqtt_reconnect_handler = NULL;
     c->mqtt_interceptor_handler = NULL;
     
-    /*only malloc write buf and read buf when call mqtt_init function */
-    if ((MQTT_MIN_PAYLOAD_SIZE >= c->mqtt_read_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= c->mqtt_read_buf_size))
-        c->mqtt_read_buf_size = MQTT_DEFAULT_BUF_SIZE;
-    if ((MQTT_MIN_PAYLOAD_SIZE >= c->mqtt_write_buf_size) || (MQTT_MAX_PAYLOAD_SIZE <= c->mqtt_write_buf_size))
-        c->mqtt_write_buf_size = MQTT_DEFAULT_BUF_SIZE;
-    
-    if (NULL == c->mqtt_read_buf)
-        c->mqtt_read_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
-    
-    if (NULL == c->mqtt_write_buf)
-        c->mqtt_write_buf = (uint8_t*) platform_memory_alloc(c->mqtt_write_buf_size);
-    
-    if ((NULL == c->mqtt_read_buf) || (NULL == c->mqtt_write_buf)) {
-        MQTT_LOG_E("%s:%d %s()... malloc buf failed...", __FILE__, __LINE__, __FUNCTION__);
-        RETURN_ERROR(MQTT_MEM_NOT_ENOUGH_ERROR);
-    }
+    mqtt_read_buf_malloc(c, MQTT_DEFAULT_BUF_SIZE);
+    mqtt_write_buf_malloc(c, MQTT_DEFAULT_BUF_SIZE);
 
     mqtt_list_init(&c->mqtt_msg_handler_list);
     mqtt_list_init(&c->mqtt_ack_handler_list);
@@ -1123,11 +1157,19 @@ MQTT_CLIENT_SET_DEFINE(will_flag, uint32_t, 0)
 MQTT_CLIENT_SET_DEFINE(clean_session, uint32_t, 0)
 MQTT_CLIENT_SET_DEFINE(version, uint32_t, 0)
 MQTT_CLIENT_SET_DEFINE(cmd_timeout, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(read_buf_size, uint32_t, 0)
-MQTT_CLIENT_SET_DEFINE(write_buf_size, uint32_t, 0)
 MQTT_CLIENT_SET_DEFINE(reconnect_try_duration, uint32_t, 0)
 MQTT_CLIENT_SET_DEFINE(reconnect_handler, reconnect_handler_t, NULL)
 MQTT_CLIENT_SET_DEFINE(interceptor_handler, interceptor_handler_t, NULL)
+
+uint32_t mqtt_set_read_buf_size(mqtt_client_t *c, uint32_t size) 
+{ 
+    return mqtt_read_buf_malloc(c, size);
+}
+
+uint32_t mqtt_set_write_buf_size(mqtt_client_t *c, uint32_t size) 
+{ 
+    return mqtt_write_buf_malloc(c, size);
+}
 
 void mqtt_sleep_ms(int ms)
 {
@@ -1346,6 +1388,11 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
     if ((NULL != msg->payload) && (0 == msg->payloadlen))
         msg->payloadlen = strlen((char*)msg->payload);
 
+    if (msg->payloadlen > c->mqtt_write_buf_size) {
+        MQTT_LOG_E("publish payload len is is greater than client write buffer...");
+        RETURN_ERROR(MQTT_BUFFER_TOO_SHORT_ERROR);
+    }
+
     platform_mutex_lock(&c->mqtt_write_lock);
 
     if (QOS0 != msg->qos) {
@@ -1380,7 +1427,7 @@ int mqtt_publish(mqtt_client_t* c, const char* topic_filter, mqtt_message_t* msg
     
 exit:
     msg->payloadlen = 0;        // clear
-
+    
     platform_mutex_unlock(&c->mqtt_write_lock);
 
     if ((MQTT_ACK_HANDLER_NUM_TOO_MUCH_ERROR == rc) || (MQTT_MEM_NOT_ENOUGH_ERROR == rc)) {
