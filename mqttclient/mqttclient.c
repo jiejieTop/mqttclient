@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-10-17 11:13:06
+ * @LastEditTime: 2020-10-17 14:11:02
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -302,7 +302,7 @@ static int mqtt_deliver_message(mqtt_client_t* c, MQTTString* topic_name, mqtt_m
         rc = MQTT_SUCCESS_ERROR;
     }
     
-    memset(message->payload, 0, strlen(message->payload));
+    memset(message->payload, 0, strlen((const char *)message->payload));
     memset(topic_name->lenstring.data, 0, topic_name->lenstring.len);
 
     RETURN_ERROR(rc);
@@ -1473,7 +1473,7 @@ int mqtt_set_will_options(mqtt_client_t* c, char *topic, mqtt_qos_t qos, uint8_t
         RETURN_ERROR(MQTT_NULL_VALUE_ERROR);
 
     if (NULL == c->mqtt_will_options) {
-        c->mqtt_will_options = platform_memory_alloc(sizeof(mqtt_will_options_t));
+        c->mqtt_will_options = (mqtt_will_options_t *)platform_memory_alloc(sizeof(mqtt_will_options_t));
         MQTT_ROBUSTNESS_CHECK(c->mqtt_will_options, MQTT_MEM_NOT_ENOUGH_ERROR);
     }
 
