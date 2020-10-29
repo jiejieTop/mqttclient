@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-10-17 14:11:02
+ * @LastEditTime: 2020-10-29 14:15:15
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1254,6 +1254,9 @@ int mqtt_release(mqtt_client_t* c)
         platform_memory_free(c->mqtt_write_buf);
         c->mqtt_write_buf = NULL;
     }
+
+    platform_mutex_destroy(&c->mqtt_write_lock);
+    platform_mutex_destroy(&c->mqtt_global_lock);
 
     memset(c, 0, sizeof(mqtt_client_t));
 
