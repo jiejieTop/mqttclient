@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-10-29 14:15:15
+ * @LastEditTime: 2020-11-05 16:02:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1045,6 +1045,7 @@ exit:
         c->mqtt_ping_outstanding = 0;        /* reset ping outstanding */
 
     } else {
+        network_release(c->mqtt_network);
         mqtt_set_client_state(c, CLIENT_STATE_INITIALIZED); /* connect failed */
     }
     
