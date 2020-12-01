@@ -24,6 +24,20 @@
 #include "mqtt_error.h"
 #include "mqtt_log.h"
 
+
+/*! \NOTE: Make sure #include "plooc_class.h" is close to the class definition 
+ */
+   
+#if     defined(__MQTT_CLIENT_CLASS_IMPLEMENT)
+#   define __PLOOC_CLASS_IMPLEMENT__
+#   undef __MQTT_CLIENT_CLASS_IMPLEMENT
+#elif   defined(__MQTT_CLIENT_CLASS_INHERIT__)
+#   define __PLOOC_CLASS_INHERIT__
+#   undef __MQTT_CLIENT_CLASS_INHERIT__
+#endif   
+
+#include "plooc_class.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,43 +104,51 @@ typedef struct mqtt_will_options {
     char                *will_message;
 } mqtt_will_options_t;
 
-typedef struct mqtt_client {
-    char                        *mqtt_client_id;
-    char                        *mqtt_user_name;
-    char                        *mqtt_password;
-    char                        *mqtt_host;
-    char                        *mqtt_port;
-    char                        *mqtt_ca;
-    void                        *mqtt_reconnect_data;
-    uint8_t                     *mqtt_read_buf;
-    uint8_t                     *mqtt_write_buf;
-    uint16_t                    mqtt_keep_alive_interval;
-    uint16_t                    mqtt_packet_id;
-    uint32_t                    mqtt_will_flag          : 1;
-    uint32_t                    mqtt_clean_session      : 1;
-    uint32_t                    mqtt_ping_outstanding   : 2;
-    uint32_t                    mqtt_version            : 4;
-    uint32_t                    mqtt_ack_handler_number : 24;
-    uint32_t                    mqtt_cmd_timeout;
-    uint32_t                    mqtt_read_buf_size;
-    uint32_t                    mqtt_write_buf_size;
-    uint32_t                    mqtt_reconnect_try_duration;
-    size_t                      mqtt_client_id_len;
-    size_t                      mqtt_user_name_len;
-    size_t                      mqtt_password_len;
-    mqtt_will_options_t         *mqtt_will_options;
-    client_state_t              mqtt_client_state;
-    platform_mutex_t            mqtt_write_lock;
-    platform_mutex_t            mqtt_global_lock;
-    mqtt_list_t                 mqtt_msg_handler_list;
-    mqtt_list_t                 mqtt_ack_handler_list;
-    network_t                   *mqtt_network;
-    platform_thread_t           *mqtt_thread;
-    platform_timer_t            mqtt_last_sent;
-    platform_timer_t            mqtt_last_received;
-    reconnect_handler_t         mqtt_reconnect_handler;
-    interceptor_handler_t       mqtt_interceptor_handler;
-} mqtt_client_t;
+dcl_class(mqtt_client_t)
+
+def_class(mqtt_client_t,
+//typedef struct mqtt_client {
+
+    private_member(
+        char                        *mqtt_client_id;
+        char                        *mqtt_user_name;
+        char                        *mqtt_password;
+        char                        *mqtt_host;
+        char                        *mqtt_port;
+        char                        *mqtt_ca;
+        void                        *mqtt_reconnect_data;
+        uint8_t                     *mqtt_read_buf;
+        uint8_t                     *mqtt_write_buf;
+        uint16_t                    mqtt_keep_alive_interval;
+        uint16_t                    mqtt_packet_id;
+        uint32_t                    mqtt_will_flag          : 1;
+        uint32_t                    mqtt_clean_session      : 1;
+        uint32_t                    mqtt_ping_outstanding   : 2;
+        uint32_t                    mqtt_version            : 4;
+        uint32_t                    mqtt_ack_handler_number : 24;
+        uint32_t                    mqtt_cmd_timeout;
+        uint32_t                    mqtt_read_buf_size;
+        uint32_t                    mqtt_write_buf_size;
+        uint32_t                    mqtt_reconnect_try_duration;
+        size_t                      mqtt_client_id_len;
+        size_t                      mqtt_user_name_len;
+        size_t                      mqtt_password_len;
+        mqtt_will_options_t         *mqtt_will_options;
+        client_state_t              mqtt_client_state;
+        platform_mutex_t            mqtt_write_lock;
+        platform_mutex_t            mqtt_global_lock;
+        mqtt_list_t                 mqtt_msg_handler_list;
+        mqtt_list_t                 mqtt_ack_handler_list;
+        network_t                   *mqtt_network;
+        platform_thread_t           *mqtt_thread;
+        platform_timer_t            mqtt_last_sent;
+        platform_timer_t            mqtt_last_received;
+        reconnect_handler_t         mqtt_reconnect_handler;
+        interceptor_handler_t       mqtt_interceptor_handler;
+    )
+//} mqtt_client_t;
+
+}
 
 
 #define MQTT_ROBUSTNESS_CHECK(item, err) if (!(item)) {                                         \
