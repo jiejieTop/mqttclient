@@ -5,6 +5,8 @@
  * @LastEditTime: 2020-11-05 16:02:47
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
+ 
+#define __MQTT_CLIENT_CLASS_IMPLEMENT
 #include "mqttclient.h"
 
 #define     MQTT_MIN_PAYLOAD_SIZE   2               

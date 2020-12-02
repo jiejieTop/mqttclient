@@ -4,7 +4,7 @@ project(mqtt-client)
 
 set(TARGETS "mqtt-client")
 set(SUBDIRS "mqtt" "test" "platform" "network" "common" "mqttclient")
-set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "network" "network/mbedtls/include" "mqttclient" "test")
+set(INCDIRS "mqtt" "platform/linux" "common" "common/log" "network" "network/mbedtls/include" "mqttclient" "test" "common/PLOOC")
 set(OUTDIRS "build")
 set(LIBNAMES "mqtt" "platform" "network" "common" "salof" "mbedtls" "mqttclient")
 set(PROJECT_ROOT_PATH "${PROJECT_SOURCE_DIR}")
@@ -19,6 +19,7 @@ set(CMAKE_LIB_TYPE "STATIC")   # SHARED STATIC
 
 set(CMAKE_C_FLAGS "-Wall")
 set(CMAKE_C_FLAGS "-lpthread")
+set(CMAKE_C_FLAGS "-fms-extensions")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS} -O0 -g -ggdb")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} -O3 -DNDEBUG")
 
