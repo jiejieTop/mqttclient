@@ -312,7 +312,7 @@ extern "C" {
 #       warning The black box template is incompatible with other templates. When\
  header files which contains different templates mixing together, the one contains\
  black box template will cause conflicts in other header files. To avoid such\
- conflicts, you can either use black box alone in a project or in a module's\
+ conflicts, you can either use black box alone in a project or in a module`s\
  source code, avoid including header files which directly or indirectly including\
  the header file of the very same module. To suppress this warning, please find the\
  macro __PLOOC_I_KNOW_BLACK_BOX_IS_INCOMPATIBLE_WITH_OTHER_TEMPLATES__ in your\

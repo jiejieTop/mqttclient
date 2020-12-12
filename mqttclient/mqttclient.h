@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-10-17 14:16:58
+ * @LastEditTime: 2020-12-02 20:39:29
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #ifndef _MQTTCLIENT_H_
@@ -57,11 +57,6 @@ typedef enum client_state {
     CLIENT_STATE_CLEAN_SESSION = 3
 }client_state_t;
 
-typedef struct mqtt_connack_data {
-    uint8_t rc;
-    uint8_t session_present;
-} mqtt_connack_data_t;
-
 typedef struct mqtt_message {
     mqtt_qos_t          qos;
     uint8_t             retained;
@@ -80,35 +75,49 @@ typedef void (*interceptor_handler_t)(void* client, message_data_t* msg);
 typedef void (*message_handler_t)(void* client, message_data_t* msg);
 typedef void (*reconnect_handler_t)(void* client, void* reconnect_date);
 
-typedef struct message_handlers {
-    mqtt_list_t         list;
-    mqtt_qos_t          qos;
-    const char*         topic_filter;
-    message_handler_t   handler;
-} message_handlers_t;
+dcl_class(mqtt_connack_data_t)
+def_class(mqtt_connack_data_t,
+    private_member(
+    uint8_t rc;
+    uint8_t session_present;
+    )
+)
 
-typedef struct ack_handlers {
-    mqtt_list_t         list;
-    platform_timer_t    timer;
-    uint32_t            type;
-    uint16_t            packet_id;
-    message_handlers_t  *handler;
-    uint16_t            payload_len;
-    uint8_t             *payload;
-} ack_handlers_t;
 
-typedef struct mqtt_will_options {
-    mqtt_qos_t          will_qos;
-    uint8_t             will_retained;
-    char                *will_topic;
-    char                *will_message;
-} mqtt_will_options_t;
+dcl_class(message_handlers_t)
+def_class(message_handlers_t,
+    private_member(
+        mqtt_list_t         list;
+        mqtt_qos_t          qos;
+        const char*         topic_filter;
+        message_handler_t   handler;
+    )
+)
+dcl_class(ack_handlers_t)
+def_class(ack_handlers_t,
+    private_member(
+        mqtt_list_t         list;
+        platform_timer_t    timer;
+        uint32_t            type;
+        uint16_t            packet_id;
+        message_handlers_t  *handler;
+        uint16_t            payload_len;
+        uint8_t             *payload;
+    )
+)
+
+dcl_class(mqtt_will_options_t)
+def_class(mqtt_will_options_t,
+    private_member(
+        mqtt_qos_t          will_qos;
+        uint8_t             will_retained;
+        char                *will_topic;
+        char                *will_message;
+    )
+)
 
 dcl_class(mqtt_client_t)
-
 def_class(mqtt_client_t,
-//typedef struct mqtt_client {
-
     private_member(
         char                        *mqtt_client_id;
         char                        *mqtt_user_name;
@@ -146,9 +155,7 @@ def_class(mqtt_client_t,
         reconnect_handler_t         mqtt_reconnect_handler;
         interceptor_handler_t       mqtt_interceptor_handler;
     )
-//} mqtt_client_t;
-
-}
+)
 
 
 #define MQTT_ROBUSTNESS_CHECK(item, err) if (!(item)) {                                         \
