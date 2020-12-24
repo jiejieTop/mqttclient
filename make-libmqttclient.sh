@@ -65,6 +65,7 @@ cp -r ../common/*.h include/.
 cp -r ../network/*.h include/.
 cp -r ../mqttclient/*.h include/.
 cp -r ../common/log/*.h include/.
+cp -r ../common/PLOOC/*.h include/.
 cp -r ../platform/linux/*.h include/.
 cp -r ../network/mbedtls/include/mbedtls include/.
 cp -r ../network/mbedtls/wrapper/*.h include/.
