@@ -14,10 +14,7 @@
  *  limitations under the License.                                           *
  *                                                                           *
  ****************************************************************************/
-typedef enum {
-     false, 
-     true
-} bool;
+
 #ifndef __PROTECTED_LOW_OVERHEAD_OBJECT_ORIENTED_C_H__
 #define __PROTECTED_LOW_OVERHEAD_OBJECT_ORIENTED_C_H__
 
