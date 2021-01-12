@@ -35,7 +35,7 @@ INC =   -lpthread \\
 
 OBJS = \$(patsubst %.c, %.o, \$(SRC))
 
-FLAG = -g -fpic -I. -Iinclude \$(INC) 
+FLAG = -g -fpic -std=gnu99 -I. -Iinclude \$(INC) 
 TARGET = libmqttclient.so
 
 EOF
