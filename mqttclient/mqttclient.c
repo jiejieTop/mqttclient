@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime: 2020-11-05 16:02:47
+ * @LastEditTime: 2021-01-14 09:52:39
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
  
@@ -1362,8 +1362,8 @@ int mqtt_unsubscribe(mqtt_client_t* c, const char* topic_filter)
     if ((rc = mqtt_send_packet(c, len, &timer)) != MQTT_SUCCESS_ERROR)
         goto exit; 
 
-    /* create a message and record it */
-    msg_handler = mqtt_msg_handler_create((const char*)topic_filter, QOS0, NULL);
+    /* get a already subscribed message handler */
+    msg_handler = mqtt_get_msg_handler(c, &topic);
     if (NULL == msg_handler) {
         rc = MQTT_MEM_NOT_ENOUGH_ERROR;
         goto exit;
