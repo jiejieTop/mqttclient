@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-23 19:26:27
- * @LastEditTime: 2020-09-20 14:30:08
+ * @LastEditTime: 2022-05-13 10:33:19
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_thread.h"
@@ -59,6 +59,7 @@ void platform_thread_start(platform_thread_t* thread)
 
 void platform_thread_destroy(platform_thread_t* thread)
 {
+    rt_thread_delete(thread->thread);
     platform_memory_free(thread);
 }
 
