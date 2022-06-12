@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-06-08 20:45:33
+ * @LastEditTime : 2022-06-12 17:48:06
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -16,7 +16,7 @@
 #include "mqttclient.h"
 
 // #define TEST_USEING_TLS  
-extern const char *test_ca_get();
+// extern const char *test_ca_get();
 
 static void topic1_handler(void* client, message_data_t* msg)
 {
@@ -76,7 +76,7 @@ int main(void)
     mqtt_set_port(client, "1883");
 #endif
 
-    mqtt_set_host(client, "www.jiejie01.top");
+    mqtt_set_host(client, "120.25.213.14");
     mqtt_set_client_id(client, random_string(10));
     mqtt_set_user_name(client, random_string(10));
     mqtt_set_password(client, random_string(10));
