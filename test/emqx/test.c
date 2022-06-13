@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime: 2020-06-08 20:45:33
+ * @LastEditTime : 2022-06-13 09:18:38
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -76,7 +76,7 @@ int main(void)
     mqtt_set_port(client, "1883");
 #endif
 
-    mqtt_set_host(client, "www.jiejie01.top");
+    mqtt_set_host(client, "jiejie01.top");
     mqtt_set_client_id(client, random_string(10));
     mqtt_set_user_name(client, random_string(10));
     mqtt_set_password(client, random_string(10));
