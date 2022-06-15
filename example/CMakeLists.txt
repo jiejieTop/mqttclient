@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.8)
 project(mqttclient_example)
 
 set(EXAMPLE_DIRS "emqx" "onenet" "baidu" "ali")
@@ -8,7 +8,7 @@ set(EXAMPLE_DIRS "emqx" "onenet" "baidu" "ali")
 # #########################
 if(NOT BUILD_EXAMPLES)
     include(${CMAKE_CURRENT_SOURCE_DIR}/mqttclient.cmake)
-    set(PACKAGE_DEPEND ${WTURS_PACKAGE_LIBS})
+    set(PACKAGE_DEPEND ${MQTTCLIENT_PACKAGE_LIBS})
 endif()
 
 ################
