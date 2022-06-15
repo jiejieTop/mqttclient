@@ -71,6 +71,7 @@ mkdir -p $current_pwd/libmqttclient/include/network/.
 mkdir -p $current_pwd/libmqttclient/include/mqttclient/.
 mkdir -p $current_pwd/libmqttclient/include/common/log/.
 mkdir -p $current_pwd/libmqttclient/include/platform/linux/.
+mkdir -p $current_pwd/libmqttclient/include/mbedtls/.
 mkdir -p $current_pwd/libmqttclient/include/mbedtls/wrapper/.
 
 cp -r $current_pwd/test/*.h $current_pwd/libmqttclient/include/test/.
@@ -80,7 +81,7 @@ cp -r $current_pwd/network/*.h $current_pwd/libmqttclient/include/network/.
 cp -r $current_pwd/mqttclient/*.h $current_pwd/libmqttclient/include/mqttclient/.
 cp -r $current_pwd/common/log/*.h $current_pwd/libmqttclient/include/common/log/.
 cp -r $current_pwd/platform/linux/*.h $current_pwd/libmqttclient/include/platform/linux/.
-cp -r $current_pwd/network/mbedtls/$current_pwd/libmqttclient/include/mbedtls $current_pwd/libmqttclient/include/.
+cp -r $current_pwd/network/mbedtls/include/mbedtls/* $current_pwd/libmqttclient/include/mbedtls/.
 cp -r $current_pwd/network/mbedtls/wrapper/*.h $current_pwd/libmqttclient/include/mbedtls/wrapper/.
 
 if [ " $1" == " " ]; then
