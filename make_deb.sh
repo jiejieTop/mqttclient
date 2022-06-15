@@ -45,11 +45,12 @@ fun_do_generate_ld_conf() {
         mkdir -p ${work_dir}/${deb_name}${ld_so_config_path}
     fi
 
-    sudo echo "$mqttclient_ld_conf_file" > ${work_dir}/${deb_name}${ld_so_config_path}/${deb_name}.conf
+    sudo echo "$mqttclient_ld_conf_file" >${work_dir}/${deb_name}${ld_so_config_path}/${deb_name}.conf
 }
 
 fun_do_help() {
-    echo "usage: $0 [-i install path] [-c compiler / compiler path] [-d] [-r] [-s <on> <off>] [-n <name>]"
+    echo "usage: $0 [-i install path] [-c compiler / compiler path] [-s <on> <off>] [-n <name>]"
+        echo "[-r / --release] [-d / --debug] [--toolchanin <toolchanin file>]"
     echo "  [-i] install path: install $deb_name path"
     echo "  [-c] compiler: specify the compiler you are using, default: gcc"
     echo "  [-c] compiler path: specify the compiler path you are using"
@@ -59,12 +60,12 @@ fun_do_help() {
     echo "      $0"
     echo "      $0 -i"
     echo "      $0 -i /usr/lib/"
-    echo "      $0 -carm-linux-gnueabihf-gcc"
-    echo "      $0 -c/usr/bin/arm-linux-gnueabihf-gcc"
+    echo "      $0 -c arm-linux-gnueabihf-gcc"
+    echo "      $0 -c /usr/bin/arm-linux-gnueabihf-gcc"
     echo "      $0 -r"
     echo "      $0 -d"
-    echo "      $0 -soff"
-    echo "      $0 -son"
+    echo "      $0 -n <name>"
+    echo "      $0 --toolchanin [toolchanin file]"
 }
 
 fun_do_install() {
@@ -78,6 +79,11 @@ fun_do_install() {
 fun_do_compiler() {
     if [ " $1" != " " ]; then
         compiler=$1
+        compiler_path=$(which $compiler)
+        if [ " $compiler_path" == " " ]; then
+            echo -e "\033[31mNo $compiler compiler found in the system\033[0m"
+            exit
+        fi
     fi
 }
 
@@ -95,6 +101,12 @@ fun_do_config_shared() {
     fi
 }
 
+fun_do_toolchanin() {
+    if [ " $1" != " " ]; then
+        toolchanin=$1
+    fi
+}
+
 fun_do_config_name() {
     if [ " $1" != " " ]; then
         deb_name=$1
@@ -109,13 +121,13 @@ fun_do_make_deb() {
     # 去掉临时安装目录的前缀
     sudo sed -i "s#${work_dir}/$deb_name##g" $(find ${work_dir}/$deb_name -name "*.cmake")
     # 分号换行，避免太长
-    sudo sed -i "s#;#;\n#g" $(find ${work_dir}/$deb_name -name "*.cmake")
+    sudo sed -i "s#;#;#g" $(find ${work_dir}/$deb_name -name "*.cmake")
     $work_dir/build_deb.sh "${work_dir}/$deb_name/" "$deb_name.deb"
 }
 
 fun_do_arg_init() {
     if [ " $compiler_path" != " " ]; then
-        build_arg="-c${compiler_path} ${build_arg}"
+        build_arg="-c ${compiler_path} ${build_arg}"
     fi
 
     if [ " $install_path" != " " ]; then
@@ -134,7 +146,7 @@ fun_do_arg_init() {
 }
 
 main() {
-    ARGS=$(getopt -o hrdi::c::s::n: --long help,release,debug,install::,compiler::,shared::,name: -- "$@")
+    ARGS=$(getopt -o hrdi::c:s::n: --long help,release,debug,install::,compiler::,shared:,name:,toolchanin: -- "$@")
     if [ $? != 0 ]; then
         echo "Terminating..." >&2
         exit 1
@@ -166,6 +178,11 @@ main() {
         -d | --debug)
             fun_do_build_debug
             shift
+            ;;
+        --toolchanin)
+            fun_do_toolchanin $2
+            shift
+            exit 0
             ;;
         -h | --help)
             fun_do_help

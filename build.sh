@@ -147,7 +147,7 @@ main() {
     fun_do_config
 
     # [-h] [-e] [-i install path] [-c compiler path]
-    ARGS=$(getopt -o hdrei::c::s:: --long help,clean,debug,release,example,install::,compiler::,shared::,toolchanin: -- "$@")
+    ARGS=$(getopt -o hdrei::c:s:: --long help,clean,debug,release,example,install::,compiler:,shared::,toolchanin: -- "$@")
     if [ $? != 0 ]; then
         echo "Terminating..." >&2
         exit 1
