@@ -7,6 +7,7 @@
  */
 #include "nettype_tcp.h"
 #include "mqtt_log.h"
+#include "platform_net_socket.h"
 
 int nettype_tcp_read(network_t *n, unsigned char *read_buf, int len, int timeout)
 {

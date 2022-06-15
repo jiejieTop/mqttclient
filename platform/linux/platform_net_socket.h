@@ -25,9 +25,6 @@
 #include <string.h>
 #include <signal.h>
 
-#include "network.h"
-#include "mqtt_error.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-11 21:53:07
- * @LastEditTime : 2022-06-12 17:48:06
+ * @LastEditTime : 2022-06-15 23:03:30
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include <stdio.h>
@@ -15,8 +15,9 @@
 #include "mqtt_log.h"
 #include "mqttclient.h"
 
+#include "ca.inc"
+
 // #define TEST_USEING_TLS  
-// extern const char *test_ca_get();
 
 static void topic1_handler(void* client, message_data_t* msg)
 {
@@ -62,8 +63,15 @@ int main(void)
     int res;
     pthread_t thread1;
     mqtt_client_t *client = NULL;
-    
+    char client_id[32];
+    char user_name[32];
+    char password[32];
+
     printf("\nwelcome to mqttclient test...\n");
+
+    random_string(client_id, 10);
+    random_string(user_name, 10);
+    random_string(password, 10);
 
     mqtt_log_init();
 
@@ -77,9 +85,9 @@ int main(void)
 #endif
 
     mqtt_set_host(client, "120.25.213.14");
-    mqtt_set_client_id(client, random_string(10));
-    mqtt_set_user_name(client, random_string(10));
-    mqtt_set_password(client, random_string(10));
+    mqtt_set_client_id(client, client_id);
+    mqtt_set_user_name(client, user_name);
+    mqtt_set_password(client, password);
     mqtt_set_clean_session(client, 1);
 
     mqtt_connect(client);

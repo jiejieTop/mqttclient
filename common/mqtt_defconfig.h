@@ -1,4 +1,13 @@
 /*
+ * @Author       : jiejie
+ * @GitHub       : https://github.com/jiejieTop
+ * @Date         : 2021-02-26 12:00:24
+ * @LastEditors  : jiejie
+ * @LastEditTime : 2022-06-15 23:22:10
+ * @FilePath     : /mqttclient/mqttclient/mqtt_defconfig.h
+ * Copyright (c) 2022 jiejie, All Rights Reserved. Please keep the author information and source code according to the license.
+ */
+/*
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-02-25 03:36:09
@@ -73,14 +82,7 @@
 #ifndef MQTT_TLS_HANDSHAKE_TIMEOUT
     #define MQTT_TLS_HANDSHAKE_TIMEOUT  (5 * 1000)
 #endif // !MQTT_TLS_HANDSHAKE_TIMEOUT
-    
-    #include "mbedtls/config.h"
-    #include "mbedtls/ssl.h"
-    #include "mbedtls/entropy.h"
-    #include "mbedtls/net_sockets.h"
-    #include "mbedtls/ctr_drbg.h"
-    #include "mbedtls/error.h"
-    #include "mbedtls/debug.h"
+
 #endif /* MQTT_NETWORK_TYPE_NO_TLS */
 
 #endif /* _DEFCONFIG_H_ */

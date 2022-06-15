@@ -1,0 +1,11 @@
+# - Config file for the Project package
+# It defines the following variables
+#  ${PROJECT_NAME}_INCLUDE_DIRS - include directories for Project
+#  ${PROJECT_NAME}_LIBRARIES    - libraries to link against
+#  ${PROJECT_NAME}_EXECUTABLE   - the bar executable
+
+set(${PROJECT_NAME}_INCLUDE_DIRS ${${PROJECT_NAME}_INCLUDE_DIRS_INSTALL})
+set(${PROJECT_NAME}_LINK_DIRS ${${PROJECT_NAME}_LINK_DIRS_INSTALL})
+set(${PROJECT_NAME}_LIBRARIES ${${PROJECT_NAME}_LIBRARIES_INSTALL})
+set(${PROJECT_NAME}_EXECUTABLE ${${PROJECT_NAME}_EXECUTABLE_INSTALL})
+

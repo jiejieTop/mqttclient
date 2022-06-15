@@ -1,4 +1,13 @@
 /*
+ * @Author       : jiejie
+ * @GitHub       : https://github.com/jiejieTop
+ * @Date         : 2021-02-26 12:00:24
+ * @LastEditors  : jiejie
+ * @LastEditTime : 2022-06-15 19:48:43
+ * @FilePath     : /mqttclient/network/nettype_tls.h
+ * Copyright (c) 2022 jiejie, All Rights Reserved. Please keep the author information and source code according to the license.
+ */
+/*
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2020-01-11 19:45:44
@@ -15,6 +24,14 @@
 #include "mqtt_log.h"
 
 #ifndef MQTT_NETWORK_TYPE_NO_TLS
+
+#include "mbedtls/config.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/net_sockets.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/error.h"
+#include "mbedtls/debug.h"
 
 #ifdef __cplusplus
 extern "C" {

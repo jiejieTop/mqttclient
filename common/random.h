@@ -1,10 +1,13 @@
 /*
- * @Author: jiejie
- * @Github: https://github.com/jiejieTop
- * @Date: 2020-01-09 19:59:19
- * @LastEditTime: 2020-10-17 14:18:15
- * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
+ * @Author       : jiejie
+ * @GitHub       : https://github.com/jiejieTop
+ * @Date         : 2021-02-26 12:00:24
+ * @LastEditors  : jiejie
+ * @LastEditTime : 2022-06-15 19:40:10
+ * @FilePath     : /mqttclient/common/random.h
+ * Copyright (c) 2022 jiejie, All Rights Reserved. Please keep the author information and source code according to the license.
  */
+
 
 #ifndef _RANDOM_H_
 #define _RANDOM_H_
@@ -17,7 +20,7 @@ extern "C" {
 
 int random_number(void);
 int random_number_range(unsigned int min, unsigned int max);
-char *random_string(unsigned int len);
+int random_string(char *buffer, int len);
 
 #ifdef __cplusplus
 }

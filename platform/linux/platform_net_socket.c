@@ -6,6 +6,7 @@
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "platform_net_socket.h"
+#include "mqtt_error.h"
 
 int platform_net_socket_connect(const char *host, const char *port, int proto)
 {

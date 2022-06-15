@@ -1,16 +1,24 @@
 /*
- * @Author: jiejie
- * @Github: https://github.com/jiejieTop
- * @Date: 2020-01-09 19:25:05
- * @LastEditTime: 2020-06-16 14:50:33
- * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
+ * @Author       : jiejie
+ * @GitHub       : https://github.com/jiejieTop
+ * @Date         : 2021-02-26 12:00:24
+ * @LastEditors  : jiejie
+ * @LastEditTime : 2022-06-15 19:44:22
+ * @FilePath     : /mqttclient/common/random.c
+ * Copyright (c) 2022 jiejie, All Rights Reserved. Please keep the author information and source code according to the license.
  */
+
 #include <stdlib.h>
 #include "random.h"
-#include "platform_timer.h"
-#include "platform_memory.h"
 
+extern int platform_timer_now();
 static unsigned int last_seed = 1;
+
+
+int __attribute__((weak)) platform_timer_now()
+{
+    return 1;
+}
 
 static int do_random(unsigned int seed)
 {
@@ -31,16 +39,15 @@ int random_number_range(unsigned int min, unsigned int max)
     return (random_number() % (max - min)) + min;
 }
 
-char *random_string(unsigned int len)
+int random_string(char *buffer, int len)
 {
     unsigned int i, flag, seed, random;
 
-    char *str = platform_memory_alloc((size_t)(len + 1));
-    if (NULL == str)
-        return NULL;
+    if (NULL == buffer)
+        return 0;
     
     seed = (unsigned int) random_number();
-    seed += (unsigned int) ((size_t)str ^ seed);
+    seed += (unsigned int) ((size_t)buffer ^ seed);
     
     random = (unsigned int)do_random(seed);
     
@@ -49,22 +56,22 @@ char *random_string(unsigned int len)
 		flag = (unsigned int)random % 3;
 		switch (flag) {
             case 0:
-                str[i] = 'A' + do_random(random ^ (i & flag)) % 26;
+                buffer[i] = 'A' + do_random(random ^ (i & flag)) % 26;
                 break;
             case 1:
-                str[i] = 'a' + do_random(random ^ (i & flag)) % 26;
+                buffer[i] = 'a' + do_random(random ^ (i & flag)) % 26;
                 break;
             case 2:
-                str[i] = '0' + do_random(random ^ (i & flag)) % 10;
+                buffer[i] = '0' + do_random(random ^ (i & flag)) % 10;
                 break;
             default:
-                str[i] = 'x';
+                buffer[i] = 'x';
                 break;
 		}
         random += ((0xb433e5c6 ^ random)  << (i & flag));
 	}
 
-    str[len] = '\0';
-	return str;
+    buffer[len] = '\0';
+	return len;
 }
 

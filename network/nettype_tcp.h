@@ -8,7 +8,6 @@
 #ifndef _NETTYPE_TCP_H_
 #define _NETTYPE_TCP_H_
 
-#include "platform_net_socket.h"
 #include "network.h"
 #include "mqtt_error.h"
 

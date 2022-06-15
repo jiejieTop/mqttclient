@@ -73,8 +73,11 @@ int main(void)
     int res;
     pthread_t thread1;
     mqtt_client_t *client = NULL;
-    
+    char client_id[32];
+
     printf("\nwelcome to mqttclient test...\n");
+
+    random_string(client_id, 10);
 
     mqtt_log_init();
 
@@ -88,7 +91,7 @@ int main(void)
 #endif
 
     mqtt_set_host(client, "j6npr4w.mqtt.iot.gz.baidubce.com");
-    mqtt_set_client_id(client, random_string(10));
+    mqtt_set_client_id(client, client_id);
     mqtt_set_user_name(client, "j6npr4w/mqtt-client-dev");
     mqtt_set_password(client, "lcUhUs5VYLMSbrnB");
     mqtt_set_clean_session(client, 1);
