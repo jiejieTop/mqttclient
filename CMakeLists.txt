@@ -5,6 +5,9 @@ project(mqtt-client)
 set(TARGETS "mqtt-client")
 set(SUBDIRS  "common" "mqtt" "platform" "network" "mqttclient")
 
+# 选项
+option(BUILD_EXAMPLES "Whether to enable examples" ON)
+
 # 库文件前缀
 set(LIBRARY_PREFIX "mc")
 
