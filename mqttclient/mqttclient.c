@@ -954,8 +954,12 @@ static void mqtt_yield_thread(void *arg)
     
 exit:
     thread_to_be_destoried = c->mqtt_thread;
-    c->mqtt_thread = (platform_thread_t *)0;
-    platform_thread_destroy(thread_to_be_destoried);
+    if(NULL != thread_to_be_destoried)
+    {
+        platform_thread_destroy(thread_to_be_destoried);
+        platform_memory_free(thread_to_be_destoried);
+        thread_to_be_destoried = NULL;
+    }
 }
 
 static int mqtt_connect_with_results(mqtt_client_t* c)
@@ -1457,7 +1461,6 @@ exit:
 
 int mqtt_list_subscribe_topic(mqtt_client_t* c)
 {
-    int i = 0;
     mqtt_list_t *curr, *next;
     message_handlers_t *msg_handler;
     
