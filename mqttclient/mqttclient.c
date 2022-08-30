@@ -1302,6 +1302,7 @@ int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, m
 {
     int rc = MQTT_SUBSCRIBE_ERROR;
     int len = 0;
+    int qos_level = qos; /* This can avoid alignment bugs, because enum is not int on some compilers */
     uint16_t packet_id;
     platform_timer_t timer;
     MQTTString topic = MQTTString_initializer;
@@ -1314,8 +1315,6 @@ int mqtt_subscribe(mqtt_client_t* c, const char* topic_filter, mqtt_qos_t qos, m
     platform_mutex_lock(&c->mqtt_write_lock);
 
     packet_id = mqtt_get_next_packet_id(c);
-
-    int qos_level = qos; /* This can avoid alignment bugs, because enum is not int on some compilers */
 
     /* serialize subscribe packet and send it */
     len = MQTTSerialize_subscribe(c->mqtt_write_buf, c->mqtt_write_buf_size, 0, packet_id, 1, &topic, (int *)&qos_level);
