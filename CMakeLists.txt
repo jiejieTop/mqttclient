@@ -57,6 +57,6 @@ show_module_info()
 install_project()
 
 
-if(BUILD_EXAMPLES)
+# if(BUILD_EXAMPLES)
     add_subdirectory(example)
-endif()
+# endif()
