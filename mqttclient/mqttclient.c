@@ -2,7 +2,7 @@
  * @Author: jiejie
  * @Github: https://github.com/jiejieTop
  * @Date: 2019-12-09 21:31:25
- * @LastEditTime : 2022-06-12 17:39:43
+ * @LastEditTime : 2023-03-26 17:18:35
  * @Description: the code belongs to jiejie, please keep the author information and source code according to the license.
  */
 #include "mqttclient.h"
@@ -1462,6 +1462,7 @@ exit:
 
 int mqtt_list_subscribe_topic(mqtt_client_t* c)
 {
+    int i = 0;
     mqtt_list_t *curr, *next;
     message_handlers_t *msg_handler;
     
