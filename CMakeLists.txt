@@ -8,6 +8,9 @@ set(SUBDIRS  "common" "mqtt" "platform" "network" "mqttclient")
 # 库文件前缀
 set(LIBRARY_PREFIX "mc")
 
+# 编译debug版本
+set(CMAKE_BUILD_TYPE "Debug")
+
 # 设置版本信息
 set(PROJECT_MAJOR_VERSION 1) # 架版本信息
 set(PROJECT_MINOR_VERSION 2) # 主版本信息
@@ -56,7 +59,8 @@ get_module_info()
 show_module_info()
 install_project()
 
+option(BUILD_EXAMPLES "Build examples" ON)
 
-# if(BUILD_EXAMPLES)
+if(BUILD_EXAMPLES)
     add_subdirectory(example)
-# endif()
+endif()
