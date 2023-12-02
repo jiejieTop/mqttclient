@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 current_pwd=$(
     cd "$(dirname "$0")"
@@ -36,7 +36,7 @@ INC =   -lpthread \\
         -I$current_pwd/mqttclient \\
         -I$current_pwd/network \\
         -I$current_pwd/platform/linux \\
-        -I$current_pwd/test
+        -I$current_pwd/config
 
 OBJS = \$(patsubst %.c, %.o, \$(SRC))
 
@@ -64,7 +64,7 @@ EOF
 
 fi
 
-mkdir -p $current_pwd/libmqttclient/include/test/.
+mkdir -p $current_pwd/libmqttclient/include/config/.
 mkdir -p $current_pwd/libmqttclient/include/mqtt/.
 mkdir -p $current_pwd/libmqttclient/include/common/.
 mkdir -p $current_pwd/libmqttclient/include/network/.
@@ -74,7 +74,7 @@ mkdir -p $current_pwd/libmqttclient/include/platform/linux/.
 mkdir -p $current_pwd/libmqttclient/include/mbedtls/.
 mkdir -p $current_pwd/libmqttclient/include/mbedtls/wrapper/.
 
-cp -r $current_pwd/test/*.h $current_pwd/libmqttclient/include/test/.
+cp -r $current_pwd/config/*.h $current_pwd/libmqttclient/include/config/.
 cp -r $current_pwd/mqtt/*.h $current_pwd/libmqttclient/include/mqtt/.
 cp -r $current_pwd/common/*.h $current_pwd/libmqttclient/include/common/.
 cp -r $current_pwd/network/*.h $current_pwd/libmqttclient/include/network/.
