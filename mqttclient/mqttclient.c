@@ -1463,6 +1463,8 @@ exit:
 int mqtt_list_subscribe_topic(mqtt_client_t* c)
 {
     int i = 0;
+
+    (void) i; /* prevent compiler warning */
     mqtt_list_t *curr, *next;
     message_handlers_t *msg_handler;
     
