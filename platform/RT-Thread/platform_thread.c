@@ -59,6 +59,7 @@ void platform_thread_start(platform_thread_t* thread)
 
 void platform_thread_destroy(platform_thread_t* thread)
 {
+    rt_thread_delete(thread->thread);
     platform_memory_free(thread);
 }
 
