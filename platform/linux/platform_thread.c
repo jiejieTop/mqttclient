@@ -54,8 +54,10 @@ void platform_thread_start(platform_thread_t* thread)
 
 void platform_thread_destroy(platform_thread_t* thread)
 {
-    if (NULL != thread)
+    if (NULL != thread) {
         pthread_detach(thread->thread);
+        platform_memory_free(thread);
+    }
 }
 
 

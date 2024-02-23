@@ -957,7 +957,6 @@ exit:
     if(NULL != thread_to_be_destoried)
     {
         platform_thread_destroy(thread_to_be_destoried);
-        platform_memory_free(thread_to_be_destoried);
         thread_to_be_destoried = NULL;
     }
 }

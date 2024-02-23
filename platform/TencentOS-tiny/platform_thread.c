@@ -59,8 +59,8 @@ void platform_thread_destroy(platform_thread_t* thread)
 {
     if (NULL != thread)
         tos_task_destroy(&(thread->thread));
+    platform_memory_free(thread->thread.stk_base);
     platform_memory_free(&(thread->thread));
-    platform_memory_free(&(thread->thread.stk_size));
 }
 
 
