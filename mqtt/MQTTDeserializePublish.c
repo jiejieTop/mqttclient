@@ -50,7 +50,7 @@ int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retaine
 	*qos = header.bits.qos;
 	*retained = header.bits.retain;
 
-	curdata += (rc = MQTTPacket_decodeBuf(curdata, &mylen)); /* read remaining length */
+	curdata += MQTTPacket_decodeBuf(curdata, &mylen); /* read remaining length */
 	enddata = curdata + mylen;
 
 	if (!readMQTTLenString(topicName, &curdata, enddata) ||
